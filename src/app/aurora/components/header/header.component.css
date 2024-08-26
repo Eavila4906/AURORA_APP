@@ -1,0 +1,47 @@
+/*COLOR OPCION ACTIVA EN EL SIDEBAR*/
+.sidebar .nav-item.active>.nav-link {
+    color: white;
+    background-color: #03466e;
+}
+
+/*COLOR DEL CURSOR DE LOS ITEMS DEL SIDEBAR*/
+.sidebar .nav-item .nav-link:hover {
+    color: white;
+    background-color: #03466e
+}
+
+/*COLOR sidebar*/
+.bg-gray-50 {
+    background-color: #011f30 !important
+}
+
+.separator {
+    background-color: aliceblue;
+}
+
+app-nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 500;
+}
+
+#sidebarMenu {
+    position: fixed;
+    left: 0;
+    z-index: 1000;
+}
+
+.nav-responsive {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 500;
+}
+
+@media (max-width: 991px) {
+    app-nav {
+        display: none;
+    }
+}

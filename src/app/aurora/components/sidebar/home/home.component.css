@@ -1,0 +1,30 @@
+.modal-backdrop {
+    background-color: rgba(165, 165, 165, 0.6);
+    /* Color de fondo grisáceo */
+    opacity: 0;
+    /* Por defecto, la opacidad es 0 para que no sea visible inicialmente */
+    transition: opacity 0.3s ease;
+    /* Agregar una transición suave */
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+    /* Mostrar el fondo oscurecido con opacidad completa cuando el modal está abierto */
+}
+
+section {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    margin: 0; 
+}
+
+.logo {
+    background-image: url('../../../../../assets/img/logo.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    margin-top: 40px;
+    width: 600px;
+    height: 300px; 
+}

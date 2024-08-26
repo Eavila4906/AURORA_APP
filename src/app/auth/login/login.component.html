@@ -1,0 +1,43 @@
+<section class="intro">
+    <div class="bg-image h-100">
+        <div class="mask d-flex align-items-center h-100" style="background-color: #f3f2f2;">
+            <div class="container">
+                <div class="row d-flex justify-content-center align-items-center">
+                    <div class="col-12 col-lg-6">
+                        <div class="logo"></div>
+                    </div>
+                    <div class="col-12 col-lg-5">
+                        <div class="card" style="border-radius: 1rem;">
+                            <div class="row g-0">
+                                <div class="card-body py-5 px-4 p-md-5">
+                                    <form id="form-login" (ngSubmit)="login()">
+                                        <h4 class="mb-4 title-login">
+                                            Ingresar al sistema
+                                        </h4>
+
+                                        <div class="form-outline mb-3">
+                                            <input type="text" [(ngModel)]="email" name="email" class="form-control" 
+                                            required placeholder="Usuario o correo electrónico">
+                                        </div>
+
+                                        <div class="form-outline mb-3">
+                                            <input type="password" id="password" [(ngModel)]="password" name="password" class="form-control"
+                                                required placeholder="Contraseña">
+                                        </div>
+
+                                        <div>
+                                            <button class="btn btn-login btn-rounded" 
+                                                type="submit">
+                                                Iniciar sesion
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

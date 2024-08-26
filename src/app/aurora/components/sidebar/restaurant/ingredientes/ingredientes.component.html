@@ -1,0 +1,107 @@
+<div class="row" *ngIf="permission_read">
+    <div class="ms-3 card card-body border-0 shadow mb-4 me-4">
+
+        <div class="row mb-4">
+            <div class="col-md-9">
+                <h1 class="h3 d-inline align-middle"><i class="fas fa-carrot"></i> Ingredientes</h1>
+                <button type="button" class="btn btn-success text-white ms-3" data-bs-toggle="modal" 
+                    (click)="limpiarFormulario()" data-bs-target="#modal-default"
+                    *ngIf="permission_create">
+                    Nuevo
+                </button>
+            </div>
+            <div class="col-lg-3 col-sm-6 mb-3">
+                <div class="input-group">
+                    <input class="form-control" [(ngModel)]="filtroNombres" (input)="filtrar()" 
+                    placeholder="Buscar por ingredientes" aria-label="Buscar">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" data-bs-backdrop="static" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <form [formGroup]="ingredientesForm" (ngSubmit)="verificarModal()">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h2 class="h6 modal-title">{{editarModal ? 'Editar Ingrediente' : 'Registrar Ingrediente'}}
+                            </h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div class="mb-3 ">
+                                                <label>Nombre del Ingrediente</label>
+                                                <input class="form-control " type="text" formControlName="nombre">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div class="mb-3 ">
+                                                <label>Medida</label>
+                                                <select class="form-select mb-0" formControlName="medida">
+                                                    <option value="ud">
+                                                        Unidad </option>
+                                                    <option value="gr">
+                                                        Gramos </option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success text-white">
+                                <span >
+                                    {{editarModal? 'Guardar' : 'Registrar' }}
+                                </span>
+                            </button>
+                            <button type="button" class="btn btn-secondary text-gray-600" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive ">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col ">Ingrediente</th>
+                        <th scope="col ">Medida</th>
+                        <th scope="col ">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let ingrediente of listaIngredientesFiltrada | paginate: { itemsPerPage: registrosPorPagina, currentPage: paginaActual } ">
+                        <td>{{ingrediente.nombre}}</td>
+                        <td>{{ingrediente.medida}}</td>
+                        <td>
+                            <button class="mx-2 btn btn-info btn-sm" title="Editar" data-bs-toggle="modal" 
+                                data-bs-target="#modal-default" (click)="modalEditar(ingrediente)" 
+                                role="button " *ngIf="permission_update">
+                                <i class="fas fa-edit "></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" title="Eliminar" 
+                                (click)="eliminarIngredientes(ingrediente.id_ingrediente)" 
+                                role="button" *ngIf="permission_delete">
+                                <i class="fas fa-trash "></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination ">
+                <pagination-controls (pageChange)="paginaActual=$event"></pagination-controls>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

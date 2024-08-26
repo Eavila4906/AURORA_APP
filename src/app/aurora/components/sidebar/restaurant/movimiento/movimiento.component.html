@@ -1,0 +1,186 @@
+<div class="row">
+    <div class="ms-3 card card-body border-0 shadow mb-4 me-4">
+
+        <div class="row mb-4">
+            <div class="col-md-9">
+                <h1 class="h3 d-inline align-middle"><i class="fas fa-dolly"></i> Movimientos</h1>
+                <button type="button" class="btn btn-success text-white ms-3" data-bs-toggle="modal" 
+                (click)="limpiarModal()" data-bs-target="#modal-movimiento">
+                    Nuevo
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-2 col-sm-6 mb-3">
+                <label>Tipo de Movimiento</label>
+                <select class="form-select mb-0" [(ngModel)]="filtroTipoMovimiento" (ngModelChange)="filtrar()">
+                    <option value="I">
+                        Ingreso </option>
+                    <option value="E">
+                        Egreso
+                    </option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-sm-6 mb-3">
+                <label>F. Desde</label>
+                <input class="form-control" type="date" [(ngModel)]="fechaDesde">
+            </div>
+            <div class="col-lg-2 col-sm-6 mb-3">
+                <label>F. Hasta</label>
+                <input class="form-control" type="date" [(ngModel)]="fechaHasta">
+            </div>
+            <div class="col-lg-2 col-sm-6 mb-3 mt-2">
+                <br>
+                <button class="mx-2 btn btn-success text-white" (click)="mostrarMovimientos()"> <i class="fas fa-search"></i> </button>
+            </div>
+        </div>
+
+        <div class="modal fade" data-bs-backdrop="static" id="modal-movimiento" tabindex="-1" role="dialog" aria-labelledby="modal-movimiento" aria-hidden="true">
+            <div class="modal-dialog custom-modal-size" role="document">
+
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h2 class="h6 modal-title">{{editarModal ? 'Modificar Movimiento' : 'Registrar Movimiento'}}
+                        </h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+
+                            <div class="with-border col-lg-7 col-md-12">
+
+                                <div class="col-12">
+                                    <form [formGroup]="movimientoForm">
+                                        <div class="row">
+                                            <div class="col-lg-6 col-sm-6 mb-3">
+                                                <label>T. Movimiento</label>
+                                                <select class="form-select mb-0" formControlName="tipoMovimiento">
+                                                        <option value="I">
+                                                            Ingreso </option>
+                                                        <option value="E">
+                                                            Egreso
+                                                        </option>
+                                                    </select>
+                                            </div>
+                                            <div class="col-lg-6 col-sm-6 mb-3">
+                                                <label>Fecha</label>
+                                                <input class="form-control" type="date" formControlName="fecha">
+                                            </div>
+
+                                            <div class="col-lg-12 col-sm-6 mb-3">
+                                                <label>Comentarios</label>
+                                                <textarea class="form-control" type="text" formControlName="comentarios" rows="1"></textarea>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Ingrediente</th>
+                                                    <th scope="col">Cantidad</th>
+                                                    <th scope="col">Accion</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let ingrediente of listaIngredientes; let i = index">
+                                                    <td>{{ingrediente.nombre_ingrediente}}</td>
+                                                    <td>
+                                                        <div class="col-md-6">
+                                                            <input class="form-control" name="cantidad{{i}}" [(ngModel)]="ingrediente.cantidad" type="number">
+                                                        </div>
+                                                    </td>
+                                                    <td><button class="btn btn-danger btn-sm" role="button" (click)="eliminarIngrediente(i)"><i
+                                                                    class="fas fa-trash"></i></button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5 col-md-12">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-sm-6">
+                                            <label>Busquedad </label>
+                                            <input class="form-control" name="filtroNombresIngrediente" [(ngModel)]="filtroNombresIngrediente" type="text" placeholder="Buscar Ingrediente" (input)="filtrarIngredientes()">
+                                        </div>
+                                        <br>
+                                        <div class=" col-lg-12 col-sm-6">
+                                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Ingrediente</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let ingrediente of listaIngredientesFiltradaBusquedad" (click)="onRowClick(ingrediente)">
+                                                            <td>{{ingrediente.nombre}}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success text-white" (click)="registarOEditarMovimiento()">
+                                <span>
+                                    {{editarModal? 'Guardar' : 'Registrar'}}
+                                </span>
+                        </button>
+                        <button type="button" class="btn btn-secondary text-gray-600" data-bs-dismiss="modal">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="table-responsive ">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col ">N° Movimiento</th>
+                        <th scope="col ">Tipo</th>
+                        <th scope="col ">Fecha</th>
+                        <th scope="col ">Comentario</th>
+                        <th scope="col ">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let movimiento of listaMovimientosFilt | paginate: { itemsPerPage: registrosPorPagina, currentPage: paginaActual } ">
+                        <td><small>{{movimiento.id_movimientos}}</small></td>
+                        <td *ngIf="movimiento.tipo_movimiento == 'E' ">Egreso</td>
+                        <td *ngIf="movimiento.tipo_movimiento == 'I' ">Ingreso</td>
+                        <td>{{movimiento.fecha}}</td>
+                        <td>{{movimiento.comentario}}</td>
+
+                        <td>
+                            <button class="mx-2 btn btn-info btn-sm" title="Editar" data-bs-toggle="modal" 
+                                data-bs-target="#modal-movimiento" role="button" 
+                                (click)="modalEditar(movimiento)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" title="Eliminar"
+                                (click)="eliminarMovimiento(movimiento.id_movimientos)" role="button ">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination ">
+                <pagination-controls (pageChange)="paginaActual=$event"></pagination-controls>
+            </div>
+        </div>
+    </div>
+</div>

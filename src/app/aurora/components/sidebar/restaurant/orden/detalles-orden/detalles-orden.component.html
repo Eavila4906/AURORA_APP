@@ -1,0 +1,354 @@
+<div *ngIf="ordenService.tipoPedido">
+    <app-slide-productos></app-slide-productos>
+</div>
+<div class="row">
+    <div class="card card-body border-0 shadow mb-4">
+        <h2 class="h6 mb-4"> Orden - #{{numeroOrden}}</h2>
+        <div class="row">
+            <div class="col-lg-4 col-sm-6 mb-3">
+                <label for="gender">Nombre de Cliente </label>
+                <div class="input-group">
+                    <input class="form-control" [(ngModel)]="cliente" aria-label="Buscar">
+                </div>
+            </div>
+            <div class="col-lg-2 col-sm-6 mb-3">
+                <label>T. Pedido</label>
+                <select class="form-select mb-0" name="ordenService.tipoPedido" [(ngModel)]="ordenService.tipoPedido">
+                    <option value="S">
+                        Servirse </option>
+                    <option value="L">
+                        Para Llevar
+                    </option>
+                    <option value="P">
+                        Pedidos Ya!
+                    </option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-sm-6 mb-3">
+                <label>Fecha</label>
+                <input class="form-control" type="date" [(ngModel)]="fecha">
+            </div>
+            <div class="col-lg-4 col-sm-6 mb-3" style="text-align: right;">
+                <br>
+                <button class="btn btn-info-adicional btn-sm" title="Guardar" (click)="actualizarOrden()"> 
+                    <i class="fas fa-save fa-lg"></i> 
+                </button>
+                <button [disabled]="false" data-bs-toggle="modal" data-bs-target="#modal-pagoTotal" 
+                    class="mx-1 btn btn-info btn-sm" title="Pagar" (click)="infoPago(restanteTotal())"> 
+                    <i class="fas fa-cash-register"></i>
+                </button>
+                <button [disabled]="false" data-bs-toggle="modal" data-bs-target="#modal-pagoSeleccTotal" 
+                    class="btn btn-info btn-sm" title="Abonar" (click)="infoPagoA(calcularTotalSelecc())"> 
+                    <i class="fas fa-hand-holding-usd fa-lg"></i> 
+                </button>
+                <button *ngIf="ordenService.tipoPedido=='L'" [disabled]="false" data-bs-toggle="modal" 
+                    data-bs-target="#modal-delivery" class="mx-1 btn btn-info btn-sm" 
+                    title="Delivery" (click)="infoPagoA(calcularTotalSelecc())"> 
+                    <i class="fas fa-motorcycle fa-lg"></i> 
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Precio</th>
+                        <th class="col">Cantidad</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col">Comentarios</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let producto of listaOrdenProductos">
+                        <td><input type="checkbox" [disabled]="producto.cantidad_pagada1==producto.cantidad" [(ngModel)]="producto.selected" (change)="seleccionarFila(producto)">
+                        </td>
+                        <td><small>{{producto.nombre_producto}}</small></td>
+                        <td>${{producto.precio}}</td>
+                        <td>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input class="form-control form-control-sm narrow-input" type="number" [disabled]="!producto.selected" [(ngModel)]="producto.numero" [max]="( producto.cantidad - producto.cantidad_pagada )" [min]="1">
+                                </div>
+                                <div class=" col-md-6">
+                                    <span> {{producto.cantidad_pagada}} / {{producto.cantidad}}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            ${{producto.subtotal}}
+                        </td>
+                        <td>
+                            <a data-bs-toggle="modal" data-bs-target="#modal-infComentarios" (click)="infComentarios(producto.comentarios)">
+                                <small>
+                                    <div class="fixed-column truncate" style="width: 150px;">{{producto.comentarios}}
+                                    </div>
+                                </small>
+                            </a>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-danger btn-sm" role="button" (click)="eliminarProducto(producto)"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th>
+                            <h6>Total Selecc ${{ calcularTotalSelecc().toFixed(2) }}</h6>
+                        </th>
+                        <th>
+                            <h6>Total ${{ calcularTotal().toFixed(2) }}</h6>
+                        </th>
+                        <th>
+                            <h6>Restante ${{ restanteTotal().toFixed(2) }}</h6>
+                        </th>
+                        <th></th>
+                    </tr>
+
+                </tfoot>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="modal-infComentarios" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="h6 modal-title"> Comentarios
+                    </h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-lg-12 col-sm-6">
+                                    <div>
+                                        <label>{{infoComentarios}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary text-gray-600" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="modal fade" data-bs-backdrop="static" id="modal-pagoTotal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h2 class="h6 modal-title"> Pago total de orden
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-6 mb-3">
+                                <label>Monto a Pagar </label>
+                                <div class="input-group">
+                                    <input class="form-control" [(ngModel)]="montoPagar" name="montoPagar" (ngModelChange)="actualizarMontoPagar2()" type="number">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 mb-3">
+                                <label>Tipo de Pago </label>
+                                <select class="form-select mb-0" [(ngModel)]="tipoPago" name="tipoPago">
+                                        <option value="E">
+                                            Efectivo </option>
+                                        <option value="T">
+                                            Transferencia
+                                        </option>
+                                    </select>
+                            </div>
+                        </div>
+                        <small>
+                                <div class="form-check mb-2">
+                                    <label class="form-check-label" for="defaultCheck10">Dividir Pago
+                                    </label>
+                                    <input class="form-check-input" [checked]="aggDividirCuentas" type="checkbox"
+                                        (change)="checkboxChangedPago($event)">
+                                </div>
+                            </small>
+                        <div *ngIf="aggDividirCuentas" class="row">
+                            <div class="col-lg-6 col-sm-6">
+                                <label>Monto a Pagar </label>
+                                <div class="input-group">
+                                    <input class="form-control" [(ngModel)]="montoPagar2" name="montoPagar2" type="number">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-sm-6">
+                                <label>Tipo de Pago </label>
+                                <select class="form-select mb-0" [(ngModel)]="tipoPago2" name="tipoPago2">
+                                        <option value="E">
+                                            Efectivo </option>
+                                        <option value="T">
+                                            Transferencia
+                                        </option>
+                                    </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button [disabled]="deshabilitarBotones" type="button" (click)="pagarTotal()" 
+                    class="btn btn-success text-white" data-bs-dismiss="modal">
+                    <span>
+                        Pagar ${{montoTotal}}
+                    </span>
+                </button>
+                <button [disabled]="deshabilitarBotones" type="button" (click)="comprobanteTotal()" 
+                    class="btn btn-info">
+                    <span>
+                        Comprobante
+                    </span>
+                </button>
+                <button type="button" class="btn btn-secondary text-gray-600" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="modal-pagoSeleccTotal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h2 class="h6 modal-title"> Pago total seleccionado
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-6 mb-3">
+                                <label>Monto a Pagar </label>
+                                <div class="input-group">
+                                    <input class="form-control" [(ngModel)]="montoPagarA" name="montoPagarA" (ngModelChange)="actualizarMontoPagarA2()" type="number">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 mb-3">
+                                <label>Tipo de Pago </label>
+                                <select class="form-select mb-0" [(ngModel)]="tipoPagoA" name="tipoPagoA">
+                                        <option value="E">
+                                            Efectivo </option>
+                                        <option value="T">
+                                            Transferencia
+                                        </option>
+                                    </select>
+                            </div>
+                        </div>
+                        <small>
+                                <div class="form-check mb-2">
+                                    <label class="form-check-label" for="defaultCheck10">Dividir Pago
+                                    </label>
+                                    <input class="form-check-input" [checked]="aggDividirCuentas" type="checkbox"
+                                        (change)="checkboxChangedPago($event)">
+                                </div>
+                            </small>
+                        <div *ngIf="aggDividirCuentas" class="row">
+                            <div class="col-lg-6 col-sm-6">
+                                <label>Monto a Pagar </label>
+                                <div class="input-group">
+                                    <input class="form-control" [(ngModel)]="montoPagarA2" name="montoPagarA2" type="number">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-sm-6">
+                                <label>Tipo de Pago </label>
+                                <select class="form-select mb-0" [(ngModel)]="tipoPagoA2" name="tipoPagoA2">
+                                        <option value="E">
+                                            Efectivo </option>
+                                        <option value="T">
+                                            Transferencia
+                                        </option>
+                                    </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button [disabled]="pagar||deshabilitarBotones" type="button" (click)="pagarTotalA()" 
+                    data-bs-dismiss="modal" class="btn btn-success">
+                    <span>
+                        Pagar ${{montoTotalA}}
+                    </span>
+                    </button>
+                <button [disabled]="pagar||deshabilitarBotones" type="button" (click)="comprobanteAbono()" 
+                    class="btn btn-info">
+                    <span>
+                        Comprobante
+                    </span>
+                </button>
+                <button type="button" class="btn btn-secondary text-gray-600" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop="static" id="modal-delivery" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form>
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h2 class="h6 modal-title"> Delivery
+                    </h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-6 col-sm-6 mb-3">
+                            <label>Monto a Pagar </label>
+                            <div class="input-group">
+                                <input class="form-control" [(ngModel)]="montoDelivery" name="montoDelivery" type="number">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-6 mb-3">
+                            <label>Comentarios </label>
+                            <div class="input-group">
+                                <textarea class="form-control" [(ngModel)]="comentariosDelivery" name="comentariosDelivery" type="text"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="deshabilitarBotones" type="submit" (click)="registrarDelivery()" 
+                        data-bs-dismiss="modal" class="btn btn-success text-white">
+                        <span>
+                          Registrar
+                        </span>
+                    </button>
+                    <button type="button" class="btn btn-secondary text-gray-600" 
+                        data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

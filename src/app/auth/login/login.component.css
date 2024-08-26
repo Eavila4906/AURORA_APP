@@ -1,0 +1,37 @@
+.container {
+    margin-top: 12%;
+    height: 100%;
+}
+
+.logo {
+    background-image: url('../../../assets/img/logo.png');
+    background-size: cover;
+    background-position: center;
+    width: 600px;
+    height: 300px; 
+    margin-bottom: 75px;
+}
+
+@media (max-width: 991px) {
+    .logo {
+        display: none;
+    }
+}
+
+.title-login {
+    color: #03466e;
+}
+
+.label-form-login {
+    color: #011f30;
+    opacity: 0.8;
+}
+
+.btn-login {
+    background-color: #03466e;
+    color: white;
+}
+
+.btn-login:hover {
+    background-color: #03588a;
+}

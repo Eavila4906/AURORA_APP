@@ -1,0 +1,144 @@
+<app-nav></app-nav>
+
+<nav class="navbar navbar-dark  px-4 col-12 d-lg-none bg-gray-50 mb-3 nav-responsive">
+    <a class="navbar-brand me-lg-5" [routerLink]="['/principal']">
+        <img class="navbar-brand-dark" src="assets/img/logo_white.png">
+    </a>
+    <div class="d-flex align-items-center">
+        <a class="d-lg-none collapsed bg-gray-50" type="button" data-bs-toggle="collapse" 
+            data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" 
+            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </a>
+    </div>
+</nav>
+
+<nav id="sidebarMenu" class="shadow-lg sidebar d-lg-block bg-gray-50 collapse" data-simplebar>
+    <div class="sidebar-inner px-4 pt-3">
+        <div
+            class="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
+            <div class="collapse-close d-md-none">
+                <a href="#sidebarMenu" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+                    aria-controls="sidebarMenu" aria-expanded="true" aria-label="Toggle navigation">
+                    <svg class="icon icon-xs text-white" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <ul class="nav flex-column pt-3 pt-md-0">
+            <li>
+                <a [routerLink]="['/principal/']" class="nav-link d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <img src="assets/img/logo_white.png" height="50" width="150" alt="Rich Logo">
+                    </span>
+                </a>
+            </li>
+            <hr class="separator">
+
+            <li class="nav-item" [ngClass]="{'active':esRutaActual('/principal')}">
+                <a [routerLink]="['/principal/']" class="nav-link">
+                    <span class="sidebar-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </span>
+                    <span class="sidebar-text">Principal</span>
+                </a>
+            </li>
+
+            <ng-container *ngFor="let module of menu">
+                <li class="nav-item" [ngClass]="{'active': esRutaActual(module.full_path)}">
+                    <span class="nav-link collapsed d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse" [attr.data-bs-target]="'#submenu-'+module.module_id"
+                        *ngIf="module.submodules.length">
+                        <span>
+                            <span class="sidebar-icon">
+                                <span [innerHTML]="module.module_icon"></span>
+                            </span>
+                            <span class="sidebar-text">{{ module.module_name }}</span>
+                        </span>
+                        <span class="link-arrow">
+                            <svg class="icon icon-sm" fill="currentColor" viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd"
+                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                    clip-rule="evenodd">
+                                </path>
+                            </svg>
+                        </span>
+                    </span>
+
+                    <a class="nav-link" *ngIf="!module.submodules.length" [routerLink]="module.full_path">
+                        <span class="sidebar-icon">
+                            <span [innerHTML]="module.module_icon"></span>
+                        </span>
+                        <span class="sidebar-text">{{ module.module_name }}</span>
+                    </a>
+
+                    <div class="multi-level collapse" role="list" id="{{'submenu-'+module.module_id}}"
+                        aria-expanded="false" [ngClass]="{'show': esRutaActual(module.full_path)}"
+                        *ngIf="module.submodules.length > 0">
+                        <ng-container *ngFor="let submodule of module.submodules">
+                            <ul class="flex-column nav">
+                                <li class="nav-item" [ngClass]="{'active': esRutaActual(submodule.full_path)}">
+                                    <a class="nav-link collapsed d-flex justify-content-between align-items-center"
+                                        data-bs-toggle="collapse"
+                                        [attr.data-bs-target]="'#subitem-'+submodule.submodule_id"
+                                        *ngIf="submodule.items.length">
+                                        <span>
+                                            <span class="sidebar-text">
+                                                <span [innerHTML]="submodule.submodule_icon"></span>
+                                                {{ submodule.submodule_name }}
+                                            </span>
+                                        </span>
+                                        <span class="link-arrow">
+                                            <svg class="icon icon-sm" fill="currentColor" viewBox="0 0 20 20"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd"
+                                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                    clip-rule="evenodd">
+                                                </path>
+                                            </svg>
+                                        </span>
+                                    </a>
+
+                                    <a class="nav-link" *ngIf="!submodule.items.length"
+                                        [routerLink]="submodule.full_path">
+                                        <span class="sidebar-text">
+                                            <span [innerHTML]="submodule.submodule_icon"></span>
+                                            {{ submodule.submodule_name }}
+                                        </span>
+                                    </a>
+
+                                    <div class="multi-level collapse" role="list"
+                                        id="{{'subitem-'+submodule.submodule_id}}" aria-expanded="false"
+                                        [ngClass]="{'show': esRutaActual(submodule.full_path)}"
+                                        *ngIf="submodule.items.length > 0">
+                                        <ng-container *ngFor="let item of submodule.items">
+                                            <ul class="flex-column nav">
+                                                <li class="nav-item"
+                                                    [ngClass]="{'active': esRutaActual(item.full_path)}">
+                                                    <a class="nav-link" [routerLink]="item.full_path">
+                                                        <span class="sidebar-text ms-3">
+                                                            <span [innerHTML]="item.item_icon"></span>
+                                                            {{ item.item_name }}
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </ng-container>
+                                    </div>
+                                </li>
+                            </ul>
+                        </ng-container>
+                    </div>
+                </li>
+            </ng-container>
+        </ul>
+
+    </div>
+</nav>

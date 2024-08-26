@@ -1,0 +1,23 @@
+.error-message {
+    color: red;
+}
+
+.content-imagen {
+    color: rgb(4, 136, 59);
+}
+
+.custom-modal-size {
+    max-width: 60%;
+    /* Puedes ajustar este valor según tus necesidades */
+}
+
+.separator {
+    border-left: 1px solid #ddd;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.with-border {
+    border-right: 2px solid #E5E7EB;
+    /* Cambia el color y grosor del borde según necesites */
+}
