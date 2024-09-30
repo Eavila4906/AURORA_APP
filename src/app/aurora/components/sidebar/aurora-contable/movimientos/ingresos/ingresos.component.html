@@ -1,0 +1,375 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Lista de ingresos </h1>
+        <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
+            Registrar
+            <i class="fas fa-circle-plus"></i>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search(1)"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Fecha</th>
+                                    <th>Observación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <app-spinner-component *ngIf="loading"></app-spinner-component>
+                            <tbody>
+                                <tr
+                                    *ngFor="let ingreso of ingresosFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ ingreso.fecha }}</td>
+                                    <td>{{ ingreso.observacion }}</td>
+
+                                    <td>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                            (click)="openModalSee(ingreso.id)" *ngIf="permission_read">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                            (click)="openModalEdit(ingreso.id)" *ngIf="permission_update">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                            (click)="delete(ingreso.id)" *ngIf="permission_delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to new -->
+    <div bsModal #ModalNew="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
+        aria-labelledby="modal-default" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-circle-plus"></i> Registrar ingreso
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalNew.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        <p class="text-success">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+
+                            <div class="with-border col-lg-7 col-md-12">
+
+                                <div class="col-12">
+                                    <form>
+                                        <div class="row">
+                                            <div class="col-lg-6 col-sm-6 mb-3">
+                                                <label>Fecha *</label>
+                                                <input class="form-control" type="date" name="fecha"
+                                                [(ngModel)]="newIngreso.fecha">
+                                            </div>
+
+                                            <div class="col-lg-6 col-sm-6 mb-3">
+                                                <label>Observación</label>
+                                                <textarea class="form-control" type="text" name="observacion" 
+                                                rows="1" [(ngModel)]="newIngreso.observacion"></textarea>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Producto</th>
+                                                    <th scope="col">Cantidad</th>
+                                                    <th scope="col">Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let producto of productosSelected; let i = index">
+                                                    <td>{{producto.descripcion}}</td>
+                                                    <td>
+                                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
+                                                        <div class="col-md-6">
+                                                            <input class="form-control" name="cantidad{{i}}" [(ngModel)]="producto.cantidad" type="number">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-danger btn-sm" role="button" 
+                                                            (click)="deleteProducto(i)" title="Eliminar">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5 col-md-12">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-sm-6 mt-4">
+                                            <input class="form-control" name="searchProducto"
+                                            type="text" placeholder="Buscar" (input)="Search(2)"
+                                            [(ngModel)]="search">
+                                        </div>
+                                        <br>
+                                        <div class=" col-lg-12 col-sm-6 mt-4">
+                                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Productos</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let producto of productosFilter" 
+                                                        (click)="onRowClick(producto)">
+                                                            <td>{{producto.descripcion}}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success text-white"
+                                (click)="create()">
+                                Guardar
+                            </button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalNew.hide(); resetForm()">Cerrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to Edit -->
+    <div bsModal #ModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-edit"></i> Editar ingreso
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalEdit.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form #formUpdateRol="ngForm" id="form-UpdateRol" class="form-horizontal">
+                        <p class="text-info">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+
+                            <div class="with-border col-lg-7 col-md-12">
+
+                                <div class="col-12">
+                                    <form>
+                                        <div class="row">
+                                            <div class="col-lg-6 col-sm-6 mb-3">
+                                                <label>Fecha *</label>
+                                                <input class="form-control" type="date" name="fecha"
+                                                [(ngModel)]="fecha">
+                                            </div>
+
+                                            <div class="col-lg-6 col-sm-6 mb-3">
+                                                <label>Observación</label>
+                                                <textarea class="form-control" type="text" name="observacion" 
+                                                rows="1" [(ngModel)]="observacion"></textarea>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Producto</th>
+                                                    <th scope="col">Cantidad</th>
+                                                    <th scope="col">Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let producto of productosSelected; let i = index">
+                                                    <td>{{producto.descripcion}}</td>
+                                                    <td>
+                                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
+                                                        <div class="col-md-6">
+                                                            <input class="form-control" name="cantidad{{i}}" [(ngModel)]="producto.cantidad" type="number">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-danger btn-sm" role="button" 
+                                                            (click)="deleteProducto(i)" title="Eliminar">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5 col-md-12">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-sm-6 mt-4">
+                                            <input class="form-control" name="searchProducto"
+                                            type="text" placeholder="Buscar" (input)="Search(2)"
+                                            [(ngModel)]="search">
+                                        </div>
+                                        <br>
+                                        <div class=" col-lg-12 col-sm-6 mt-4">
+                                            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Productos</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let producto of productosFilter" 
+                                                        (click)="onRowClick(producto)">
+                                                            <td>{{producto.descripcion}}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info" (click)="edit(id)">
+                                Editar
+                            </button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalEdit.hide(); resetForm()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to see -->
+    <div bsModal #ModalSee="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-info-circle"></i> Información del ingreso
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalSee.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td><b>Fecha</b></td>
+                                <td>{{fecha}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Observación</b></td>
+                                <td>{{observacion}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Productos</b></td>
+                                <td>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <td>Producto</td>
+                                                <td>Cantidad</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let producto of productosSelected">
+                                                <td>{{producto.descripcion}}</td>
+                                                <td>{{producto.cantidad}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ModalSee.hide()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

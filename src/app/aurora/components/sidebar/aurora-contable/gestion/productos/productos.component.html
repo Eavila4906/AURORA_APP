@@ -1,0 +1,583 @@
+<app-spinner></app-spinner>
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Lista de productos </h1>
+        <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
+            Registrar
+            <i class="fas fa-box"></i>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Código</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría</th>
+                                    <th>Marca</th>
+                                    <th>Linea</th>
+                                    <th>Proveedor</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <app-spinner-component *ngIf="loading"></app-spinner-component>
+                            <tbody>
+                                <tr 
+                                    *ngFor="let producto of productosFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ producto.codigo }}</td>
+                                    <td>{{ producto.descripcion }}</td>
+                                    <td>{{ producto.nombreCategoria }}</td>
+                                    <td>{{ producto.nombreMarca }}</td>
+                                    <td>{{ producto.nombreLinea }}</td>
+                                    <td>{{ producto.nombreProveedor }}</td>
+
+                                    <td>
+                                        <span *ngIf="producto.estado == 'Activo' else elseBlock">
+                                            {{ producto.estado }} <i class="fas fa-circle fa-sm text-success"></i>
+                                        </span>
+                                        <ng-template #elseBlock>
+                                            <span>
+                                                {{ producto.estado }} <i class="fas fa-circle fa-sm text-danger"></i>
+                                            </span>
+                                        </ng-template>
+                                    </td>
+                                    <td>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                            (click)="openModalSee(producto.id)" *ngIf="permission_read">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                            (click)="openModalEdit(producto.id)" *ngIf="permission_update">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                            (click)="delete(producto.id)" *ngIf="permission_delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to new -->
+    <div bsModal #ModalNew="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
+        aria-labelledby="modal-default" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-box"></i> Registrar producto
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalNew.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="form-CreateRol" class="form-horizontal" (submit)="create()">
+                        <p class="text-success">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Código *</label>
+                                            <input class="form-control " type="text" 
+                                            name="codigo" 
+                                            [(ngModel)]="newProducto.codigo">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-sm-8">
+                                        <div class="mb-3">
+                                            <label>Descripción</label>
+                                            <textarea class="form-control" name="descripcion" 
+                                                [(ngModel)]="newProducto.descripcion"
+                                                rows="1" required>
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Categoría *</label>
+                                            <select class="form-control" name="categoria_id" 
+                                                [(ngModel)]="newProducto.categoria_id"
+                                                required>
+                                                <option value="0" class="d-none">Seleccionar</option>
+                                                <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                                                    {{categoria.categoria}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Marca *</label>
+                                            <select class="form-control" name="marca_id" 
+                                                [(ngModel)]="newProducto.marca_id"
+                                                required>
+                                                <option value="0" class="d-none">Seleccionar</option>
+                                                <option *ngFor="let marca of marcas" [value]="marca.id">
+                                                    {{marca.marca}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Línea *</label>
+                                            <select class="form-control" name="linea_id" 
+                                                [(ngModel)]="newProducto.linea_id"
+                                                required>
+                                                <option value="0" class="d-none">Seleccionar</option>
+                                                <option *ngFor="let linea of lineas" [value]="linea.id">
+                                                    {{linea.linea}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Proveedor *</label>
+                                            <select class="form-control" name="proveedor_id" 
+                                                [(ngModel)]="newProducto.proveedor_id"
+                                                required>
+                                                <option value="0" class="d-none">Seleccionar</option>
+                                                <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">
+                                                    {{proveedor.proveedor}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 1 *</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp1" 
+                                            [(ngModel)]="newProducto.pvp1">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 2</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp2" 
+                                            [(ngModel)]="newProducto.pvp2">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 3</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp3" 
+                                            [(ngModel)]="newProducto.pvp3">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 4</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp4" 
+                                            [(ngModel)]="newProducto.pvp4">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Precio de compra</label>
+                                            <input class="form-control " type="text" 
+                                            name="precioCompra" 
+                                            [(ngModel)]="newProducto.precioCompra">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Fecha de elaboración</label>
+                                            <input class="form-control " type="date" 
+                                            name="fechaElaboracion"
+                                            [(ngModel)]="newProducto.fechaElaboracion">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Fecha de vencimiento</label>
+                                            <input class="form-control " type="date" 
+                                            name="fechaVencimiento"
+                                            [(ngModel)]="newProducto.fechaVencimiento">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Lote</label>
+                                            <input class="form-control " type="text" 
+                                            name="lote"
+                                            [(ngModel)]="newProducto.lote">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Medición *</label>
+                                            <select class="form-control" name="marca_id" 
+                                                [(ngModel)]="newProducto.medicion_id"
+                                                required>
+                                                <option value="0" class="d-none">Seleccionar</option>
+                                                <option *ngFor="let medicion of tiposMedicion" [value]="medicion.id">
+                                                    {{medicion.medicion}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>IVA *</label>
+                                            <select class="form-control" name="iva_id" 
+                                                [(ngModel)]="newProducto.iva_id"
+                                                required>
+                                                <option value="0" class="d-none">Seleccionar</option>
+                                                <option *ngFor="let iva of tiposIva" [value]="iva.id">
+                                                    {{iva.tipoIva}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success text-white">Guardar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalNew.hide(); resetForm()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to Edit -->
+    <div bsModal #ModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-edit"></i> Editar producto
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalEdit.hide();">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form #formUpdateRol="ngForm" id="form-UpdateRol" class="form-horizontal" (submit)="edit(id)">
+                        <p class="text-info">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Código *</label>
+                                            <input class="form-control " type="text" 
+                                            name="codigo" 
+                                            [(ngModel)]="codigo">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-sm-8">
+                                        <div class="mb-3">
+                                            <label>Descripción</label>
+                                            <textarea class="form-control" name="descripcion" 
+                                                [(ngModel)]="descripcion"
+                                                rows="1" required>
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Categoría *</label>
+                                            <select class="form-control" name="categoria_id" 
+                                                [(ngModel)]="categoria_id"
+                                                required>
+                                                <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                                                    {{categoria.categoria}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Marca *</label>
+                                            <select class="form-control" name="marca_id" 
+                                                [(ngModel)]="marca_id"
+                                                required>
+                                                <option *ngFor="let marca of marcas" [value]="marca.id">
+                                                    {{marca.marca}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Línea *</label>
+                                            <select class="form-control" name="linea_id" 
+                                                [(ngModel)]="linea_id"
+                                                required>
+                                                <option *ngFor="let linea of lineas" [value]="linea.id">
+                                                    {{linea.linea}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3 ">
+                                            <label>Proveedor *</label>
+                                            <select class="form-control" name="proveedor_id" 
+                                                [(ngModel)]="proveedor_id"
+                                                required>
+                                                <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">
+                                                    {{proveedor.proveedor}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 1 *</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp1" 
+                                            [(ngModel)]="pvp1">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 2</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp2" 
+                                            [(ngModel)]="pvp2">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 3</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp3" 
+                                            [(ngModel)]="pvp3">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 4</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp4" 
+                                            [(ngModel)]="pvp4">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Precio de compra</label>
+                                            <input class="form-control " type="text" 
+                                            name="precioCompra" 
+                                            [(ngModel)]="precioCompra">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Fecha de elaboración</label>
+                                            <input class="form-control " type="date" 
+                                            name="fechaElaboracion"
+                                            [(ngModel)]="fechaElaboracion">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Fecha de vencimiento</label>
+                                            <input class="form-control " type="date" 
+                                            name="fechaVencimiento"
+                                            [(ngModel)]="fechaVencimiento">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3">
+                                            <label>Lote</label>
+                                            <input class="form-control " type="text" 
+                                            name="lote"
+                                            [(ngModel)]="lote">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Medición *</label>
+                                            <select class="form-control" name="medicion_id" 
+                                                [(ngModel)]="medicion_id"
+                                                required>
+                                                <option *ngFor="let medicion of tiposMedicion" [value]="medicion.id">
+                                                    {{medicion.medicion}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>IVA *</label>
+                                            <select class="form-control" name="iva_id" 
+                                                [(ngModel)]="iva_id"
+                                                required>
+                                                <option *ngFor="let iva of tiposIva" [value]="iva.id">
+                                                    {{iva.tipoIva}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info">Editar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalEdit.hide(); resetForm()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to see -->
+    <div bsModal #ModalSee="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-info-circle"></i> Información del producto
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalSee.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-bordered table-info-product">
+                        <tbody>
+                            <tr>
+                                <td><b>Código:</b></td>
+                                <td>{{codigo}}</td>
+                                <td><b>Descripción:</b></td>
+                                <td>{{descripcion}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Categoría:</b></td>
+                                <td>{{categoria}}</td>
+                                <td><b>Marca:</b></td>
+                                <td>{{marca}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Línea:</b></td>
+                                <td>{{linea}}</td>
+                                <td><b>Proveedor:</b></td>
+                                <td>{{proveedor}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>PVP 1:</b></td>
+                                <td>{{pvp1}}</td>
+                                <td><b>PVP 2:</b></td>
+                                <td>{{pvp2}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>PVP 3:</b></td>
+                                <td>{{pvp3}}</td>
+                                <td><b>PVP 4:</b></td>
+                                <td>{{pvp4}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Precio de compra:</b></td>
+                                <td>{{precioCompra}}</td>
+                                <td><b>Fecha de elaboración:</b></td>
+                                <td>{{fechaElaboracion}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Fecha de vencimiento:</b></td>
+                                <td>{{fechaVencimiento}}</td>
+                                <td><b>Lote:</b></td>
+                                <td>{{lote}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Medición:</b></td>
+                                <td>{{tipoMedicion}}</td>
+                                <td><b>Iva:</b></td>
+                                <td>{{tipoIva}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Estado:</b></td>
+                                <td colspan="3" id="view-rol">
+                                    <span *ngIf="estado == 'Activo' else elseBlock">
+                                        {{estado}} <i class="fas fa-circle fa-sm text-success"></i>
+                                    </span>
+                                    <ng-template #elseBlock>
+                                        <span>
+                                            {{estado}} <i class="fas fa-circle fa-sm text-danger"></i>
+                                        </span>
+                                    </ng-template>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ModalSee.hide()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

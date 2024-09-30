@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AdministracionRoutingModule } from './aurora/components/sidebar/administracion/administracion-routing.module';
-import { RestaurantRoutingModule } from './aurora/components/sidebar/restaurant/restaurant-routing.module';
+import { AdministracionRoutingModule } from './aurora/components/sidebar/aurora-administrativo/administracion-routing.module';
+import { RestaurantRoutingModule } from './aurora/components/sidebar/aurora-restaurant/restaurant-routing.module';
+import { AuroraContableRoutingModule } from './aurora/components/sidebar/aurora-contable/aurora-contable-routing.module';
 import { AuthRoutingModule } from './auth/auth-routing.module';
 import { AuroraRoutingModule } from './aurora/aurora-routing.module';
 
@@ -17,7 +18,8 @@ const routes: Routes = [
     AuthRoutingModule,
     AuroraRoutingModule,
     AdministracionRoutingModule,
-    RestaurantRoutingModule
+    RestaurantRoutingModule,
+    AuroraContableRoutingModule
   ],
   exports: [RouterModule]
 })

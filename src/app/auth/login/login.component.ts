@@ -56,14 +56,6 @@ export class LoginComponent implements OnInit {
           this.router.navigate(['/principal']);
           this.toastr.success('Aurora Computer System', '¡Bienvenido!', {closeButton: true});
         }
-      },error => {
-        if (error.error.status == 401) {
-          this.toastr.warning(error.error.message,'¡Atención!', {closeButton: true});
-        } else if (error.error.status == 422) {
-          this.toastr.warning('Los campos son obligatorios','¡Atención!', {closeButton: true});
-        } else {
-          this.toastr.error(error.error.error,'¡Error!', {closeButton: true});
-        }
       }
     );
   }

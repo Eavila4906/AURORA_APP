@@ -1,0 +1,229 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="container card">
+        <div class="row justify-content-center">
+            <div class="col-md-6 card-body">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert" 
+                    *ngIf="id == 0">
+                    <strong>¡Atención!</strong> Aún no existe un perfil para mostrar.
+                </div>
+                <div class="mb-3">
+                    <h1 class="h3 d-inline align-middle">Perfil de emisor</h1>
+                    <button class="btn btn-info text-white ms-2" title="Guardar"
+                        *ngIf="permission_create && permission_update"
+                        (click)="save()">
+                        <i class="fas fa-save"></i>
+                    </button>
+                    <span *ngIf="id != 0 else elseBlock">
+                        <button class="btn btn-info text-white ms-2" title="Registrar firma electrónica"
+                            *ngIf="permission_create && permission_update" (click)="openModalFirmaElectronica()">
+                            <i class="fas fa-file-signature"></i>
+                        </button>
+                        <button class="btn btn-danger text-white ms-2" title="Eliminar perfil" *ngIf="permission_delete"
+                            (click)="delete(id)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </span>
+                    <ng-template #elseBlock>
+                        <button class="btn btn-info text-white ms-2" title="Registrar firma electrónica"
+                            *ngIf="permission_create && permission_update" disabled>
+                            <i class="fas fa-file-signature"></i>
+                        </button>
+                        <button class="btn btn-danger text-white ms-2" title="Eliminar perfil" *ngIf="permission_delete"
+                            disabled>
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </ng-template>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-6">
+                                <form>
+                                    <input type="hidden" name="id" [(ngModel)]="id">
+                                    <div class="mb-3">
+                                        <label for="emisor" class="form-label">Emisor</label>
+                                        <input type="text" class="form-control" id="emisor" name="emisor" 
+                                            [(ngModel)]="emisor" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="ruc" class="form-label">RUC</label>
+                                        <input type="text" class="form-control" id="ruc" name="ruc" 
+                                            [(ngModel)]="ruc" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="establecimiento" class="form-label">Establecimiento</label>
+                                        <select class="form-control" name="establecimiento_id" [(ngModel)]="establecimiento_id">
+                                            <option value="0" class="d-none">Selecciona establecimiento</option>
+                                            <option *ngFor="let establecimiento of establecimientos"
+                                                [value]="establecimiento.id">
+                                                {{establecimiento.establecimiento}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    
+                                    <form id="form-perfil">
+                                        <div class="mb-3">
+                                            <label for="logo" class="form-label">Subir logo</label>
+                                            <input type="file" class="form-control" (change)="onFileSelected($event)"
+                                                accept=".jpg, .png" id="logo" name="logo">
+                                        </div>
+                                    </form>
+                                    
+                                </form>
+                            </div>
+                            <div class="col-lg-2 col-sm-2"></div>
+                            <div class="col-lg-4 col-sm-4">
+                                <div class="mb-4" class="justify-content-center">
+                                    <img [src]="logo" alt="" class="profile-img mb-3"/>
+                                    <div class="file-size-hint">
+                                        Tamaño máximo 100 KB, extensión .jpg o .png, menor a 200px por 200px.
+                                    </div>
+                                    <div *ngIf="imageError" class="text-danger mt-2">{{ imageError }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to FirmaElectronica -->
+    <div bsModal #ModalFirmaElectronica="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-file-signature"></i> Registrar firma electrónica
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalFirmaElectronica.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="row">
+                                            <!-- Campo firmaElectronica -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="firmaElectronica" class="form-label">Firma electrónica</label>
+                                                <select name="firmaElectronica" class="form-select"
+                                                    [(ngModel)]="firmaElectronica">
+                                                    <option value="SI">SI</option>
+                                                    <option value="NO">NO</option>
+                                                </select>
+                                            </div>
+            
+                                            <!-- Campo certificadoFirma -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="certificadoFirma" class="form-label">Certificado firma</label>
+                                                <input type="file" class="form-control" name="certificadoFirma" 
+                                                (change)="onFileCertificadoFirma($event)"/>
+                                            </div>
+            
+                                            <!-- Campo claveFirma -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="claveFirma" class="form-label">Clave firma</label>
+                                                <input type="password" class="form-control" name="claveFirma" 
+                                                [(ngModel)]="claveFirma"/>
+                                            </div>
+            
+                                            <!-- Campo fechaVigencia -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="fechaVigencia" class="form-label">Fecha vigencia</label>
+                                                <input type="date" class="form-control" name="fechaVigencia"
+                                                [(ngModel)]="fechaVigencia"/>
+                                            </div>
+            
+                                            <!-- Campo propietarioCertificado -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="propietarioCertificado" class="form-label">Propietario certificado</label>
+                                                <input type="text" class="form-control" name="propietarioCertificado" 
+                                                [(ngModel)]="propietarioCertificado"/>
+                                            </div>
+            
+                                            <!-- Campo contribuyenteRimpe -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="contribuyenteRimpe" class="form-label">Contribuyente rimpe</label>
+                                                <select name="contribuyenteRimpe" class="form-select"
+                                                    [(ngModel)]="contribuyenteRimpe">
+                                                    <option value="SI">SI</option>
+                                                    <option value="NO">NO</option>
+                                                </select>
+                                            </div>
+            
+                                            <!-- Campo contribuyenteEspecial -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="contribuyenteEspecial" class="form-label">Contribuyente especial</label>
+                                                <select name="contribuyenteEspecial" class="form-select"
+                                                    [(ngModel)]="contribuyenteEspecial">
+                                                    <option value="SI">SI</option>
+                                                    <option value="NO">NO</option>
+                                                </select>
+                                            </div>
+            
+                                            <!-- Campo negocioPopular -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="negocioPopular" class="form-label">Negocio popular</label>
+                                                <select name="negocioPopular" class="form-select"
+                                                    [(ngModel)]="negocioPopular">
+                                                    <option value="SI">SI</option>
+                                                    <option value="NO">NO</option>
+                                                </select>
+                                            </div>
+            
+                                            <!-- Campo obligadoContabilidad -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="obligadoContabilidad" class="form-label">Obligado a llevar contabilidad</label>
+                                                <select name="obligadoContabilidad" class="form-select"
+                                                    [(ngModel)]="obligadoContabilidad">
+                                                    <option value="SI">SI</option>
+                                                    <option value="NO">NO</option>
+                                                </select>
+                                            </div>
+            
+                                            <!-- Campo agenteRetencion -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="agenteRetencion" class="form-label">Agente de retención</label>
+                                                <select name="agenteRetencion" class="form-select"
+                                                    [(ngModel)]="agenteRetencion">
+                                                    <option value="SI">SI</option>
+                                                    <option value="NO">NO</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info"
+                                (click)="registrarFirma()">
+                                Guardar
+                            </button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalFirmaElectronica.hide()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

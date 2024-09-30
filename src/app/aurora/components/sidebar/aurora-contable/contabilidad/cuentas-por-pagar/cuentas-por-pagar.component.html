@@ -1,0 +1,100 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Cuentas por pagar <i class="fas fa-money-bill-wave"></i></h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                            <form>
+                                <label>
+                                    <input type="checkbox" [(ngModel)]="searchByRange" name="searchByRange"
+                                    (change)="onCheckboxChange($event)">
+                                    Buscar por rango
+                                </label>
+                                <div class="row" *ngIf="searchByRange">
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>Fecha inicio</label>
+                                            <input class="form-control" type="date" name="fechaInicio"
+                                                [(ngModel)]="fechaInicio">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>Fecha fin</label>
+                                            <input class="form-control" type="date" name="fechaFin"
+                                                [(ngModel)]="fechaFin">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mt-4">
+                                            <button class="btn btn-success text-white" title="Generar" (click)="byRange()">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Proveedor</th>
+                                    <th>fecha</th>
+                                    <th>Total a pagar</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <app-spinner-component *ngIf="loading"></app-spinner-component>
+                            <tbody>
+                                <tr
+                                    *ngFor="let cuentaPorPagar of cuentasPorPagarFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ cuentaPorPagar.receptor.nombres }}</td>
+                                    <td>{{ cuentaPorPagar.fechaEmision }}</td>
+                                    <td>{{ cuentaPorPagar.total }}</td>
+                                    <td>{{ cuentaPorPagar.estado }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

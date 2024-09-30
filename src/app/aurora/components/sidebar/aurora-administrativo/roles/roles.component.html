@@ -1,0 +1,851 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Lista de roles </h1>
+        <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
+            Registrar
+            <i class="fas fa-user-tag"></i>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search(1)"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Rol</th>
+                                    <th>App</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                    *ngFor="let rol of rolesFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ rol.rol }}</td>
+                                    <td>{{ rol.aurora_app.app }}</td>
+                                    <td>{{ rol.description }}</td>
+                                    <td>
+                                        <span *ngIf="rol.status == 1">
+                                            {{ rol.r_status }} <i class="fas fa-circle fa-sm text-success"></i>
+                                        </span>
+                                        <span *ngIf="rol.status != 1">
+                                            {{ rol.r_status }} <i class="fas fa-circle fa-sm text-danger"></i>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm text-white" title="Permisos"
+                                            (click)="openModalPermissions(rol.id)"
+                                            *ngIf="permission_create && permission_update">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                            (click)="openModalSee(rol.id)" *ngIf="permission_read">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <span *ngIf="rol.id != 1; else elseBlock">
+                                            <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                                (click)="openModalEdit(rol.id)" *ngIf="permission_update">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                                (click)="delete(rol.id)" *ngIf="permission_delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </span>
+                                        <ng-template #elseBlock>
+                                            <button class="ms-1 btn btn-info btn-sm" title="Actualizar"
+                                                *ngIf="permission_update" disabled>
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                                *ngIf="permission_delete" disabled>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </ng-template>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to new roles-->
+    <div bsModal #ModalNew="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
+        aria-labelledby="modal-default" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-user-tag"></i> Registrar rol
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalNew.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="form-CreateRol" class="form-horizontal" (submit)="create()">
+                        <p class="text-success">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 ">
+                                            <label>Aplicación *</label>
+                                            <select class="form-control" name="app_id" [(ngModel)]="newRole.app_id"
+                                                required>
+                                                <option value="0" class="d-none" selected>Selecciona aplicación</option>
+                                                <option [value]="app.id" *ngFor="let app of apps">{{app.app}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Rol *</label>
+                                            <input class="form-control " type="text" name="rol"
+                                                [(ngModel)]="newRole.rol">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Estado *</label>
+                                            <select class="form-control" name="status" [(ngModel)]="newRole.status"
+                                                required>
+                                                <option value="1">Activo</option>
+                                                <option value="2">Inactivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label id="labelLastName" class="labelForm">Descripción</label>
+                            <textarea class="form-control" name="description" [(ngModel)]="newRole.description" rows="3"
+                                required>
+                            </textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success text-white">Guardar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalNew.hide(); resetForm()">Cerrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to Edit roles-->
+    <div bsModal #ModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-edit"></i> Editar rol
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalEdit.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form #formUpdateRol="ngForm" id="form-UpdateRol" class="form-horizontal" (submit)="edit(id)">
+                        <p class="text-info">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 ">
+                                            <label>Aplicación *</label>
+                                            <select class="form-control" name="app_id" [(ngModel)]="app_id"
+                                                required>
+                                                <option *ngFor="let app of apps" [value]="app.id">{{app.app}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Rol *</label>
+                                            <input class="form-control" type="text" name="rol" [(ngModel)]="rol">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Estado *</label>
+                                            <select class="form-control" name="status" [(ngModel)]="status" required>
+                                                <option value="1">Activo</option>
+                                                <option value="2">Inactivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label id="labelLastName" class="labelForm">Descripción</label>
+                            <textarea class="form-control" name="description" [(ngModel)]="description" rows="3"
+                                required>
+                            </textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info">Editar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalEdit.hide(); resetForm()">Cerrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to see role information-->
+    <div bsModal #ModalSee="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-tag"></i> Información del rol
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalSee.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td><b>ID</b></td>
+                                <td>{{id}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>ROL</b></td>
+                                <td>{{rol}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>APP</b></td>
+                                <td>{{app}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>DESCRIPCION</b></td>
+                                <td>{{description}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>ESTADO</b></td>
+                                <td id="view-rol">
+                                    <span *ngIf="status == 1">
+                                        Activo <i class="fas fa-circle fa-sm text-success"></i>
+                                    </span>
+                                    <span *ngIf="status != 1">
+                                        Inactivo <i class="fas fa-circle fa-sm text-danger"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ModalSee.hide()">Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to permissions-->
+    <div bsModal #ModalPermissions="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content .modal-xl">
+                <div class="modal-header bg-success">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-key"></i> Asignación de permisos
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalPermissions.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <nav class="nav">
+                                <ul>
+                                    <li>
+                                        <label>
+                                            <input type="radio" (click)="getPermisos(id, '1')" [(ngModel)]="opcion"
+                                                name="option" value="1"> Módulos
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="radio" (click)="getPermisos(id, '2')" [(ngModel)]="opcion"
+                                                name="option" value="2"> Submódulos
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="radio" (click)="getPermisos(id, '3')" [(ngModel)]="opcion"
+                                                name="option" value="3"> Items
+                                        </label>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <div class="col-md-3"></div>
+                    </div>
+
+                    <div *ngIf="opcion == '1'">
+                        <form id="form-Permissions" (submit)="assignPermissions()">
+                            <div class="row mb-2">
+                                <div class="col-md-8">
+                                    <input class="form-control" type="search" name="searchModules" 
+                                        placeholder="Buscar" 
+                                        (input)="Search(2)"
+                                        [(ngModel)]="searchModules">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-info"  
+                                        (click)="toggleAllRows(true, 1)" title="Marcar todos">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-info ms-1" 
+                                        (click)="toggleAllRows(false, 1)" title="Desmarcar todos">
+                                        <i class="fas fa-minus-circle"></i>
+                                    </button> 
+                                    <button type="submit" class="btn btn-success text-white ms-1"
+                                        (click)="clearSearch(); Search(2)">
+                                        Asignar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary ms-1"
+                                        (click)="ModalPermissions.hide()">
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="rol" value={{id}}>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nº</th>
+                                            <th>Módulo</th>
+                                            <th>Ver</th>
+                                            <th>Registrar</th>
+                                            <th>Editar</th>
+                                            <th>Eliminar</th>
+                                            <th>Todos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let module of modulesFilter; let i = index">
+                                            <td>
+                                                {{i + 1}}
+                                                <input type="hidden" name="module[{{i}}][id]" value={{module.id}}>
+                                            </td>
+                                            <td>
+                                                {{module.module}}
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="module.permissions['r'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="module[{{i}}][r]" checked [(ngModel)]="module.permissions['r']"
+                                                                (change)="updateToggleAll(i, 1)">
+                                                            <span class="flip-indecator" data-toggle-on="ON"
+                                                                data-toggle-off="OFF"></span>
+                                                        </label>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="module.permissions['r'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="module[{{i}}][r]" [(ngModel)]="module.permissions['r']"
+                                                                (change)="updateToggleAll(i, 1)">
+                                                            <span class="flip-indecator" data-toggle-on="ON"
+                                                                data-toggle-off="OFF"></span>
+                                                        </label>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="module.permissions['w'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="module[{{i}}][w]" checked [(ngModel)]="module.permissions['w']"
+                                                            (change)="updateToggleAll(i, 1)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="module.permissions['w'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="module[{{i}}][w]" [(ngModel)]="module.permissions['w']"
+                                                            (change)="updateToggleAll(i, 1)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="module.permissions['u'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="module[{{i}}][u]" checked [(ngModel)]="module.permissions['u']"
+                                                            (change)="updateToggleAll(i, 1)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="module.permissions['u'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="module[{{i}}][u]" [(ngModel)]="module.permissions['u']"
+                                                            (change)="updateToggleAll(i, 1)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="module.permissions['d'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="module[{{i}}][d]" checked [(ngModel)]="module.permissions['d']"
+                                                            (change)="updateToggleAll(i, 1)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="module.permissions['d'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="module[{{i}}][d]" [(ngModel)]="module.permissions['d']"
+                                                            (change)="updateToggleAll(i, 1)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        [checked]="module.permissions['r'] && module.permissions['w'] && module.permissions['u'] && module.permissions['d']"
+                                                        (change)="toggleAllPermissions(i, $event, 1)">
+                                                    <span class="flip-indecator" data-toggle-on="ON" data-toggle-off="OFF"></span>
+                                                </div>
+                                            </td>                                            
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                
+                            </div>
+                        </form>
+                    </div>
+                    <div *ngIf="opcion == '2'">
+                        <form id="form-Permissions-submodules" (submit)="assignPermissionsSubmodules()">
+                            <div class="row mb-2">
+                                <div class="col-md-8">
+                                    <input class="form-control" type="search" name="searchModules" 
+                                        placeholder="Buscar" 
+                                        (input)="Search(3)"
+                                        [(ngModel)]="searchSubmodules">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-info"  
+                                        (click)="toggleAllRows(true, 2)" title="Marcar todos">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-info ms-1" 
+                                        (click)="toggleAllRows(false, 2)" title="Desmarcar todos">
+                                        <i class="fas fa-minus-circle"></i>
+                                    </button> 
+                                    <button type="submit" class="btn btn-success text-white ms-1"
+                                        (click)="clearSearch(); Search(3)">
+                                        Asignar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary ms-1"
+                                        (click)="ModalPermissions.hide()">
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="rol" value={{id}}>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nº</th>
+                                            <th>Módulo</th>
+                                            <th>Submódulo</th>
+                                            <th>Ver</th>
+                                            <th>Registrar</th>
+                                            <th>Editar</th>
+                                            <th>Eliminar</th>
+                                            <th>Todos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let submodule of submodulesFilter; let i = index">
+                                            <td>
+                                                {{i + 1}}
+                                                <input type="hidden" name="submodule[{{i}}][id]" value={{submodule.id}}>
+                                            </td>
+                                            <td>
+                                                {{submodule.module.module}}
+                                            </td>
+                                            <td>
+                                                {{submodule.submodule}}
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="submodule.permissions['r'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="submodule[{{i}}][r]" checked 
+                                                                [(ngModel)]="submodule.permissions['r']"
+                                                                (change)="updateToggleAll(i, 2)">
+                                                            <span class="flip-indecator" data-toggle-on="ON"
+                                                                data-toggle-off="OFF"></span>
+                                                        </label>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="submodule.permissions['r'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="submodule[{{i}}][r]" 
+                                                                [(ngModel)]="submodule.permissions['r']"
+                                                                (change)="updateToggleAll(i, 2)">
+                                                            <span class="flip-indecator" data-toggle-on="ON"
+                                                                data-toggle-off="OFF"></span>
+                                                        </label>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="submodule.permissions['w'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="submodule[{{i}}][w]" checked 
+                                                            [(ngModel)]="submodule.permissions['w']"
+                                                            (change)="updateToggleAll(i, 2)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="submodule.permissions['w'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="submodule[{{i}}][w]" 
+                                                            [(ngModel)]="submodule.permissions['w']"
+                                                            (change)="updateToggleAll(i, 2)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="submodule.permissions['u'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="submodule[{{i}}][u]" checked 
+                                                            [(ngModel)]="submodule.permissions['u']"
+                                                            (change)="updateToggleAll(i, 2)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="submodule.permissions['u'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="submodule[{{i}}][u]" 
+                                                            [(ngModel)]="submodule.permissions['u']"
+                                                            (change)="updateToggleAll(i, 2)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="submodule.permissions['d'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="submodule[{{i}}][d]" checked 
+                                                            [(ngModel)]="submodule.permissions['d']"
+                                                            (change)="updateToggleAll(i, 2)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="submodule.permissions['d'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="submodule[{{i}}][d]" 
+                                                            [(ngModel)]="submodule.permissions['d']"
+                                                            (change)="updateToggleAll(i, 2)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        [checked]="submodule.permissions['r'] && submodule.permissions['w'] && submodule.permissions['u'] && submodule.permissions['d']"
+                                                        (change)="toggleAllPermissions(i, $event, 2)">
+                                                    <span class="flip-indecator" data-toggle-on="ON" data-toggle-off="OFF"></span>
+                                                </div>
+                                            </td>   
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                            </div>
+                        </form>
+                    </div>
+                    <div *ngIf="opcion == '3'">
+                        <form id="form-Permissions-items" (submit)="assignPermissionsItems()">
+                            <div class="row mb-2">
+                                <div class="col-md-8">
+                                    <input class="form-control" type="search" name="searchModules" 
+                                        placeholder="Buscar" 
+                                        (input)="Search(4)"
+                                        [(ngModel)]="searchItems">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-info"  
+                                        (click)="toggleAllRows(true, 3)" title="Marcar todos">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-info ms-1" 
+                                        (click)="toggleAllRows(false, 3)" title="Desmarcar todos">
+                                        <i class="fas fa-minus-circle"></i>
+                                    </button> 
+                                    <button type="submit" class="btn btn-success text-white ms-1"
+                                        (click)="clearSearch(); Search(4)">
+                                        Asignar
+                                    </button>
+                                    <button type="button" class="btn btn-secondary ms-1"
+                                        (click)="ModalPermissions.hide()">
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="rol" value={{id}}>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nº</th>
+                                            <th>Submódulo</th>
+                                            <th>Item</th>
+                                            <th>Ver</th>
+                                            <th>Registrar</th>
+                                            <th>Editar</th>
+                                            <th>Eliminar</th>
+                                            <th>Todos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of itemsFilter; let i = index">
+                                            <td>
+                                                {{i + 1}}
+                                                <input type="hidden" name="item[{{i}}][id]" value={{item.id}}>
+                                            </td>
+                                            <td>
+                                                {{item.submodule.submodule}}
+                                            </td>
+                                            <td>
+                                                {{item.item}}
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="item.permissions['r'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="item[{{i}}][r]" checked
+                                                                [(ngModel)]="item.permissions['r']"
+                                                                (change)="updateToggleAll(i, 3)">
+                                                            <span class="flip-indecator" data-toggle-on="ON"
+                                                                data-toggle-off="OFF"></span>
+                                                        </label>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="item.permissions['r'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <label>
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="item[{{i}}][r]"
+                                                                [(ngModel)]="item.permissions['r']"
+                                                                (change)="updateToggleAll(i, 3)">
+                                                            <span class="flip-indecator" data-toggle-on="ON"
+                                                                data-toggle-off="OFF"></span>
+                                                        </label>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="item.permissions['w'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="item[{{i}}][w]" checked
+                                                            [(ngModel)]="item.permissions['w']"
+                                                            (change)="updateToggleAll(i, 3)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="item.permissions['w'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="item[{{i}}][w]"
+                                                            [(ngModel)]="item.permissions['w']"
+                                                            (change)="updateToggleAll(i, 3)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="item.permissions['u'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="item[{{i}}][u]" checked
+                                                            [(ngModel)]="item.permissions['u']"
+                                                            (change)="updateToggleAll(i, 3)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="item.permissions['u'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="item[{{i}}][u]"
+                                                            [(ngModel)]="item.permissions['u']"
+                                                            (change)="updateToggleAll(i, 3)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span *ngIf="item.permissions['d'] == 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="item[{{i}}][d]" checked
+                                                            [(ngModel)]="item.permissions['d']"
+                                                            (change)="updateToggleAll(i, 3)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                                <span *ngIf="item.permissions['d'] != 1">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="item[{{i}}][d]"
+                                                            [(ngModel)]="item.permissions['d']"
+                                                            (change)="updateToggleAll(i, 3)">
+                                                        <span class="flip-indecator" data-toggle-on="ON"
+                                                            data-toggle-off="OFF"></span>
+                                                    </div>
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        [checked]="item.permissions['r'] && item.permissions['w'] && item.permissions['u'] && item.permissions['d']"
+                                                        (change)="toggleAllPermissions(i, $event, 3)">
+                                                    <span class="flip-indecator" data-toggle-on="ON" data-toggle-off="OFF"></span>
+                                                </div>
+                                            </td> 
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

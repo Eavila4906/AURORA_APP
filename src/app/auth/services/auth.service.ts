@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { Router } from '@angular/router';
 
-import { AppService } from 'src/app/service/app.service';
+import { AppService } from 'src/app/services/app.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,14 +21,14 @@ export class AuthService {
   constructor(private http: HttpClient,private Router: Router, private AppService: AppService) {
     this.AuroraApiCore = AppService.getAuroraApiCore();
     this.AuroraApiRestaurant = AppService.getAuroraApiRestaurant();
-    this.urlApi = AppService.getAuroraApiRestaurant();
+    this.AuroraApiContable = AppService.getAuroraApiContable();
   }
   
   login(user: string, password: string) {
     var formData = new FormData();
     formData.append("user", user);
     formData.append("password", password);
-    return this.http.post<any>(`${this.AuroraApiCore}/login`, formData)
+    return this.http.post<any>(`${this.AuroraApiCore}/login`, formData);
   }
 
   setIsAuthenticated(value: boolean) {

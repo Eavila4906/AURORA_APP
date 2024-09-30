@@ -28,7 +28,7 @@ register();
     LoginComponent,
     BaseComponent,
     NotFoundComponent,
-    SpinnerComponent,
+    SpinnerComponent
   ],
   imports: [
     RouterModule,

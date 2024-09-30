@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { AppService } from 'src/app/service/app.service';
+import { AppService } from 'src/app/services/app.service';
 
 interface Module {
   module_id: number;

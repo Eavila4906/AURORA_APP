@@ -1,0 +1,368 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Lista de items </h1>
+        <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
+            Registrar
+            <i class="fas fa-sitemap"></i>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Item</th>
+                                    <th>Submódulo</th>
+                                    <th>App</th>
+                                    <th>Path</th>
+                                    <th>icono</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                    *ngFor="let item of itemsFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ item.item }}</td>
+                                    <td>{{ item.submodule.submodule }}</td>
+                                    <td>{{item.aurora_app.app}}</td>
+                                    <td>{{ item.path }}</td>
+                                    <td><div [innerHTML]="item.icon"></div></td>
+                                    <td>
+                                        <span *ngIf="item.status == 1">
+                                            {{ item.r_status }} <i class="fas fa-circle fa-sm text-success"></i>
+                                        </span>
+                                        <span *ngIf="item.status != 1">
+                                            {{ item.r_status }} <i class="fas fa-circle fa-sm text-danger"></i>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                            (click)="openModalSee(item.id)" *ngIf="permission_read">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                            (click)="openModalEdit(item.id)" *ngIf="permission_update">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                            (click)="delete(item.id)" *ngIf="permission_delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to new -->
+    <div bsModal #ModalNew="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
+        aria-labelledby="modal-default" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-sitemap"></i> Registrar item
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalNew.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="form-CreateRol" class="form-horizontal" (submit)="create()">
+                        <p class="text-success">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Aplicación *</label>
+                                            <select class="form-control" name="app_id" [(ngModel)]="newItem.app_id"
+                                                (change)="onAppChange(1)" required>
+                                                <option value="0" class="d-none" disabled>Selecciona aplicación</option>
+                                                <option *ngFor="let app of apps" [value]="app.id">{{app.app}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Submódulo padre *</label>
+                                            <select class="form-control" name="module_id" [(ngModel)]="newItem.submodule_id"
+                                                required>
+                                                <option value="0" class="d-none" disabled>Selecciona submódulo</option>
+                                                <option *ngFor="let submodule of submodulesFilter" [value]="submodule.id">
+                                                    {{submodule.submodule }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Item *</label>
+                                            <input class="form-control " type="text" 
+                                            name="item" 
+                                            [(ngModel)]="newItem.item">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Path *</label>
+                                            <input class="form-control " type="text" 
+                                            name="path"
+                                            [(ngModel)]="newItem.path">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Icono</label>
+                                            <input class="form-control " type="text" 
+                                            name="icon"
+                                            [(ngModel)]="newItem.icon">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Estado *</label>
+                                            <select class="form-control" name="status" 
+                                                [(ngModel)]="newItem.status" required>
+                                                <option value="1">Activo</option>
+                                                <option value="2">Inactivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label id="labelLastName" class="labelForm">Descripción</label>
+                            <textarea class="form-control" name="description" 
+                                [(ngModel)]="newItem.description"
+                                rows="3" required>
+                            </textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success text-white">Guardar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalNew.hide(); resetForm()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to Edit -->
+    <div bsModal #ModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-edit"></i> Editar item
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalEdit.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form #formUpdateRol="ngForm" id="form-UpdateRol" class="form-horizontal" (submit)="edit(id)">
+                        <p class="text-info">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">                             
+                                <div class="row">
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Aplicación *</label>
+                                            <select class="form-control" name="app_id" [(ngModel)]="app_id"
+                                                (change)="onAppChange(2)" required>
+                                                <option value="0" class="d-none" disabled>Selecciona aplicación</option>
+                                                <option *ngFor="let app of apps" [value]="app.id">{{app.app}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Submódulo padre *</label>
+                                            <select class="form-control" name="module_id" [(ngModel)]="submodule_id"
+                                                required>
+                                                <option value="0" class="d-none" disabled>Selecciona submódulo</option>
+                                                <option *ngFor="let submodule of submodulesFilter" [value]="submodule.id">
+                                                    {{submodule.submodule }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Item *</label>
+                                            <input class="form-control" type="text" 
+                                            name="item" 
+                                            [(ngModel)]="item">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Path *</label>
+                                            <input class="form-control" type="text" 
+                                            name="path"
+                                            [(ngModel)]="path">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Icono</label>
+                                            <input class="form-control" type="text" 
+                                            name="icon"
+                                            [(ngModel)]="icon">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Estado *</label>
+                                            <select class="form-control" name="status" 
+                                                [(ngModel)]="status" required>
+                                                <option value="1">Activo</option>
+                                                <option value="2">Inactivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label id="labelLastName" class="labelForm">Descripción</label>
+                            <textarea class="form-control" name="description" 
+                                [(ngModel)]="description"
+                                rows="3" required>
+                            </textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info">Editar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalEdit.hide(); resetForm()">Cerrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to see -->
+    <div bsModal #ModalSee="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-sitemap"></i> Información del item
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalSee.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td><b>Item</b></td>
+                                <td>{{item}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Submódulo</b></td>
+                                <td>{{submodule}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>App</b></td>
+                                <td>{{app}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Path</b></td>
+                                <td>{{path}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Descripción</b></td>
+                                <td>{{description}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Icono</b></td>
+                                <td><div [innerHTML]="icon"></div></td>
+                            </tr>
+                            <tr>
+                                <td><b>Estado</b></td>
+                                <td id="view-rol">
+                                    <span *ngIf="status == 1">
+                                        Activo <i class="fas fa-circle fa-sm text-success"></i>
+                                    </span>
+                                    <span *ngIf="status != 1">
+                                        Inactivo <i class="fas fa-circle fa-sm text-danger"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ModalSee.hide()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>
