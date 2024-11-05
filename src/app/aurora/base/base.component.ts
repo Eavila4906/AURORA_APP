@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { AppService } from 'src/app/service/app.service';
+import { AppService } from 'src/app/services/app.service';
 
 @Component({
   selector: 'app-base',

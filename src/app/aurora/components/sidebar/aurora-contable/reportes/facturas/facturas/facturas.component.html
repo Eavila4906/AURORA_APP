@@ -1,0 +1,263 @@
+<app-spinner></app-spinner>
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Lista de facturas </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Código</th>
+                                    <th>Tipo de factura</th>
+                                    <th>Emisor</th>
+                                    <th>Receptor</th>
+                                    <th>Fecha de emisión</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <app-spinner-component *ngIf="loading"></app-spinner-component>
+                            <tbody>
+                                <tr
+                                    *ngFor="let factura of facturasFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ factura.id }}</td>
+                                    <td>{{ factura.tipoFactura }}</td>
+                                    <td>{{ factura.emisor.nombres }}</td>
+                                    <td>{{ factura.receptor.nombres }}</td>
+                                    <td>{{ factura.fechaEmision }}</td>
+                                    <td>{{ factura.total }}</td>
+                                    <td>{{ factura.estado }}</td>
+                                    <td>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                            (click)="openModalSee(factura.id)" *ngIf="permission_read">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to see -->
+    <div bsModal #ModalSee="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-info-circle"></i> Información
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalSee.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <button class="ms-1 btn btn-info btn-sm" title="Imprimir factura" (click)="printFactura(1)"
+                        *ngIf="permission_read">
+                        <i class="fas fa-print"></i>
+                    </button>
+                    <button class="ms-1 btn btn-danger btn-sm" title="Descargar pdf" (click)="printFactura(2)"
+                        *ngIf="permission_read">
+                        <i class="far fa-file-pdf"></i>
+                    </button>
+                    <div class="container my-4 p-4 border rounded">
+                        <div class="row">
+                            <div class="col-12 text-center mb-3">
+                                <h2><b>Factura de {{ tipoFactura }} #{{ id }}</b></h2>
+                                <small><b>Estado:</b> {{ estado }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Información del Emisor y Receptor -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5><b>Emisor:</b></h5>
+                                <p><strong>{{ emisor.nombres }}</strong></p>
+                                <p>RUC: {{ emisor.RUC }}</p>
+                                <p>Establecimiento: {{ emisor.establecimiento }}</p>
+                                <p>Punto de Emisión: {{ puntoEmision }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><b>Receptor</b></h5>
+                                <p><strong>{{ receptor.nombres }}</strong></p>
+                                <p>RUC/Ced/Pass: {{ receptor.numeroIdentificacion }}</p>
+                                <p>Teléfono: {{ receptor.telefono ? receptor.telefono : 'N/A' }}</p>
+                                <p>Email: {{ receptor.email ? receptor.email : 'N/A' }}</p>
+                                <p>Dirección: {{ receptor.direccion ? receptor.direccion : 'N/A' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Detalles de la Factura -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5><b>Detalles de Factura</b></h5>
+                                <p>Fecha de Emisión: {{ fechaEmision }}</p>
+                                <p>Factura Comercial Negociable: {{ facturaComercialNegociable }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><b>Totales</b></h5>
+                                <p>Subtotal Sin IVA: ${{ subTotalSinIva }}</p>
+                                <p>Subtotal Con IVA: ${{ subTotalConIva }}</p>
+                                <p>Total Descuento: ${{ totalDescuento }}</p>
+                                <p>Total IVA: ${{ totalIva }}</p>
+                                <p>Total Servicio: ${{ totalServicio }}</p>
+                                <h4>Total: ${{ total }}</h4>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Productos -->
+                        <div class="table-responsive mb-4">
+                            <h5><b>Productos</b></h5>
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Cantidad</th>
+                                        <th>Descripción</th>
+                                        <th>Precio Unitario</th>
+                                        <th>IVA</th>
+                                        <th>Descuento</th>
+                                        <th>Valor Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let producto of productosEnFactura">
+                                        <td>{{ producto.cantidad }}</td>
+                                        <td>{{ producto.descripcion }}</td>
+                                        <td>${{ producto.precioUnitario }}</td>
+                                        <td>{{ producto.iva }}</td>
+                                        <td>${{ producto.descuento }}</td>
+                                        <td>${{ producto.valorTotal }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Formas de Pago -->
+                        <div class="table-responsive mb-4">
+                            <h5><b>Formas de Pago</b></h5>
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Forma de Pago</th>
+                                        <th>Valor</th>
+                                        <th>Plazo</th>
+                                        <th>Tiempo</th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngIf="formasDePagoEnFactura else elseBlockFormasDePago">
+                                    <tr *ngFor="let pago of formasDePagoEnFactura">
+                                        <td>{{ pago.formaPago }}</td>
+                                        <td>${{ pago.valor }}</td>
+                                        <td>{{ pago.plazo }}</td>
+                                        <td>{{ pago.tiempo }}</td>
+                                    </tr>
+                                </tbody>
+                                <ng-template #elseBlockFormasDePago>
+                                    <tbody>
+                                        <tr>
+                                            No hay registros para mostrar
+                                        </tr>
+                                    </tbody>
+                                </ng-template>
+                            </table>
+                        </div>
+
+                        <!-- Abonos -->
+                        <div class="table-responsive mb-4">
+                            <h5><b>Abonos</b></h5>
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Monto</th>
+                                        <th>Saldo</th>
+                                        <th>Fecha</th>
+                                        <th>Descripción</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngIf="abonosEnFactura else elseBlockAbonos">
+                                    <tr *ngFor="let abono of abonosEnFactura">
+                                        <td>${{ abono.monto }}</td>
+                                        <td>${{ abono.saldo }}</td>
+                                        <td>{{ abono.fecha }}</td>
+                                        <td>{{ abono.descripcion }}</td>
+                                        <td>{{ abono.estado }}</td>
+                                    </tr>
+                                </tbody>
+                                <ng-template #elseBlockAbonos>
+                                    <tbody>
+                                        <tr>
+                                            No hay registros para mostrar
+                                        </tr>
+                                    </tbody>
+                                </ng-template>
+                            </table>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="mb-4">
+                            <h5><b>Observaciones</b></h5>
+                            <ul *ngIf="observacionesEnFactura.length > 0 else elseBlockObservaciones">
+                                <li *ngFor="let observacion of observacionesEnFactura">
+                                    <strong>{{ observacion.nombre }}:</strong> {{ observacion.descripcion }}
+                                </li>
+                            </ul>
+                            <ng-template #elseBlockObservaciones>
+                                <ul>
+                                    <p>No hay registros para mostrar</p>
+                                </ul>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ModalSee.hide()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

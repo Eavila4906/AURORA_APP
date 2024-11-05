@@ -1,0 +1,412 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="mb-3">
+        <h1 class="h3 d-inline align-middle">Lista de puntos de emisión </h1>
+        <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
+            Registrar
+            <i class="fas fa-map-pin"></i>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-md-9">
+                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
+                                *ngIf="generate_reports">
+                                <i class="fas fa-print"></i>
+                            </button>-->
+                        </div>
+                        <div class="col-md-3">
+                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                                [(ngModel)]="search">
+                        </div>
+                    </div>
+                    <div>
+                        <p> {{ countRangeRegister() }} </p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Establecimiento</th>
+                                    <th>Punto de emisión</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <app-spinner-component *ngIf="loading"></app-spinner-component>
+                            <tbody>
+                                <tr
+                                    *ngFor="let puntoDeEmision of puntosDeEmisionFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ puntoDeEmision.nombreEstablecimiento }}</td>
+                                    <td>{{ puntoDeEmision.puntoEmision }}</td>
+                                    <td>{{ puntoDeEmision.descripcion }}</td>
+
+                                    <td>
+                                        <span *ngIf="puntoDeEmision.estado == 'Activo' else elseBlock">
+                                            {{ puntoDeEmision.estado }} <i class="fas fa-circle fa-sm text-success"></i>
+                                        </span>
+                                        <ng-template #elseBlock>
+                                            <span>
+                                                {{ puntoDeEmision.estado }} <i class="fas fa-circle fa-sm text-danger"></i>
+                                            </span>
+                                        </ng-template>
+                                    </td>
+                                    <td>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                            (click)="openModalSee(puntoDeEmision.id)" *ngIf="permission_read">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                            (click)="openModalEdit(puntoDeEmision.id)" *ngIf="permission_update">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                            (click)="delete(puntoDeEmision.id)" *ngIf="permission_delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-9"></div>
+                        <div class="col-md-3 pagination">
+                            <pagination-controls (pageChange)="currentPage=$event"></pagination-controls>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to new -->
+    <div bsModal #ModalNew="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
+        aria-labelledby="modal-default" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-map-pin"></i> Registrar punto de emisión
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalNew.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="form-CreateRol" class="form-horizontal" (submit)="create()">
+                        <p class="text-success">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Establecimiento *</label>
+                                            <select class="form-control" name="establecimiento_id" [(ngModel)]="newPuntoDeEmision.establecimiento_id">
+                                                <option value="0" class="d-none">Selecciona establecimiento</option>
+                                                <option *ngFor="let establecimiento of establecimientos" [value]="establecimiento.id">
+                                                    {{establecimiento.establecimiento}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Punto de emisión *</label>
+                                            <input class="form-control " type="text" 
+                                            name="puntoEmision" 
+                                            [(ngModel)]="newPuntoDeEmision.puntoEmision">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Factura *</label>
+                                            <input class="form-control " type="number" 
+                                            name="factura" 
+                                            [(ngModel)]="newPuntoDeEmision.factura">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Nota de crédito *</label>
+                                            <input class="form-control " type="number" 
+                                            name="notaCredito" 
+                                            [(ngModel)]="newPuntoDeEmision.notaCredito">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Nota de débito *</label>
+                                            <input class="form-control " type="number" 
+                                            name="notaDebito" 
+                                            [(ngModel)]="newPuntoDeEmision.notaDebito">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Comprobante de retención *</label>
+                                            <input class="form-control " type="number" 
+                                            name="comprobanteRetencion" 
+                                            [(ngModel)]="newPuntoDeEmision.comprobanteRetencion">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Liquidación de compra *</label>
+                                            <input class="form-control " type="number" 
+                                            name="liquidacionCompra" 
+                                            [(ngModel)]="newPuntoDeEmision.liquidacionCompra">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Guía de remisión *</label>
+                                            <input class="form-control " type="number" 
+                                            name="guiaRemision" 
+                                            [(ngModel)]="newPuntoDeEmision.guiaRemision">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 ">
+                                            <label>Descripción</label>
+                                            <textarea class="form-control" name="description" 
+                                                [(ngModel)]="newPuntoDeEmision.descripcion"
+                                                rows="3" required>
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success text-white">Guardar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalNew.hide(); resetForm()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to Edit -->
+    <div bsModal #ModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-edit"></i> Editar punto de emisión
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalEdit.hide(); resetForm()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form #formUpdateRol="ngForm" id="form-UpdateRol" class="form-horizontal" (submit)="edit(id)">
+                        <p class="text-info">
+                            Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Establecimiento *</label>
+                                            <select class="form-control" name="establecimiento_id" [(ngModel)]="establecimiento_id">
+                                                <option value="0" class="d-none">Selecciona establecimiento</option>
+                                                <option *ngFor="let establecimiento of establecimientos" [value]="establecimiento.id">
+                                                    {{establecimiento.establecimiento}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="mb-3 ">
+                                            <label>Punto de emisión *</label>
+                                            <input class="form-control " type="text" 
+                                            name="puntoEmision" 
+                                            [(ngModel)]="puntoEmision">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Factura *</label>
+                                            <input class="form-control " type="number" 
+                                            name="factura" 
+                                            [(ngModel)]="factura">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Nota de crédito *</label>
+                                            <input class="form-control " type="number" 
+                                            name="notaCredito" 
+                                            [(ngModel)]="notaCredito">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Nota de débito *</label>
+                                            <input class="form-control " type="number" 
+                                            name="notaDebito" 
+                                            [(ngModel)]="notaDebito">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Comprobante de retención *</label>
+                                            <input class="form-control " type="number" 
+                                            name="comprobanteRetencion" 
+                                            [(ngModel)]="comprobanteRetencion">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Liquidación de compra *</label>
+                                            <input class="form-control " type="number" 
+                                            name="liquidacionCompra" 
+                                            [(ngModel)]="liquidacionCompra">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4">
+                                        <div class="mb-3 ">
+                                            <label>Guía de remisión *</label>
+                                            <input class="form-control " type="number" 
+                                            name="guiaRemision" 
+                                            [(ngModel)]="guiaRemision">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 ">
+                                            <label>Estado *</label>
+                                            <select class="form-control" name="estado" [(ngModel)]="estado">
+                                                <option value="Activo">Activo</option>
+                                                <option value="Inactivo">Inactivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 ">
+                                            <label>Descripción</label>
+                                            <textarea class="form-control" name="description" 
+                                                [(ngModel)]="descripcion"
+                                                rows="3" required>
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info">Editar</button>
+                            <button type="button" class="btn btn-secondary"
+                                (click)="ModalEdit.hide(); resetForm()">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to see -->
+    <div bsModal #ModalSee="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-info-circle"></i> Información de punto de emisión
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalSee.hide()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td><b>Establecimiento</b></td>
+                                <td>{{nombreEstablecimiento}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Punto de emisión</b></td>
+                                <td>{{puntoEmision}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Factura</b></td>
+                                <td>{{factura}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Nota de crédito</b></td>
+                                <td>{{notaCredito}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Nota de débito</b></td>
+                                <td>{{notaDebito}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Comprobante de retención</b></td>
+                                <td>{{comprobanteRetencion}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Liquidación de compra</b></td>
+                                <td>{{liquidacionCompra}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Guía de remisión</b></td>
+                                <td>{{guiaRemision}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Descripción</b></td>
+                                <td>{{descripcion}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Estado</b></td>
+                                <td id="view-rol">
+                                    <span *ngIf="estado == 'Activo' else elseBlock">
+                                        {{estado}} <i class="fas fa-circle fa-sm text-success"></i>
+                                    </span>
+                                    <ng-template #elseBlock>
+                                        <span>
+                                            {{estado}} <i class="fas fa-circle fa-sm text-danger"></i>
+                                        </span>
+                                    </ng-template>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="ModalSee.hide()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

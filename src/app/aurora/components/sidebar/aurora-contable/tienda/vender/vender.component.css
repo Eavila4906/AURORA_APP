@@ -1,0 +1,32 @@
+.sri-logo {
+    font-weight: bold;
+    font-size: 9px;
+    font-family: 'Poppins', sans-serif;
+    /* Tamaño del texto */
+    color: white;
+    /* Color del texto SRI */
+    margin-bottom: 2px;
+    /* Espacio entre el texto y la línea */
+}
+
+.sri-line {
+    width: 100%;
+    /* Ancho completo del botón */
+    height: 2px;
+    /* Grosor de la línea */
+    background-color: rgb(255, 0, 0);
+    /* Color de la línea */
+}
+
+.custom-select {
+    position: relative;
+}
+
+.dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.form-control {
+    margin-bottom: 10px;
+}

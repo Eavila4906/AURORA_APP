@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
-import { Observable, finalize, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, finalize, throwError, of } from 'rxjs';
+import { catchError, delay, retryWhen, mergeMap } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 
-import { AppService } from 'src/app/service/app.service';
+import { AppService } from 'src/app/services/app.service';
 import { SpinnerService } from '../service/spinner.service';
  
 @Injectable()
@@ -31,28 +31,39 @@ export class SnpinnerInterceptor implements HttpInterceptor {
     this.spinner.mostrar();
 
     return next.handle(authReq).pipe(
+      retryWhen(errors => errors.pipe(
+        mergeMap((error: HttpErrorResponse) => {
+          if (error.status === 429) {
+            if (!this.hasShown429Error) { 
+              this.hasShown429Error = true;
+              const errorMessage = 'Se ha realizado demasiadas solicitudes. Por favor, espera un momento e inténtalo nuevamente.';
+              this.toastr.warning(errorMessage, '¡Atención!', { closeButton: true });
+            }
+            return of(error).pipe(delay(60000)); // Esperar 60 segundos antes de reintentar
+          }
+          // Si el error no es 429, simplemente lo pasamos al siguiente operador
+          return throwError(() => error);
+        })
+      )),
       catchError((error: HttpErrorResponse) => {
         let errorMessage = '';
 
-        if (error.status === 429) {
-          if (!this.hasShown429Error) { 
-            this.hasShown429Error = true;
-            errorMessage = 'Se ha realizado demasiadas solicitudes. Por favor, espera un momento e inténtalo nuevamente.';
-            this.toastr.warning(errorMessage, '¡Atención!', { closeButton: true });
-          }
-        } else {
-          errorMessage = `Error: ${error.status}\nMensaje: ${error.message}`;
+        if (error.status !== 429) {
+          errorMessage = error.error.message || `Error: ${error.status}\nMensaje: ${error.message}`;
           this.toastr.warning(errorMessage, '¡Atención!', { closeButton: true });
         }
 
         return throwError(() => new Error(errorMessage));
       }),
       finalize(() => {
-        this.spinner.ocultar();
-        if (this.hasShown429Error) {
+        if (!this.hasShown429Error) {
+          this.spinner.ocultar();
+        } else {
           setTimeout(() => {
+            this.spinner.ocultar();
             this.hasShown429Error = false;
-          }, 10000);
+            window.location.reload();
+          }, 60000);
         }
       })
     );

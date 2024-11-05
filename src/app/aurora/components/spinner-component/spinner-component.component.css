@@ -1,0 +1,78 @@
+/* Contenedor del spinner */
+.loading-table {
+    position: absolute;
+    /* Asegura que el spinner esté posicionado correctamente */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Centra el spinner verticalmente y horizontalmente */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* Fondo semi-transparente */
+    padding: 20px;
+    border-radius: 8px;
+    /* Opcional: bordes redondeados */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    /* Opcional: sombra para visibilidad */
+    width: 100%;
+    /* Asegura que el contenedor ocupe todo el ancho del contenedor padre */
+    height: 100%;
+    /* Asegura que el contenedor ocupe todo el alto del contenedor padre */
+}
+
+/* Contenedor de los puntos del spinner */
+.spinner-table {
+    display: flex;
+    justify-content: center;
+    /* Centra los puntos horizontalmente */
+    align-items: center;
+    /* Alinea los puntos verticalmente (opcional, en caso de que haya más elementos) */
+    flex-direction: row;
+    /* Alinea los puntos en una fila horizontal */
+}
+
+/* Estilo para cada punto */
+.dot {
+    width: 12px;
+    height: 12px;
+    margin: 0 5px;
+    /* Espaciado entre puntos */
+    background-color: #011f30;
+    /* Color del punto */
+    border-radius: 50%;
+    /* Hace que los puntos sean circulares */
+    animation: dotBounce 1.4s infinite ease-in-out;
+    /* Animación de rebote */
+}
+
+/* Animación de rebote */
+@keyframes dotBounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-15px);
+    }
+
+    60% {
+        transform: translateY(-7px);
+    }
+}
+
+/* Opcional: Espaciado entre puntos */
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
