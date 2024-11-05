@@ -1,9 +1,9 @@
 <section *ngIf="permission_read" class="me-3">
     <div class="mb-3">
-        <h1 class="h3 d-inline align-middle">Lista de abonos </h1>
+        <h1 class="h3 d-inline align-middle">Lista de movimientos contables </h1>
         <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
             Registrar
-            <i class="fas fa-hand-holding-usd"></i>
+            <i class="fas fa-wallet"></i>
         </button>
     </div>
 
@@ -35,7 +35,7 @@
                             <thead>
                                 <tr>
                                     <th>N°</th>
-                                    <th>Código de factura</th>
+                                    <th>Tipo</th>
                                     <th>Monto</th>
                                     <th>Fecha</th>
                                     <th>Descripción</th>
@@ -45,39 +45,23 @@
                             <app-spinner-component *ngIf="loading"></app-spinner-component>
                             <tbody>
                                 <tr
-                                    *ngFor="let abono of abonosFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                    *ngFor="let movimiento of movimientosFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
                                     <td>{{ i + 1 }}</td>
-                                    <td>{{ abono.cabFactura_id }}</td>
-                                    <td>{{ abono.monto }}</td>
-                                    <td>{{ abono.fecha }}</td>
-                                    <td>{{ abono.descripcion == null ? 'N/A' : abono.descripcion }}</td>
+                                    <td>{{ movimiento.tipo }}</td>
+                                    <td>{{ movimiento.monto }}</td>
+                                    <td>{{ movimiento.fecha }}</td>
+                                    <td>{{ movimiento.descripcion == null ? 'N/A' : movimiento.descripcion }}</td>
                                     <td>
                                         <button class="ms-1 btn btn-info btn-sm" title="Ver"
-                                            (click)="openModalSee(abono.id)" *ngIf="permission_read">
+                                            (click)="openModalSee(movimiento.id)" *ngIf="permission_read">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <span *ngIf="abono.cab_factura.estado === 'Pagada'">
-                                            <button class="ms-1 btn btn-info btn-sm" title="Editar"
-                                                disabled *ngIf="permission_update">
+                                        <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                            (click)="openModalEdit(movimiento.id)" *ngIf="permission_update">
                                             <i class="fas fa-edit"></i>
-                                            </button>
-                                        </span>
-                                        <span *ngIf="abono.cab_factura.estado !== 'Pagada'">
-                                            <span *ngIf="!abono.ultimoAbono">
-                                                <button class="ms-1 btn btn-info btn-sm" title="Editar"
-                                                disabled *ngIf="permission_update">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </span>
-                                            <span *ngIf="abono.ultimoAbono">
-                                                <button class="ms-1 btn btn-info btn-sm" title="Editar"
-                                                (click)="openModalEdit(abono.id)" *ngIf="permission_update">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </span>
-                                        </span>
+                                        </button>
                                         <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
-                                            (click)="delete(abono.id)" *ngIf="permission_delete">
+                                            (click)="delete(movimiento.id)" *ngIf="permission_delete">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -103,7 +87,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-success">
                     <h3 class="modal-title text-white fs-2 fw-bolder">
-                        <i class="fas fa-hand-holding-usd"></i> Registrar abono
+                        <i class="fas fa-hand-holding-usd"></i> Registrar movimiento
                     </h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                         (click)="ModalNew.hide(); resetForm()">
@@ -121,10 +105,12 @@
                                 <div class="row">
                                     <div class="col-lg-12 col-sm-12">
                                         <div class="mb-3">
-                                            <label>Codigo de factura *</label>
-                                            <input class="form-control " type="text" 
-                                            name="cabFactura_id" 
-                                            [(ngModel)]="newAbono.cabFactura_id">
+                                            <label>Tipo *</label>
+                                            <select class="form-control" name="tipo" [(ngModel)]="newMovimiento.tipo">
+                                                <option value="Seleccionar" disabled class="d-none">Seleccionar</option>
+                                                <option value="Ingreso">Ingreso</option>
+                                                <option value="Egreso">Egreso</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
@@ -132,7 +118,7 @@
                                             <label>Monto *</label>
                                             <input class="form-control " type="number" 
                                             name="monto" 
-                                            [(ngModel)]="newAbono.monto">
+                                            [(ngModel)]="newMovimiento.monto">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
@@ -140,14 +126,14 @@
                                             <label>Fecha</label>
                                             <input class="form-control " type="date" 
                                             name="fecha" 
-                                            [(ngModel)]="newAbono.fecha">
+                                            [(ngModel)]="newMovimiento.fecha">
                                         </div>
                                     </div>
                                     <div class="col-lg-12 col-sm-12">
                                         <div class="mb-3">
                                             <label>Descripción</label>
                                             <textarea class="form-control" name="descripcion" 
-                                                [(ngModel)]="newAbono.descripcion"
+                                                [(ngModel)]="newMovimiento.descripcion"
                                                 rows="3" required>
                                             </textarea>
                                         </div>
@@ -174,7 +160,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-info">
                     <h3 class="modal-title text-white fs-2 fw-bolder">
-                        <i class="fas fa-edit"></i> Editar proveedor
+                        <i class="fas fa-edit"></i> Editar movimiento
                     </h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                         (click)="ModalEdit.hide(); resetForm()">
@@ -190,7 +176,16 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="row">
-                                    <input type="hidden" name="cabFactura_id" [(ngModel)]="cabFactura_id">
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3">
+                                            <label>Tipo *</label>
+                                            <select class="form-control" name="tipo" [(ngModel)]="tipo">
+                                                <option value="Seleccionar" disabled class="d-none">Seleccionar</option>
+                                                <option value="Ingreso">Ingreso</option>
+                                                <option value="Egreso">Egreso</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Monto *</label>
@@ -238,7 +233,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-info">
                     <h3 class="modal-title text-white fs-2 fw-bolder">
-                        <i class="fas fa-info-circle"></i> Información del proveedor
+                        <i class="fas fa-info-circle"></i> Información del movimiento
                     </h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                         (click)="ModalSee.hide()">
@@ -249,8 +244,8 @@
                     <table class="table table-bordered">
                         <tbody>
                             <tr>
-                                <td><b>Código de factura</b></td>
-                                <td>{{cabFactura_id}}</td>
+                                <td><b>Tipo</b></td>
+                                <td>{{tipo}}</td>
                             </tr>
                             <tr>
                                 <td><b>Monto</b></td>

@@ -17,3 +17,16 @@
     background-color: rgb(255, 0, 0);
     /* Color de la línea */
 }
+
+.custom-select {
+    position: relative;
+}
+
+.dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.form-control {
+    margin-bottom: 10px;
+}

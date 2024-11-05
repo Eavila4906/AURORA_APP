@@ -6,6 +6,11 @@
             Registrar
             <i class="fas fa-box"></i>
         </button>
+        <button class="btn btn-info text-white ms-2" title="Generar código de barras" 
+            (click)="generateBarCode()" *ngIf="permission_create">
+            Generar
+            <i class="fas fa-barcode"></i>
+        </button>
     </div>
 
     <div class="row">
@@ -189,38 +194,6 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 1 *</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp1" 
-                                            [(ngModel)]="newProducto.pvp1">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 2</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp2" 
-                                            [(ngModel)]="newProducto.pvp2">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 3</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp3" 
-                                            [(ngModel)]="newProducto.pvp3">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 4</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp4" 
-                                            [(ngModel)]="newProducto.pvp4">
-                                        </div>
-                                    </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Precio de compra</label>
@@ -277,6 +250,38 @@
                                                     {{iva.tipoIva}}
                                                 </option>
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 1 *</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp1" 
+                                            [(ngModel)]="newProducto.pvp1">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 2 </label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp2" 
+                                            [(ngModel)]="newProducto.pvp2">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 3</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp3" 
+                                            [(ngModel)]="newProducto.pvp3">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 4</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp4" 
+                                            [(ngModel)]="newProducto.pvp4">
                                         </div>
                                     </div>
                                 </div>
@@ -382,38 +387,6 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 1 *</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp1" 
-                                            [(ngModel)]="pvp1">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 2</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp2" 
-                                            [(ngModel)]="pvp2">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 3</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp3" 
-                                            [(ngModel)]="pvp3">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 4</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp4" 
-                                            [(ngModel)]="pvp4">
-                                        </div>
-                                    </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Precio de compra</label>
@@ -470,6 +443,38 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 1*</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp1" 
+                                            [(ngModel)]="pvp1">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 2</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp2" 
+                                            [(ngModel)]="pvp2">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 3</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp3" 
+                                            [(ngModel)]="pvp3">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3">
+                                        <div class="mb-3">
+                                            <label>PVP 4</label>
+                                            <input class="form-control " type="text" 
+                                            name="pvp4" 
+                                            [(ngModel)]="pvp4">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -521,18 +526,6 @@
                                 <td>{{proveedor}}</td>
                             </tr>
                             <tr>
-                                <td><b>PVP 1:</b></td>
-                                <td>{{pvp1}}</td>
-                                <td><b>PVP 2:</b></td>
-                                <td>{{pvp2}}</td>
-                            </tr>
-                            <tr>
-                                <td><b>PVP 3:</b></td>
-                                <td>{{pvp3}}</td>
-                                <td><b>PVP 4:</b></td>
-                                <td>{{pvp4}}</td>
-                            </tr>
-                            <tr>
                                 <td><b>Precio de compra:</b></td>
                                 <td>{{precioCompra}}</td>
                                 <td><b>Fecha de elaboración:</b></td>
@@ -549,6 +542,18 @@
                                 <td>{{tipoMedicion}}</td>
                                 <td><b>Iva:</b></td>
                                 <td>{{tipoIva}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>PVP 1:</b></td>
+                                <td>{{pvp1}}</td>
+                                <td><b>PVP 2:</b></td>
+                                <td>{{pvp2}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>PVP 3:</b></td>
+                                <td>{{pvp3}}</td>
+                                <td><b>PVP 4:</b></td>
+                                <td>{{pvp4}}</td>
                             </tr>
                             <tr>
                                 <td><b>Estado:</b></td>

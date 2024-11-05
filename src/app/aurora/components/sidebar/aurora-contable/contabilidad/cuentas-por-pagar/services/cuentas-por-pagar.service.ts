@@ -24,6 +24,15 @@ export class CuentasPorPagarService {
     );
   }
 
+  pagarCuenta(data: any) {
+    const url = this.AuthService.AuroraApiContable + `/cuenta/pagar/${data.data.cabFactura_id}`;
+    return this.http.post<any>(url, data).pipe(
+      catchError(error => {
+        return throwError(error.error.message);
+      })
+    );
+  }
+
   byRange(data: any) {
     const url = this.AuthService.AuroraApiContable + `/cuentasPorPagar/range/${data.fechaInicio}/${data.fechaFin}`;
     return this.http.get<any>(url).pipe(

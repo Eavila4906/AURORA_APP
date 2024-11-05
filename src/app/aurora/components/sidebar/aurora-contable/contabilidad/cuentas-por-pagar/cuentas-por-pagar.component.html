@@ -64,7 +64,10 @@
                                     <th>Proveedor</th>
                                     <th>fecha</th>
                                     <th>Total a pagar</th>
+                                    <th>Total de abonos</th>
+                                    <th>Saldo Pendiente</th>
                                     <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <app-spinner-component *ngIf="loading"></app-spinner-component>
@@ -72,10 +75,22 @@
                                 <tr
                                     *ngFor="let cuentaPorPagar of cuentasPorPagarFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
                                     <td>{{ i + 1 }}</td>
-                                    <td>{{ cuentaPorPagar.receptor.nombres }}</td>
+                                    <td>{{ cuentaPorPagar.receptor.nombre }}</td>
                                     <td>{{ cuentaPorPagar.fechaEmision }}</td>
                                     <td>{{ cuentaPorPagar.total }}</td>
+                                    <td>{{ cuentaPorPagar.totalAbonos }}</td>
+                                    <td>{{ cuentaPorPagar.saldo }}</td>
                                     <td>{{ cuentaPorPagar.estado }}</td>
+                                    <td>
+                                        <button class="ms-1 btn btn-success btn-sm" title="Pagar"
+                                            (click)="pagar(cuentaPorPagar)" *ngIf="permission_create">
+                                            <i class="fas fa-cash-register text-white"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-success btn-sm" title="Abonar"
+                                            (click)="openModalAbonar(cuentaPorPagar)" *ngIf="permission_create">
+                                            <i class="fas fa-hand-holding-usd text-white"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -92,6 +107,65 @@
     </div>
 
 </section>
+
+<!--Modal to new abono-->
+<div bsModal #ModalNewAbono="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
+    aria-labelledby="modal-default" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h3 class="modal-title text-white fs-2 fw-bolder">
+                    <i class="fas fa-hand-holding-usd"></i> Registrar abono
+                </h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalNewAbono.hide(); resetForm()">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form id="form-CreateRol" class="form-horizontal" (submit)="abonar()">
+                    <p class="text-success">
+                        Los campos con asterisco (<span class="required">*</span>) son obligatorios.
+                    </p>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-lg-6 col-sm-6">
+                                    <div class="mb-3">
+                                        <label>Monto *</label>
+                                        <input class="form-control " type="number" name="monto"
+                                            [(ngModel)]="newAbono.monto">
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-sm-6">
+                                    <div class="mb-3">
+                                        <label>Fecha</label>
+                                        <input class="form-control " type="date" name="fecha"
+                                            [(ngModel)]="newAbono.fecha">
+                                    </div>
+                                </div>
+                                <div class="col-lg-12 col-sm-12">
+                                    <div class="mb-3">
+                                        <label>Descripción</label>
+                                        <textarea class="form-control" name="descripcion"
+                                            [(ngModel)]="newAbono.descripcion" rows="3" required>
+                                    </textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success text-white">Guardar</button>
+                        <button type="button" class="btn btn-secondary"
+                            (click)="ModalNewAbono.hide(); resetForm()">Cerrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div *ngIf="permission_read == false">
     <div class="alert alert-danger" role="alert">

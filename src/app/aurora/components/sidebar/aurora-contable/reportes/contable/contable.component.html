@@ -11,38 +11,52 @@
                         <div class="row">
                             <div class="col-lg-2 col-sm-2">
                                 <div class="mb-3">
+                                    <label>Rango</label>
+                                    <select class="form-control" name="tipoOp" [(ngModel)]="tipoOp">
+                                        <option value="Dia">Día</option>
+                                        <option value="Semana">Semana</option>
+                                        <option value="Mes">Mes</option>
+                                        <option value="Año">Año</option>
+                                        <option value="General">General</option>
+                                        <option value="Personalizado">Personalizado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-sm-2" *ngIf="tipoOp === 'Personalizado'">
+                                <div class="mb-3">
                                     <label>Fecha inicio</label>
                                     <input class="form-control" type="date" name="fechaInicio"
                                         [(ngModel)]="fechaInicio">
                                 </div>
                             </div>
-                            <div class="col-lg-2 col-sm-2">
+                            <div class="col-lg-2 col-sm-2" *ngIf="tipoOp === 'Personalizado'">
                                 <div class="mb-3">
                                     <label>Fecha fin</label>
                                     <input class="form-control" type="date" name="fechaFin" [(ngModel)]="fechaFin">
                                 </div>
                             </div>
+
                             <div class="col-lg-2 col-sm-2">
-                                <div class="mb-3">
-                                    <label>Rango</label>
-                                    <select class="form-control" name="tipoOp" [(ngModel)]="tipoOp">
-                                        <option value="0" class="d-none" selected>Seleccionar</option>
-                                        <option value="Dia">Día</option>
-                                        <option value="Semana">Semana</option>
-                                        <option value="Mes">Mes</option>
-                                        <option value="Año">Año</option>
-                                    </select>
+                                <div class="mt-4">
+                                    <button class="btn btn-success text-white" title="Generar" (click)="reporteContable()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    
+                                    <button class="btn btn-warning ms-2" title="Limpiar" (click)="resetForm()">
+                                        <i class="fas fa-broom"></i>
+                                    </button>
+            
+                                    <button class="btn btn-info ms-2" title="Imprimir reporte" *ngIf="reportes"
+                                        (click)="printReporte()">
+                                        <i class="fas fa-print"></i>
+                                    </button>
                                 </div>
                             </div>
+
+                            
                         </div>
 
-                        <button class="btn btn-success text-white" title="Generar" (click)="reporteContable()">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        
-                        <button class="btn btn-warning ms-2" title="Limpiar" (click)="resetForm()">
-                            <i class="fas fa-broom"></i>
-                        </button>
+                       
 
                     </form>
 
@@ -53,7 +67,7 @@
                         <div class="col-md-12 mb-3">
                             <div class="card text-center">
                                 <div class="card-header bg-lightblue">
-                                    <b>Reporte general de {{rango}}</b>
+                                    <b>Reporte general {{rango ? 'de ' + rango : ''}}</b>
                                 </div>
                             </div>
                         </div>
@@ -62,7 +76,7 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <i class="fas fa-cash-register fa-2x"></i>
-                                        <p class="mt-2">Ingresos: {{total_ingresos}}</p>
+                                        <p class="mt-2">Ingresos: <b>{{total_ingresos}} USD</b></p>
                                     </div>
                                 </div>
                             </div>
@@ -70,7 +84,7 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <i class="fas fa-wallet fa-2x"></i>
-                                        <p class="mt-2">Egresos: {{total_egresos}}</p>
+                                        <p class="mt-2">Egresos: <b>{{total_egresos}} USD</b></p>
                                     </div>
                                 </div>
                             </div>
@@ -78,7 +92,15 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <i class="fas fa-dollar-sign fa-2x"></i>
-                                        <p class="mt-2">Ganancias: {{total_ganancias}}</p>
+                                        <p class="mt-2">
+                                            Ganancias: 
+                                            <span *ngIf="contabilidadPositiva">
+                                                <span class="text-success"><b>{{total_ganancias}} USD</b></span>
+                                            </span>
+                                            <span *ngIf="!contabilidadPositiva">
+                                                <span class="text-danger"><b>{{total_ganancias}} USD</b></span>
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -88,14 +110,14 @@
                         <div class="col-md-12 mb-3">
                             <div class="card text-center">
                                 <div class="card-header bg-lightblue">
-                                    <b>Reportes detallados de {{rango}}</b>
+                                    <b>Reportes detallados {{rango ? 'de ' + rango : ''}}</b>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="card text-center">
-                                    <div class="card-header bg-success text-white">
+                                    <div class="card-header bg-system text-white">
                                         <b>Ventas</b>
                                     </div>
                                     <div class="card-body d-flex justify-content-between align-items-center">
@@ -112,24 +134,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="card text-center">
-                                    <div class="card-header bg-warning">
-                                        <b>Compras</b>
-                                    </div>
-                                    <div class="card-body d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-shopping-bag fa-2x"></i>
-                                            <p class="mt-2">Cantidad: {{cantidad_compras}}</p>
-                                        </div>
-                                        <div>
-                                            <i class="fas fa-dollar-sign fa-2x"></i>
-                                            <p class="mt-2">Total: {{total_compras}}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card text-center">
-                                    <div class="card-header bg-success text-white">
+                                    <div class="card-header bg-system text-white">
                                         <b>Ventas pagadas</b>
                                     </div>
                                     <div class="card-body d-flex justify-content-between align-items-center">
@@ -146,24 +151,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="card text-center">
-                                    <div class="card-header bg-warning">
-                                        <b>Compras pagadas</b>
-                                    </div>
-                                    <div class="card-body d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="fas fa-shopping-basket fa-2x"></i>
-                                            <p class="mt-2">Cantidad: {{cantidad_comprasPagadas}}</p>
-                                        </div>
-                                        <div>
-                                            <i class="fas fa-dollar-sign fa-2x"></i>
-                                            <p class="mt-2">Total: {{total_comprasPagadas}}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <div class="card text-center">
-                                    <div class="card-header bg-info text-white">
+                                    <div class="card-header bg-system text-white">
                                         <b>Cuentas por cobrar</b>
                                     </div>
                                     <div class="card-body d-flex justify-content-between align-items-center">
@@ -180,7 +168,58 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="card text-center">
-                                    <div class="card-header bg-info text-white">
+                                    <div class="card-header bg-system text-white">
+                                        <b>Abonos en cuentas por cobrar</b>
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-hand-holding-usd fa-2x"></i>
+                                            <p class="mt-2">Cantidad: {{cantidad_abonosCuentasPorCobrar}}</p>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                            <p class="mt-2">Total: {{total_abonosCuentasPorCobrar}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-header bg-system text-white">
+                                        <b>Compras</b>
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-shopping-bag fa-2x"></i>
+                                            <p class="mt-2">Cantidad: {{cantidad_compras}}</p>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                            <p class="mt-2">Total: {{total_compras}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-header bg-system text-white">
+                                        <b>Compras pagadas</b>
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-shopping-basket fa-2x"></i>
+                                            <p class="mt-2">Cantidad: {{cantidad_comprasPagadas}}</p>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                            <p class="mt-2">Total: {{total_comprasPagadas}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-header bg-system text-white">
                                         <b>Cuentas por pagar</b>
                                     </div>
                                     <div class="card-body d-flex justify-content-between align-items-center">
@@ -191,6 +230,57 @@
                                         <div>
                                             <i class="fas fa-dollar-sign fa-2x"></i>
                                             <p class="mt-2">Total: {{total_cuentasPorPagar}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-header bg-system text-white">
+                                        <b>Abonos en cuentas por pagar</b>
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                                            <p class="mt-2">Cantidad: {{cantidad_abonosCuentasPorPagar}}</p>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                            <p class="mt-2">Total: {{total_abonosCuentasPorPagar}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-header bg-system text-white">
+                                        <b>Ingresos en tesorería</b>
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-arrow-down fa-2x"></i>
+                                            <p class="mt-2">Cantidad: {{cantidad_ingresosMovimientosContables}}</p>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                            <p class="mt-2">Total: {{total_ingresosMovimientosContables}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card text-center">
+                                    <div class="card-header bg-system text-white">
+                                        <b>Egresos en tesorería</b>
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-arrow-up fa-2x"></i>
+                                            <p class="mt-2">Cantidad: {{cantidad_egresosMovimientosContables}}</p>
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-dollar-sign fa-2x"></i>
+                                            <p class="mt-2">Total: {{total_egresosMovimientosContables}}</p>
                                         </div>
                                     </div>
                                 </div>

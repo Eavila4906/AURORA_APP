@@ -7,6 +7,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 /**
  * Aurora base
@@ -67,6 +68,8 @@ import { CategoriasComponent as CategoriasComponentAuroraContable } from './comp
 import { ProductosComponent as ProductosComponentAuroraContable } from './components/sidebar/aurora-contable/gestion/productos/productos.component';
 import { StockComponent as StockComponentAuroraContable } from './components/sidebar/aurora-contable/reportes/stock/stock.component';
 import { PerfilComponent } from './components/sidebar/aurora-contable/configuracion/facturacion/perfil/perfil.component';
+import { FacturasComponent } from './components/sidebar/aurora-contable/reportes/facturas/facturas/facturas.component';
+import { MovimientosComponent } from './components/sidebar/aurora-contable/contabilidad/movimientos/movimientos.component';
 
 @NgModule({
   providers: [
@@ -122,7 +125,9 @@ import { PerfilComponent } from './components/sidebar/aurora-contable/configurac
     PuntosDeEmisionComponent,
     EstablecimientosComponent,
     PerfilComponent,
-    SpinnerComponentComponent
+    SpinnerComponentComponent,
+    FacturasComponent,
+    MovimientosComponent
   ],
   imports: [
     BrowserModule,
@@ -132,6 +137,7 @@ import { PerfilComponent } from './components/sidebar/aurora-contable/configurac
     NgxPaginationModule,
     ReactiveFormsModule,
     ModalModule.forRoot(),
+    NgSelectModule
   ],
   exports:[
     HomeComponent,

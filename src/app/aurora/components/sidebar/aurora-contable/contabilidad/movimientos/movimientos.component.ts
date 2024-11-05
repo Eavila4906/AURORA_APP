@@ -5,21 +5,22 @@ import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 
 import { AppService } from 'src/app/services/app.service';
-import { AbonosService } from './services/abonos.service';
+import { MovimientosContablesService } from './services/movimientos-contables.service';
+import { OtherServicesService } from 'src/app/services/other-services/other-services.service';
 
-interface Abono {
-  cabFactura_id: number;
+interface Movimiento {
+  tipo: string;
   monto: number;
   fecha: string;
   descripcion: string;
 }
 
 @Component({
-  selector: 'app-abonos',
-  templateUrl: './abonos.component.html',
-  styleUrls: ['./abonos.component.css']
+  selector: 'app-movimientos',
+  templateUrl: './movimientos.component.html',
+  styleUrls: ['./movimientos.component.css']
 })
-export class AbonosComponent implements OnInit {
+export class MovimientosComponent implements OnInit {
   @ViewChild('ModalNew') ModalNew?: ModalDirective;
   @ViewChild('ModalEdit') ModalEdit?: ModalDirective;
   @ViewChild('ModalSee') ModalSee?: ModalDirective;
@@ -31,16 +32,16 @@ export class AbonosComponent implements OnInit {
 
   loading = true;
 
-  abonos: any[] = [];
+  movimientos: any[] = [];
   id: number = 0;
-  cabFactura_id: number = 0;
+  tipo: string = 'Seleccionar';
   monto: number = 0;
   fecha: string = new Date().toISOString().slice(0, 10);
   descripcion: string = '';
   estado: string = 'Activo';
 
-  newAbono: Abono = {
-    cabFactura_id: 0,
+  newMovimiento: Movimiento = {
+    tipo: 'Seleccionar',
     monto: 0,
     fecha: new Date().toISOString().slice(0, 10),
     descripcion: ''
@@ -48,20 +49,20 @@ export class AbonosComponent implements OnInit {
 
   //Search
   search: string = '';
-  abonosFilter: any[] = [];
+  movimientosFilter: any[] = [];
 
   //Paginate
   currentPage = 1;
   recordPerPage = 5;
 
   resetForm() {
-    this.newAbono.cabFactura_id = 0;
-    this.newAbono.monto = 0;
-    this.newAbono.fecha = '';
-    this.newAbono.descripcion = '';
+    this.newMovimiento.tipo = 'Seleccionar';
+    this.newMovimiento.monto = 0;
+    this.newMovimiento.fecha = '';
+    this.newMovimiento.descripcion = '';
 
     this.id = 0;
-    this.cabFactura_id = 0;
+    this.tipo = '0';
     this.monto = 0;
     this.fecha = new Date().toISOString().slice(0, 10);
     this.descripcion = '';
@@ -69,7 +70,7 @@ export class AbonosComponent implements OnInit {
 
   constructor(
     private AppService: AppService,
-    private AbonosService: AbonosService,
+    private MovimientosContablesService: MovimientosContablesService,
     private toastr: ToastrService,
     private router: Router
   ) { }
@@ -86,29 +87,10 @@ export class AbonosComponent implements OnInit {
       }
     );
 
-    this.AbonosService.getAll().subscribe(
+    this.MovimientosContablesService.getAll().subscribe(
       response => {
-        this.abonos = response.data.sort((a: any, b: any) => b.id - a.id);
-        // Crear un mapa para identificar el último abono por cada factura
-        const ultimoAbonoMap = new Map<number, any>();
-
-        this.abonos.forEach((abono: any) => {
-          const facturaId = abono.cabFactura_id;
-
-          // Si el abono actual es más reciente o no hay aún un último abono, se asigna
-          if (!ultimoAbonoMap.has(facturaId) || abono.fecha > ultimoAbonoMap.get(facturaId).fecha) {
-            ultimoAbonoMap.set(facturaId, abono);
-          }
-        });
-
-        // Marcar cada abono con 'ultimoAbono' true o false
-        this.abonos = this.abonos.map((abono: any) => {
-          return {
-            ...abono,
-            ultimoAbono: abono.id === ultimoAbonoMap.get(abono.cabFactura_id).id
-          };
-        });
-        this.abonosFilter = this.abonos;
+        this.movimientos = response.data.sort((a: any, b: any) => b.id - a.id);
+        this.movimientosFilter = this.movimientos;
         this.loading = false;
       }
     );
@@ -124,12 +106,12 @@ export class AbonosComponent implements OnInit {
   }
 
   openModalEdit(id: number) {
-    this.getAbono(id);
+    this.getMovimiento(id);
     this.ModalEdit?.show();
   }
 
   openModalSee(id: number) {
-    this.getAbono(id);
+    this.getMovimiento(id);
     this.ModalSee?.show();
   }
 
@@ -137,11 +119,11 @@ export class AbonosComponent implements OnInit {
    * SERIVECES
    */
 
-  getAbono(id: number) {
-    this.AbonosService.get(id).subscribe(
+  getMovimiento(id: number) {
+    this.MovimientosContablesService.get(id).subscribe(
       response => {
         this.id = response.data.id;
-        this.cabFactura_id = response.data.cabFactura_id,
+        this.tipo = response.data.tipo,
         this.monto = response.data.monto,
         this.fecha = response.data.fecha,
         this.descripcion = response.data.descripcion
@@ -152,15 +134,15 @@ export class AbonosComponent implements OnInit {
   create() {
     let data = {
       data: {
-        cabFactura_id: this.newAbono.cabFactura_id,
-        monto: this.newAbono.monto,
-        fecha: this.newAbono.fecha,
-        descripcion: this.newAbono.descripcion,
+        tipo: this.newMovimiento.tipo,
+        monto: this.newMovimiento.monto,
+        fecha: this.newMovimiento.fecha,
+        descripcion: this.newMovimiento.descripcion,
         auditoria: this.AppService.getDataAuditoria('create')
       }
     };
 
-    this.AbonosService.create(data).subscribe(
+    this.MovimientosContablesService.create(data).subscribe(
       response => {
         if (response.data) {
           this.toastr.success(response.message, '¡Listo!', { closeButton: true });
@@ -176,7 +158,7 @@ export class AbonosComponent implements OnInit {
     let data = {
       data: {
         id: id,
-        cabFactura_id: this.cabFactura_id,
+        tipo: this.tipo,
         monto: this.monto,
         fecha: this.fecha,
         descripcion: this.descripcion,
@@ -184,7 +166,7 @@ export class AbonosComponent implements OnInit {
       }
     };
 
-    this.AbonosService.edit(data).subscribe(
+    this.MovimientosContablesService.edit(data).subscribe(
       response => {
         if (response.data) {
           this.toastr.success(response.message, '¡Listo!', { closeButton: true });
@@ -206,7 +188,7 @@ export class AbonosComponent implements OnInit {
       cancelButtonText: 'No, cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.AbonosService.delete(id).subscribe(
+        this.MovimientosContablesService.delete(id).subscribe(
           response => {
             if (response.data) {
               this.toastr.success(response.message, '¡Listo!', { closeButton: true });
@@ -225,14 +207,16 @@ export class AbonosComponent implements OnInit {
 
   //Search
   Search() {
-    this.abonosFilter = this.abonos.filter((abono: {
+    this.movimientosFilter = this.movimientos.filter((movimiento: {
+      tipo: string,
       fecha: string,
       descripcion: string
     }) => {
       let filter = true;
       if (this.search) {
-        filter = abono.fecha?.toLowerCase().includes(this.search.toLowerCase()) ||
-          abono.descripcion?.toLowerCase().includes(this.search.toLowerCase());
+        filter = movimiento.tipo?.toLowerCase().includes(this.search.toLowerCase()) ||
+          movimiento.fecha?.toLowerCase().includes(this.search.toLowerCase()) ||
+          movimiento.descripcion?.toLowerCase().includes(this.search.toLowerCase());
       }
       return filter;
     });
@@ -241,7 +225,7 @@ export class AbonosComponent implements OnInit {
   //Paginate
   countRangeRegister(): string {
     const startIndex = (this.currentPage - 1) * this.recordPerPage + 1;
-    const endIndex = Math.min(startIndex + this.recordPerPage - 1, this.abonosFilter.length);
+    const endIndex = Math.min(startIndex + this.recordPerPage - 1, this.movimientosFilter.length);
     let msg;
     endIndex === 0 ? msg = 'No hay registros.' : msg = `Mostrando registros del ${startIndex} al ${endIndex}`;
     return msg;

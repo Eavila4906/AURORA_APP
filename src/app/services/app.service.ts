@@ -300,4 +300,9 @@ export class AppService {
 
     return null;  
   }
+
+  padNumber(num: number, length: number = 7): string {
+    return num.toString().padStart(length, '0');
+  }
+
 }

@@ -3,9 +3,11 @@ import { ModalDirective } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import JsBarcode from 'jsbarcode';
+import * as pdfMake from "pdfmake/build/pdfmake";
 
 import { AppService } from 'src/app/services/app.service';
-import { ProductosService } from './services/productos.service'; 
+import { ProductosService } from './services/productos.service';
 import { OtherServicesService } from 'src/app/services/other-services/other-services.service';
 import { CategoriasService } from '../categorias/services/categorias.service';
 import { LineasService } from '../lineas/services/lineas.service';
@@ -47,7 +49,7 @@ export class ProductosComponent implements OnInit {
   permission_delete: boolean = true;
 
   loading = true;
-  
+
   productos: any[] = [];
   id: number = 0;
   codigo: string = '';
@@ -130,7 +132,7 @@ export class ProductosComponent implements OnInit {
     this.newProducto.lote = '';
     this.newProducto.medicion_id = 0;
     this.newProducto.iva_id = 0;
-    
+
     this.id = 0;
     this.codigo = '';
     this.categoria_id = 0;
@@ -212,7 +214,7 @@ export class ProductosComponent implements OnInit {
 
   /**
    * SERIVECES
-   */ 
+   */
 
   getProducto(id: number) {
     this.ProductosService.get(id).subscribe(
@@ -248,7 +250,7 @@ export class ProductosComponent implements OnInit {
   getCategorias() {
     this.CategoriasService.getAll().subscribe(
       response => {
-        this.categorias = response.data.filter( (categoria: any) => categoria.estado === 'Activo');
+        this.categorias = response.data.filter((categoria: any) => categoria.estado === 'Activo');
       }
     );
   }
@@ -256,7 +258,7 @@ export class ProductosComponent implements OnInit {
   getMarcas() {
     this.MarcasService.getAll().subscribe(
       response => {
-        this.marcas = response.data.filter( (marca: any) => marca.estado === 'Activo');
+        this.marcas = response.data.filter((marca: any) => marca.estado === 'Activo');
       }
     );
   }
@@ -264,7 +266,7 @@ export class ProductosComponent implements OnInit {
   getLineas() {
     this.LineasService.getAll().subscribe(
       response => {
-        this.lineas = response.data.filter( (linea: any) => linea.estado === 'Activo');
+        this.lineas = response.data.filter((linea: any) => linea.estado === 'Activo');
       }
     );
   }
@@ -272,7 +274,7 @@ export class ProductosComponent implements OnInit {
   getProveedores() {
     this.ProveedoresService.getAll().subscribe(
       response => {
-        this.proveedores = response.data.filter( (proveedor: any) => proveedor.estado === 'Activo');
+        this.proveedores = response.data.filter((proveedor: any) => proveedor.estado === 'Activo');
       }
     );
   }
@@ -280,7 +282,7 @@ export class ProductosComponent implements OnInit {
   getTiposMedicion() {
     this.TiposMedicion.getTiposMedicion().subscribe(
       response => {
-        this.tiposMedicion = response.data.filter( (tipo: any) => tipo.estado === 'Activo');
+        this.tiposMedicion = response.data.filter((tipo: any) => tipo.estado === 'Activo');
       }
     );
   }
@@ -288,7 +290,7 @@ export class ProductosComponent implements OnInit {
   getTiposIva() {
     this.TiposIva.getTiposIva().subscribe(
       response => {
-        this.tiposIva = response.data.filter( (tipo: any) => tipo.estado === 'Activo');
+        this.tiposIva = response.data.filter((tipo: any) => tipo.estado === 'Activo');
       }
     );
   }
@@ -394,24 +396,24 @@ export class ProductosComponent implements OnInit {
 
   //Search
   Search() {
-    this.productosFilter = this.productos.filter((producto: { 
-      codigo: string, 
-      descripcion: string, 
+    this.productosFilter = this.productos.filter((producto: {
+      codigo: string,
+      descripcion: string,
       nombreCategoria: string,
       nombreMarca: string,
       nombreLinea: string,
       proveedor: string,
-      estado: string 
+      estado: string
     }) => {
       let filter = true;
       if (this.search) {
-        filter = producto.codigo?.toLowerCase().includes(this.search.toLowerCase()) || 
-        producto.descripcion?.toLowerCase().includes(this.search.toLowerCase()) || 
-        producto.nombreCategoria?.toLowerCase().includes(this.search.toLowerCase()) || 
-        producto.nombreMarca?.toLowerCase().includes(this.search.toLowerCase()) || 
-        producto.nombreMarca?.toLowerCase().includes(this.search.toLowerCase()) || 
-        producto.proveedor?.toLowerCase().includes(this.search.toLowerCase()) || 
-        producto.estado?.toLowerCase().startsWith(this.search.toLowerCase());
+        filter = producto.codigo?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.descripcion?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.nombreCategoria?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.nombreMarca?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.nombreMarca?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.proveedor?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.estado?.toLowerCase().startsWith(this.search.toLowerCase());
       }
       return filter;
     });
@@ -424,6 +426,84 @@ export class ProductosComponent implements OnInit {
     let msg;
     endIndex === 0 ? msg = 'No hay registros.' : msg = `Mostrando registros del ${startIndex} al ${endIndex}`;
     return msg;
+  }
+
+  generateBarCode() {
+    Swal.fire({
+      title: '<strong>¿Cuántos códigos de barras deseas generar?</strong>',
+      html: `
+          <input type="number" id="input-number" class="form-control" placeholder="Cantidad de códigos">
+          <div class="mt-4" style="display: flex; align-items: center; justify-content: start; width: 100%;">
+            <label for="existing-code-checkbox">
+              <input type="checkbox" id="existing-code-checkbox" style="margin-right: 5px;">
+              Ya tengo un código de barras
+            </label>
+          </div>
+          <input type="text" id="existing-code-input" class="form-control" placeholder="Ingrese código existente" 
+            style="display: none; align-items: center; justify-content: start;">
+        `,
+      showCancelButton: true,
+      confirmButtonText: 'Generar',
+      cancelButtonText: 'Cancelar',
+      didOpen: () => {
+        const checkbox = document.getElementById('existing-code-checkbox') as HTMLInputElement;
+        const existingCodeInput = document.getElementById('existing-code-input') as HTMLInputElement;
+
+        // Mostrar/ocultar el campo para el código existente al marcar el checkbox
+        checkbox.addEventListener('change', (event) => {
+          existingCodeInput.style.display = checkbox.checked ? 'block' : 'none';
+        });
+      },
+      preConfirm: () => {
+        const inputValue = (document.getElementById('input-number') as HTMLInputElement).value;
+        const existingCodeChecked = (document.getElementById('existing-code-checkbox') as HTMLInputElement).checked;
+        const existingCodeValue = (document.getElementById('existing-code-input') as HTMLInputElement).value;
+
+        // Validaciones de entrada
+        if (!inputValue || isNaN(Number(inputValue)) || Number(inputValue) <= 0) {
+          Swal.showValidationMessage('Debe ingresar un número mayor que 0');
+          return;
+        }
+        if (existingCodeChecked && !existingCodeValue) {
+          Swal.showValidationMessage('Debe ingresar el código de barras existente');
+          return;
+        }
+
+        return { quantity: Number(inputValue), useExistingCode: existingCodeChecked, existingCode: existingCodeValue };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const { quantity, useExistingCode, existingCode } = result.value;
+
+        const barcodesData = [];
+        for (let i = 0; i < quantity; i++) {
+          const barcodeCode = useExistingCode ? existingCode : this.generateUniqueRandomCode();
+          const barcodeBase64 = this.generateBarcodeImage(barcodeCode);
+
+          // Añadir a la lista de datos del PDF
+          barcodesData.push({ image: barcodeBase64, width: 140, height: 50, margin: [0, 10, 0, 0] });
+        }
+
+        // Crear documento PDF y mostrar para imprimir
+        const docDefinition: any = {
+          pageSize: { width: 156, height: 'auto' },
+          pageMargins: [8, 8, 8, 8],
+          content: barcodesData
+        };
+
+        pdfMake.createPdf(docDefinition).print();
+      }
+    });
+  }
+
+  generateUniqueRandomCode(): string {
+    return Math.floor(100000000000 + Math.random() * 900000000000).toString();
+  }
+
+  generateBarcodeImage(code: string): string {
+    const canvas = document.createElement('canvas');
+    JsBarcode(canvas, code, { format: 'CODE128', lineColor: '#000', width: 2, height: 50, displayValue: true });
+    return canvas.toDataURL('image/png');
   }
 
 }

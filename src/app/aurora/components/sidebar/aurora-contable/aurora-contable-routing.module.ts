@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ConfirmNavigationGuard } from 'src/app/aurora/guards/confirm-navigation.guard';
+
 import { BaseComponent } from 'src/app/aurora/base/base.component';
 import { VenderComponent } from './tienda/vender/vender.component';
 import { ComprarComponent } from './tienda/comprar/comprar.component';
@@ -19,17 +21,19 @@ import { ProductosComponent } from './gestion/productos/productos.component';
 import { PerfilComponent } from './configuracion/facturacion/perfil/perfil.component';
 import { EstablecimientosComponent } from './configuracion/facturacion/establecimientos/establecimientos.component';
 import { PuntosDeEmisionComponent } from './configuracion/facturacion/puntos-de-emision/puntos-de-emision.component';
+import { FacturasComponent } from './reportes/facturas/facturas/facturas.component';
+import { MovimientosComponent } from './contabilidad/movimientos/movimientos.component';
 
 const routes: Routes = [
   {
     path: 'tienda', component: BaseComponent, 
     children: [
-      { path: 'vender', component: VenderComponent },
+      { path: 'vender', component: VenderComponent, canDeactivate: [ConfirmNavigationGuard] },
       { path: 'comprar', component: ComprarComponent },
     ]
   },
   {
-    path: 'movimientos', component: BaseComponent, 
+    path: 'inventario', component: BaseComponent, 
     children: [
       { path: 'ingresos', component: IngresosComponent },
       { path: 'egresos', component: EgresosComponent },
@@ -41,6 +45,7 @@ const routes: Routes = [
       { path: 'abonos', component: AbonosComponent },
       { path: 'cuentas-por-cobrar', component: CuentasPorCobrarComponent },
       { path: 'cuentas-por-pagar', component: CuentasPorPagarComponent },
+      { path: 'movimientos', component: MovimientosComponent },
     ]
   },
   {
@@ -48,6 +53,7 @@ const routes: Routes = [
     children: [
       { path: 'contable', component: ContableComponent },
       { path: 'stock', component: StockComponent },
+      { path: 'facturas', component: FacturasComponent },
     ]
   },
   {
