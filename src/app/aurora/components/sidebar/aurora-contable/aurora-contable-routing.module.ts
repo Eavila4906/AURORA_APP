@@ -23,6 +23,7 @@ import { EstablecimientosComponent } from './configuracion/facturacion/estableci
 import { PuntosDeEmisionComponent } from './configuracion/facturacion/puntos-de-emision/puntos-de-emision.component';
 import { FacturasComponent } from './reportes/facturas/facturas/facturas.component';
 import { MovimientosComponent } from './contabilidad/movimientos/movimientos.component';
+import { SistemaComponent } from './configuracion/sistema/sistema.component';
 
 const routes: Routes = [
   {
@@ -75,8 +76,9 @@ const routes: Routes = [
           { path: 'perfil', component: PerfilComponent },
           { path: 'establecimientos', component: EstablecimientosComponent },
           { path: 'puntos-de-emision', component: PuntosDeEmisionComponent },
-        ] 
-      }
+        ]
+      },
+      { path: 'sistema', component: SistemaComponent }
     ]
   },
 ];

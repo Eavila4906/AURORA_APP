@@ -121,6 +121,7 @@
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
+                                                    <th scope="col">Código</th>
                                                     <th scope="col">Producto</th>
                                                     <th scope="col">Cantidad</th>
                                                     <th scope="col">Acción</th>
@@ -128,9 +129,10 @@
                                             </thead>
                                             <tbody>
                                                 <tr *ngFor="let producto of productosSelected; let i = index">
+                                                    <td>{{producto.id}}</td>
                                                     <td>{{producto.descripcion}}</td>
                                                     <td>
-                                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
+                                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.producto_id">
                                                         <div class="col-md-6">
                                                             <input class="form-control" name="cantidad{{i}}" [(ngModel)]="producto.cantidad" type="number">
                                                         </div>
@@ -239,6 +241,7 @@
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
+                                                    <th scope="col">Código</th>
                                                     <th scope="col">Producto</th>
                                                     <th scope="col">Cantidad</th>
                                                     <th scope="col">Acción</th>
@@ -246,16 +249,17 @@
                                             </thead>
                                             <tbody>
                                                 <tr *ngFor="let producto of productosSelected; let i = index">
+                                                    <td>{{producto.producto_id ? producto.producto_id : producto.id}}</td>
                                                     <td>{{producto.descripcion}}</td>
                                                     <td>
-                                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
+                                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.producto_id">
                                                         <div class="col-md-6">
                                                             <input class="form-control" name="cantidad{{i}}" [(ngModel)]="producto.cantidad" type="number">
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <button class="btn btn-danger btn-sm" role="button" 
-                                                            (click)="deleteProducto(i)" title="Eliminar">
+                                                            (click)="deleteProducto(i, producto.id)" title="Eliminar">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </td>

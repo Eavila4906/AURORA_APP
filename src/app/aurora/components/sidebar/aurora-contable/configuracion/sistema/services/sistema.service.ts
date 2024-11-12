@@ -8,25 +8,21 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 @Injectable({
   providedIn: 'root'
 })
-export class MovimientosService {
+export class SistemaService {
+  codigoEmpresa: any = localStorage.getItem('empresa');
 
   constructor(
     private AuthService: AuthService, 
     private http: HttpClient
   ) { }
 
-  getAll() {
-    const url = this.AuthService.AuroraApiContable + '/inventarios';
-    return this.http.get<any>(url);
-  }
-
-  get(id: number) {
-    const url = this.AuthService.AuroraApiContable + '/inventario/'+id;
+  get() {
+    const url = this.AuthService.AuroraApiContable + '/config/sistema/'+this.codigoEmpresa;
     return this.http.get<any>(url);
   }
 
   create(data: any) {
-    const url = this.AuthService.AuroraApiContable + '/inventario/create';
+    const url = this.AuthService.AuroraApiContable + '/config/sistema/create';
     return this.http.post<any>(url, data).pipe(
       catchError(error => {
         return throwError(error.error.message);
@@ -35,7 +31,7 @@ export class MovimientosService {
   }
 
   edit(data: any) {
-    const url = this.AuthService.AuroraApiContable + `/inventario/edit/${data.data.id}`;
+    const url = this.AuthService.AuroraApiContable + `/config/sistema/edit/${this.codigoEmpresa}`;
     return this.http.put<any>(url, data).pipe(
       catchError(error => {
         return throwError(error.error.message);
@@ -43,8 +39,8 @@ export class MovimientosService {
     );
   }
 
-  delete(id: number) {
-    const url = this.AuthService.AuroraApiContable + `/inventario/delete/${id}`;
+  delete() {
+    const url = this.AuthService.AuroraApiContable + `/config/sistema/delete/${this.codigoEmpresa}`;
     return this.http.delete<any>(url).pipe(
       catchError(error => {
         return throwError(error.error.message);
@@ -52,13 +48,4 @@ export class MovimientosService {
     );
   }
 
-  deleteProducto(id: number) {
-    const url = this.AuthService.AuroraApiContable + `/inventario/delete/producto/${id}`;
-    return this.http.delete<any>(url).pipe(
-      catchError(error => {
-        return throwError(error.error.message);
-      })
-    );
-  }
-  
 }
