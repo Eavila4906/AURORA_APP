@@ -136,7 +136,6 @@ export class PerfilComponent implements OnInit {
     } else {
       this.edit();
     }
-    console.log(this.fileSelected);
     if (this.fileSelected) {
       this.subirLogo();
     }

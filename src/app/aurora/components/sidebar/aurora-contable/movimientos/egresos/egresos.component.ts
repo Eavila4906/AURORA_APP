@@ -34,16 +34,16 @@ export class EgresosComponent implements OnInit {
   egresos: any[] = [];
   id: number = 0;
   movimiento_id: number = 0;
-  fecha: string = '';
+  fecha: string = new Date().toISOString().slice(0, 10);;
   observacion: string = '';
   estado: string = 'Activo';
 
   productos: any[] = [];
-  productosSelected: { id: number; descripcion: string, cantidad: 0 }[] = [];
+  productosSelected: { id: number, producto_id?: number, descripcion: string, cantidad: 0 }[] = [];
 
   newIngreso: Egreso = {
     movimiento_id: 2,
-    fecha: '',
+    fecha: new Date().toISOString().slice(0, 10),
     observacion: ''
   };
 
@@ -58,13 +58,13 @@ export class EgresosComponent implements OnInit {
 
   resetForm() {
     this.newIngreso.movimiento_id = 2;
-    this.newIngreso.fecha = '';
+    this.newIngreso.fecha = new Date().toISOString().slice(0, 10);
     this.newIngreso.observacion = '';
     this.productosSelected = [],
 
-      this.id = 0;
+    this.id = 0;
     this.movimiento_id = 0;
-    this.fecha = '';
+    this.fecha = new Date().toISOString().slice(0, 10);
     this.observacion = '';
     this.estado = 'Activo';
   }
@@ -132,7 +132,12 @@ export class EgresosComponent implements OnInit {
         this.fecha = response.data.fecha;
         this.observacion = response.data.observacion;
         this.productosSelected = response.data.productos.map( (producto: any) => { 
-          return { id: producto.producto_id, descripcion: producto.descripcion, cantidad: producto.cantidad } 
+          return { 
+            id: producto.id,
+            producto_id: producto.producto_id, 
+            descripcion: producto.descripcion, 
+            cantidad: producto.cantidad 
+          } 
         });
       }
     );
@@ -156,7 +161,10 @@ export class EgresosComponent implements OnInit {
           observacion: this.newIngreso.observacion
         },
         productos: this.productosSelected.map(producto => { 
-          return { producto_id: producto.id, cantidad: producto.cantidad } 
+          return { 
+            producto_id: producto.producto_id ? producto.producto_id : producto.id, 
+            cantidad: producto.cantidad 
+          } 
         }),
         auditoria: this.AppService.getDataAuditoria('create')
       }
@@ -184,7 +192,10 @@ export class EgresosComponent implements OnInit {
           observacion: this.observacion
         },
         productos: this.productosSelected.map(producto => { 
-          return { producto_id: producto.id, cantidad: producto.cantidad } 
+          return {
+            producto_id: producto.producto_id ? producto.producto_id : producto.id, 
+            cantidad: producto.cantidad 
+          }
         }),
         auditoria: this.AppService.getDataAuditoria('edit')
       }
@@ -264,7 +275,7 @@ export class EgresosComponent implements OnInit {
     this.productosSelected.push({ id: item.id, descripcion: item.descripcion, cantidad: 0 });
   }
 
-  public deleteProducto(index: number) {
+  public deleteProducto(index: number, idProducto?: number) {
     Swal.fire({
       icon: 'warning',
       title: '<strong>¿Esta seguro que desea eliminar este registro?</strong>',
@@ -274,6 +285,16 @@ export class EgresosComponent implements OnInit {
       cancelButtonText: 'No, cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
+        if (idProducto) {
+          this.EgresosService.deleteProducto(idProducto).subscribe(
+            response => {
+              if (response.data) {
+                this.toastr.success(response.message, '¡Listo!', {closeButton: true});
+              }
+            }
+          );
+        }
+
         this.productosSelected.splice(index, 1)
       }
     })

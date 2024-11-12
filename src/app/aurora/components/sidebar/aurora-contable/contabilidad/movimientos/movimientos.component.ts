@@ -34,14 +34,14 @@ export class MovimientosComponent implements OnInit {
 
   movimientos: any[] = [];
   id: number = 0;
-  tipo: string = 'Seleccionar';
+  tipo: string = '';
   monto: number = 0;
   fecha: string = new Date().toISOString().slice(0, 10);
   descripcion: string = '';
   estado: string = 'Activo';
 
   newMovimiento: Movimiento = {
-    tipo: 'Seleccionar',
+    tipo: '',
     monto: 0,
     fecha: new Date().toISOString().slice(0, 10),
     descripcion: ''
@@ -56,7 +56,7 @@ export class MovimientosComponent implements OnInit {
   recordPerPage = 5;
 
   resetForm() {
-    this.newMovimiento.tipo = 'Seleccionar';
+    this.newMovimiento.tipo = '';
     this.newMovimiento.monto = 0;
     this.newMovimiento.fecha = '';
     this.newMovimiento.descripcion = '';

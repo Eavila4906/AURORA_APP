@@ -1,0 +1,42 @@
+<section *ngIf="permission_read" class="me-3">
+    <div class="container card">
+        <div class="row justify-content-center">
+            <div class="col-md-6 card-body">
+                <div class="mb-3">
+                    <h1 class="h3 d-inline align-middle">Configuraciones del sistema</h1>
+                    <button class="btn btn-info text-white ms-2" title="Guardar"
+                        *ngIf="permission_create && permission_update" (click)="save()">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-6">
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="emisor" class="form-label">Ventas sincronizadas con el stock</label>
+                                        <select name="ventaSincronizadaStock" class="form-control" 
+                                            [(ngModel)]="ventaSincronizadaStock">
+                                            <option value="SI">Si</option>
+                                            <option value="NO">No</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div *ngIf="permission_read == false">
+    <div class="alert alert-danger" role="alert">
+        Access denied! You do not have the necessary permissions to view this module.
+    </div>
+</div>

@@ -70,6 +70,7 @@ import { StockComponent as StockComponentAuroraContable } from './components/sid
 import { PerfilComponent } from './components/sidebar/aurora-contable/configuracion/facturacion/perfil/perfil.component';
 import { FacturasComponent } from './components/sidebar/aurora-contable/reportes/facturas/facturas/facturas.component';
 import { MovimientosComponent } from './components/sidebar/aurora-contable/contabilidad/movimientos/movimientos.component';
+import { SistemaComponent } from './components/sidebar/aurora-contable/configuracion/sistema/sistema.component';
 
 @NgModule({
   providers: [
@@ -127,7 +128,8 @@ import { MovimientosComponent } from './components/sidebar/aurora-contable/conta
     PerfilComponent,
     SpinnerComponentComponent,
     FacturasComponent,
-    MovimientosComponent
+    MovimientosComponent,
+    SistemaComponent
   ],
   imports: [
     BrowserModule,
