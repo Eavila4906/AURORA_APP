@@ -88,4 +88,13 @@ export class UsuariosService {
     );
   }
 
+  passwordChange(data: any) {
+    const url = this.AuthService.AuroraApiCore + '/user/password_change';
+    return this.http.post<any>(url, data).pipe(
+      catchError(error => {
+        return throwError(error.error.message);
+      })
+    );
+  }
+
 }

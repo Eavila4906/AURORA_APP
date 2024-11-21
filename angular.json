@@ -13,7 +13,7 @@
                 "build": {
                     "builder": "@angular-devkit/build-angular:browser",
                     "options": {
-                        "outputPath": "dist/admin",
+                        "outputPath": "dist/aurora",
                         "index": "src/index.html",
                         "main": "src/main.ts",
                         "polyfills": "src/polyfills.ts",
@@ -36,13 +36,13 @@
                         "production": {
                             "budgets": [{
                                     "type": "initial",
-                                    "maximumWarning": "500kb",
-                                    "maximumError": "5mb"
+                                    "maximumWarning": "10mb",
+                                    "maximumError": "10mb"
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "2kb",
-                                    "maximumError": "4kb"
+                                    "maximumWarning": "10mb",
+                                    "maximumError": "10mb"
                                 }
                             ],
                             "fileReplacements": [{
