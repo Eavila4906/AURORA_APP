@@ -87,7 +87,7 @@ export class ComprarComponent implements OnInit {
   showDataHead: boolean = false;
 
   perfil_id: number = 0;
-  fechaEmision: string = new Date().toISOString().slice(0, 10);
+  fechaEmision: string = this.AppService.getTimeZoneCurrentDate();
   puntoEmision_id: number = 0;
   facturaComercialNegociable: string = 'NO';
   receptor_id: number = 0;
