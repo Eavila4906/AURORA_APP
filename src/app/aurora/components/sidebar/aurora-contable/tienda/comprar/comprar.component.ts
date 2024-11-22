@@ -728,7 +728,7 @@ export class ComprarComponent implements OnInit {
       let filter = true;
       if (this.searchProveedores) {
         filter = proveedor.proveedor.toLowerCase().includes(this.searchProveedores.toLowerCase()) ||
-          proveedor.numeroIdentificacion.toLowerCase().includes(this.searchProveedores.toLowerCase());
+          proveedor.numeroIdentificacion?.toLowerCase().includes(this.searchProveedores.toLowerCase());
       }
       return filter;
     });
