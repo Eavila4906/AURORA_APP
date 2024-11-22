@@ -29,8 +29,8 @@ export class CuentasPorCobrarComponent implements OnInit {
 
   loading = true;
 
-  fechaInicio: string = new Date().toISOString().slice(0, 10);
-  fechaFin: string = new Date().toISOString().slice(0, 10);
+  fechaInicio: string = this.AppService.getTimeZoneCurrentDate();
+  fechaFin: string = this.AppService.getTimeZoneCurrentDate();
 
   cabFactura_id: number = 0;
   dataPrintComprobante: any;
@@ -38,7 +38,7 @@ export class CuentasPorCobrarComponent implements OnInit {
   newAbono: Abono = {
     cabFactura_id: 0,
     monto: 0,
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: this.AppService.getTimeZoneCurrentDate(),
     descripcion: ''
   };
 

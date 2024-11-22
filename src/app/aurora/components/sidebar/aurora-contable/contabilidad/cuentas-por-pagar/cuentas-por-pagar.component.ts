@@ -31,15 +31,15 @@ export class CuentasPorPagarComponent implements OnInit {
 
   loading = true;
 
-  fechaInicio: string = new Date().toISOString().slice(0, 10);
-  fechaFin: string = new Date().toISOString().slice(0, 10);
+  fechaInicio: string = this.AppService.getTimeZoneCurrentDate();
+  fechaFin: string = this.AppService.getTimeZoneCurrentDate();
 
   cabFactura_id: number = 0;
 
   newAbono: Abono = {
     cabFactura_id: 0,
     monto: 0,
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: this.AppService.getTimeZoneCurrentDate(),
     descripcion: ''
   };
 

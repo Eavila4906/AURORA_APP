@@ -36,14 +36,14 @@ export class MovimientosComponent implements OnInit {
   id: number = 0;
   tipo: string = '';
   monto: number = 0;
-  fecha: string = new Date().toISOString().slice(0, 10);
+  fecha: string = this.AppService.getTimeZoneCurrentDate();
   descripcion: string = '';
   estado: string = 'Activo';
 
   newMovimiento: Movimiento = {
     tipo: '',
     monto: 0,
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: this.AppService.getTimeZoneCurrentDate(),
     descripcion: ''
   };
 
@@ -64,7 +64,7 @@ export class MovimientosComponent implements OnInit {
     this.id = 0;
     this.tipo = '0';
     this.monto = 0;
-    this.fecha = new Date().toISOString().slice(0, 10);
+    this.fecha = this.AppService.getTimeZoneCurrentDate();
     this.descripcion = '';
   }
 

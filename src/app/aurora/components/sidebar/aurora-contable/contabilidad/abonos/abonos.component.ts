@@ -35,14 +35,14 @@ export class AbonosComponent implements OnInit {
   id: number = 0;
   cabFactura_id: number = 0;
   monto: number = 0;
-  fecha: string = new Date().toISOString().slice(0, 10);
+  fecha: string = this.AppService.getTimeZoneCurrentDate();
   descripcion: string = '';
   estado: string = 'Activo';
 
   newAbono: Abono = {
     cabFactura_id: 0,
     monto: 0,
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: this.AppService.getTimeZoneCurrentDate(),
     descripcion: ''
   };
 
@@ -63,7 +63,7 @@ export class AbonosComponent implements OnInit {
     this.id = 0;
     this.cabFactura_id = 0;
     this.monto = 0;
-    this.fecha = new Date().toISOString().slice(0, 10);
+    this.fecha = this.AppService.getTimeZoneCurrentDate();
     this.descripcion = '';
   }
 

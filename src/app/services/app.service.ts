@@ -305,4 +305,15 @@ export class AppService {
     return num.toString().padStart(length, '0');
   }
 
+  getTimeZoneCurrentDate() {
+    // Obtener la fecha y hora en UTC
+    const utcDate = new Date();
+
+    // Ajustar la fecha restando 5 horas para la zona horaria de Guayaquil (UTC -5)
+    utcDate.setHours(utcDate.getHours() - 5);
+
+    // Convertir la fecha ajustada a formato YYYY-MM-DD
+    return utcDate.toISOString().slice(0, 10);
+  }
+
 }

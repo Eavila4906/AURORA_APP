@@ -20,8 +20,8 @@ export class ContableComponent implements OnInit {
   permission_update: boolean = true;
   permission_delete: boolean = true;
 
-  fechaInicio: string = new Date().toISOString().slice(0, 10);
-  fechaFin: string = new Date().toISOString().slice(0, 10);
+  fechaInicio: string = this.AppService.getTimeZoneCurrentDate();
+  fechaFin: string = this.AppService.getTimeZoneCurrentDate();
   tipoOp: string = 'Dia';
 
   rango: string = '';
@@ -66,8 +66,8 @@ export class ContableComponent implements OnInit {
   reportes: boolean = false;
 
   resetForm() {
-    this.fechaInicio = new Date().toISOString().slice(0, 10);
-    this.fechaFin = new Date().toISOString().slice(0, 10);
+    this.fechaInicio = this.AppService.getTimeZoneCurrentDate();
+    this.fechaFin = this.AppService.getTimeZoneCurrentDate();
     this.tipoOp = 'Dia';
 
     this.reportes = false;

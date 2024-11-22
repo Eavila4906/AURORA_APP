@@ -34,7 +34,7 @@ export class IngresosComponent implements OnInit {
   ingresos: any[] = [];
   id: number = 0;
   movimiento_id: number = 0;
-  fecha: string = new Date().toISOString().slice(0, 10);
+  fecha: string = this.AppService.getTimeZoneCurrentDate();
   observacion: string = '';
   estado: string = 'Activo';
 
@@ -43,7 +43,7 @@ export class IngresosComponent implements OnInit {
 
   newIngreso: Ingreso = {
     movimiento_id: 1,
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: this.AppService.getTimeZoneCurrentDate(),
     observacion: ''
   };
 
@@ -58,13 +58,13 @@ export class IngresosComponent implements OnInit {
 
   resetForm() {
     this.newIngreso.movimiento_id = 1;
-    this.newIngreso.fecha = new Date().toISOString().slice(0, 10);
+    this.newIngreso.fecha = this.AppService.getTimeZoneCurrentDate();
     this.newIngreso.observacion = '';
     this.productosSelected = [],
 
     this.id = 0;
     this.movimiento_id = 0;
-    this.fecha = new Date().toISOString().slice(0, 10);
+    this.fecha = this.AppService.getTimeZoneCurrentDate();
     this.observacion = '';
     this.estado = 'Activo';
   }
