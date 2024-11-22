@@ -728,8 +728,8 @@ export class VenderComponent implements OnInit {
       let filter = true;
       if (this.searchClientes) {
         filter = cliente.nombres.toLowerCase().includes(this.searchClientes.toLowerCase()) ||
-          cliente.apellidos.toLowerCase().includes(this.searchClientes.toLowerCase()) ||
-          cliente.numeroIdentificacion.toLowerCase().includes(this.searchClientes.toLowerCase());
+          cliente.apellidos?.toLowerCase().includes(this.searchClientes.toLowerCase()) ||
+          cliente.numeroIdentificacion?.toLowerCase().includes(this.searchClientes.toLowerCase());
       }
       return filter;
     });
