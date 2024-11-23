@@ -41,6 +41,7 @@ export class FacturasComponent implements OnInit {
   loading = true;
 
   id: number = 0;
+  codigoFactura: string = '';
   tipoFactura: string = '';
   fechaEmision: string = '';
   puntoEmision_id: number = 0;
@@ -134,6 +135,7 @@ export class FacturasComponent implements OnInit {
     this.FacturasService.get(id).subscribe(
       response => {
         this.id = response.data.id;
+        this.codigoFactura = response.data.codigoFactura;
         this.tipoFactura = response.data.tipoFactura;
         this.fechaEmision = response.data.fechaEmision;
         this.facturaComercialNegociable = response.data.facturaComercialNegociable;
@@ -163,7 +165,7 @@ export class FacturasComponent implements OnInit {
   //Search
   Search() {
     this.facturasFilter = this.facturas.filter((factura: {
-      //id: string,
+      codigoFactura: string,
       tipoFactura: string,
       fechaEmision: string,
       emisor: { nombres: string },
@@ -172,7 +174,7 @@ export class FacturasComponent implements OnInit {
     }) => {
       let filter = true;
       if (this.search) {
-        filter = //factura.id?.toLowerCase().includes(this.search.toLowerCase()) ||
+        filter = factura.codigoFactura?.toLowerCase().includes(this.search.toLowerCase()) ||
           factura.tipoFactura?.toLowerCase().includes(this.search.toLowerCase()) ||
           factura.fechaEmision?.toLowerCase().includes(this.search.toLowerCase()) ||
           factura.emisor.nombres?.toLowerCase().includes(this.search.toLowerCase()) ||
@@ -196,8 +198,7 @@ export class FacturasComponent implements OnInit {
   printFactura(op: number) {
     const docDefinition: any = {
       content: [
-        { text: `Factura de ${this.tipoFactura} #${this.id}`, style: 'header', alignment: 'center' },
-        { text: `Estado: ${this.estado}`, alignment: 'center', margin: [0, 0, 0, 20] },
+        { text: `Factura de ${this.tipoFactura}`, style: 'header', alignment: 'center' },
 
         // Información del Emisor y Receptor
         {
@@ -234,7 +235,9 @@ export class FacturasComponent implements OnInit {
               width: '50%',
               stack: [
                 { text: 'Detalles de Factura', style: 'subheader' },
+                { text: `Código: ${this.codigoFactura}` },
                 { text: `Fecha de Emisión: ${this.fechaEmision}` },
+                { text: `Estado: ${this.estado}` },
                 { text: `Factura Comercial Negociable: ${this.facturaComercialNegociable}` },
               ]
             },

@@ -391,7 +391,7 @@ export class ComprarComponent implements OnInit {
             cancelButtonText: 'No, cancelar'
           }).then((result) => {
             if (result.isConfirmed) {
-              this.comprobante(data, response.data.cabecera.id);
+              this.comprobante(data, response.data.cabecera.codigoFactura);
             }
           })
         }
@@ -755,10 +755,10 @@ export class ComprarComponent implements OnInit {
         '***************************',
         { text: `COMPROBANTE DE PAGO`, style: 'header', alignment: 'center' },
         { text: `${data.data.cabecera.perfil}`, style: 'titleEmpresa', alignment: 'center' },
-        { text: `${this.AppService.padNumber(codigo)}`, style: 'info', alignment: 'center' },
+        { text: `${codigo}`, style: 'info', alignment: 'center' },
         '------------------------------------------',
         { text: `Proveedor: ${data.data.cabecera.receptor}`, style: 'dataProveedor' },
-        { text: `RUC/Ced/Pass: ${data.data.cabecera.numeroIdentificacion}`, style: 'dataProveedor' },
+        { text: `RUC/Ced/Pass: ${!data.data.cabecera.numeroIdentificacion ? '0000000009' : data.data.cabecera.numeroIdentificacion}`, style: 'dataProveedor' },
         '***************************',
         {
           table: {

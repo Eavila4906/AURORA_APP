@@ -154,7 +154,7 @@ export class CuentasPorPagarComponent implements OnInit {
                 cancelButtonText: 'No, cancelar'
               }).then((result) => {
                 if (result.isConfirmed) {
-                  this.comprobante(dataCuenta, null, 1);
+                  this.comprobante(dataCuenta, response.data.factura, 1);
                 }
               });
             }
@@ -329,7 +329,7 @@ export class CuentasPorPagarComponent implements OnInit {
         '***************************',
         { text: `COMPROBANTE DE ${tipoComprobante}`, style: 'header', alignment: 'center' },
         '------------------------------------------',
-        { text: `Código: ${this.AppService.padNumber(data.id)}`, style: 'info'},
+        { text: `Código: ${dataAbono.codigoFactura}`, style: 'info'},
         { text: `Proveedor: ${data.receptor.nombres}`, style: 'dataCliente' },
         { text: `RUC/Ced/Pass: ${data.receptor.numeroIdentificacion}`, style: 'dataCliente' },
         '***************************',
