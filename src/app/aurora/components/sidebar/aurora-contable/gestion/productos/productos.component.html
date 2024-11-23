@@ -6,8 +6,8 @@
             Registrar
             <i class="fas fa-box"></i>
         </button>
-        <button class="btn btn-info text-white ms-2" title="Generar código de barras" 
-            (click)="generateBarCode()" *ngIf="permission_create">
+        <button class="btn btn-info text-white ms-2" title="Generar código de barras" (click)="generateBarCode()"
+            *ngIf="permission_create">
             Generar
             <i class="fas fa-barcode"></i>
         </button>
@@ -53,7 +53,7 @@
                             </thead>
                             <app-spinner-component *ngIf="loading"></app-spinner-component>
                             <tbody>
-                                <tr 
+                                <tr
                                     *ngFor="let producto of productosFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
                                     <td>{{ i + 1 }}</td>
                                     <td>{{ producto.codigo }}</td>
@@ -77,6 +77,10 @@
                                         <button class="ms-1 btn btn-info btn-sm" title="Ver"
                                             (click)="openModalSee(producto.id)" *ngIf="permission_read">
                                             <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Imprimir código de barra"
+                                            (click)="printBarCode(producto.codigo)" *ngIf="permission_read">
+                                            <i class="fas fa-barcode"></i>
                                         </button>
                                         <button class="ms-1 btn btn-info btn-sm" title="Editar"
                                             (click)="openModalEdit(producto.id)" *ngIf="permission_update">
@@ -117,37 +121,91 @@
                 </div>
 
                 <div class="modal-body">
-                    <form id="form-CreateRol" class="form-horizontal" (submit)="create()">
+                    <form class="form-horizontal">
                         <p class="text-success">
                             Los campos con asterisco (<span class="required">*</span>) son obligatorios.
                         </p>
+                        <span *ngIf="barCodeNewProducto">
+                            <span *ngIf="barCodeNewProducto">
+                                <span>
+                                    <i class="fas fa-barcode text-success"
+                                        title="Ya hay un código de barras"></i>
+                                </span>
+                            </span>
+                            <span *ngIf="!barCodeNewProducto" (click)="barCodeGenerateInput()">
+                                <span>
+                                    <i class="ms-2 fas fa-barcode text-muted"
+                                        title="Generar código de barras"></i>
+                                </span>
+                            </span>
+                            <span *ngIf="barCodeNewProducto" (click)="resetBarCodeInput()"
+                                class="ms-2">
+                                <i class="fas fa-times text-danger"
+                                    title="Eliminar código de barras"></i>
+                            </span>
+                            <span *ngIf="!barCodeNewProducto" class="ms-2">
+                                <i class="fas fa-times text-muted"></i>
+                            </span>
+                        </span>
 
                         <div class="row">
                             <div class="col-12">
                                 <div class="row">
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
-                                            <label>Código *</label>
-                                            <input class="form-control " type="text" 
-                                            name="codigo" 
-                                            [(ngModel)]="newProducto.codigo">
+                                            <label *ngIf="!barCodeNewProducto">
+                                                Código *
+                                                <span *ngIf="!barCodeNewProducto">
+                                                    <span *ngIf="barCodeNewProducto">
+                                                        <span>
+                                                            <i class="fas fa-barcode text-success"
+                                                                title="Ya hay un código de barras"></i>
+                                                        </span>
+                                                    </span>
+                                                    <span *ngIf="!barCodeNewProducto" (click)="barCodeGenerateInput()">
+                                                        <span>
+                                                            <i class="ms-2 fas fa-barcode text-muted"
+                                                                title="Generar código de barras"></i>
+                                                        </span>
+                                                    </span>
+                                                    <span *ngIf="newProducto.codigo" (click)="resetBarCodeInput()"
+                                                        class="ms-2">
+                                                        <i class="fas fa-times text-danger"
+                                                            title="Eliminar código de barras"></i>
+                                                    </span>
+                                                    <span *ngIf="!newProducto.codigo" class="ms-2">
+                                                        <i class="fas fa-times text-muted"></i>
+                                                    </span>
+                                                </span>
+                                            </label>
+                                            <input *ngIf="!barCodeNewProducto" class="form-control " type="text" name="codigo"
+                                                [(ngModel)]="newProducto.codigo">
+
+                                            <table *ngIf="barCodeNewProducto" class="table-bordered"
+                                                style="width: 100%; border-collapse: collapse;">
+                                                <tr>
+                                                    <td
+                                                        style="text-align: center; padding: 10px; border: 1px solid #ccc;">
+                                                        <img [src]="barCodeImageNewProducto" [title]="'Código: ' + barCodeNewProducto + newProducto.codigo"
+                                                            alt="Código de barras">
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </div>
                                     </div>
                                     <div class="col-lg-8 col-sm-8">
                                         <div class="mb-3">
                                             <label>Descripción</label>
-                                            <textarea class="form-control" name="descripcion" 
-                                                [(ngModel)]="newProducto.descripcion"
-                                                rows="1" required>
+                                            <textarea class="form-control" name="descripcion"
+                                                [(ngModel)]="newProducto.descripcion" rows="1" required>
                                             </textarea>
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Categoría *</label>
-                                            <select class="form-control" name="categoria_id" 
-                                                [(ngModel)]="newProducto.categoria_id"
-                                                required>
+                                            <select class="form-control" name="categoria_id"
+                                                [(ngModel)]="newProducto.categoria_id" required>
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let categoria of categorias" [value]="categoria.id">
                                                     {{categoria.categoria}}
@@ -158,9 +216,8 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Marca *</label>
-                                            <select class="form-control" name="marca_id" 
-                                                [(ngModel)]="newProducto.marca_id"
-                                                required>
+                                            <select class="form-control" name="marca_id"
+                                                [(ngModel)]="newProducto.marca_id" required>
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let marca of marcas" [value]="marca.id">
                                                     {{marca.marca}}
@@ -171,9 +228,8 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Línea *</label>
-                                            <select class="form-control" name="linea_id" 
-                                                [(ngModel)]="newProducto.linea_id"
-                                                required>
+                                            <select class="form-control" name="linea_id"
+                                                [(ngModel)]="newProducto.linea_id" required>
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let linea of lineas" [value]="linea.id">
                                                     {{linea.linea}}
@@ -184,9 +240,8 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Proveedor *</label>
-                                            <select class="form-control" name="proveedor_id" 
-                                                [(ngModel)]="newProducto.proveedor_id"
-                                                required>
+                                            <select class="form-control" name="proveedor_id"
+                                                [(ngModel)]="newProducto.proveedor_id" required>
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">
                                                     {{proveedor.proveedor}}
@@ -197,41 +252,36 @@
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Precio de compra</label>
-                                            <input class="form-control " type="text" 
-                                            name="precioCompra" 
-                                            [(ngModel)]="newProducto.precioCompra">
+                                            <input class="form-control " type="text" name="precioCompra"
+                                                [(ngModel)]="newProducto.precioCompra">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Fecha de elaboración</label>
-                                            <input class="form-control " type="date" 
-                                            name="fechaElaboracion"
-                                            [(ngModel)]="newProducto.fechaElaboracion">
+                                            <input class="form-control " type="date" name="fechaElaboracion"
+                                                [(ngModel)]="newProducto.fechaElaboracion">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Fecha de vencimiento</label>
-                                            <input class="form-control " type="date" 
-                                            name="fechaVencimiento"
-                                            [(ngModel)]="newProducto.fechaVencimiento">
+                                            <input class="form-control " type="date" name="fechaVencimiento"
+                                                [(ngModel)]="newProducto.fechaVencimiento">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Lote</label>
-                                            <input class="form-control " type="text" 
-                                            name="lote"
-                                            [(ngModel)]="newProducto.lote">
+                                            <input class="form-control " type="text" name="lote"
+                                                [(ngModel)]="newProducto.lote">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3 ">
                                             <label>Medición *</label>
-                                            <select class="form-control" name="marca_id" 
-                                                [(ngModel)]="newProducto.medicion_id"
-                                                required>
+                                            <select class="form-control" name="marca_id"
+                                                [(ngModel)]="newProducto.medicion_id" required>
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let medicion of tiposMedicion" [value]="medicion.id">
                                                     {{medicion.medicion}}
@@ -242,8 +292,7 @@
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3 ">
                                             <label>IVA *</label>
-                                            <select class="form-control" name="iva_id" 
-                                                [(ngModel)]="newProducto.iva_id"
+                                            <select class="form-control" name="iva_id" [(ngModel)]="newProducto.iva_id"
                                                 required>
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let iva of tiposIva" [value]="iva.id">
@@ -255,33 +304,29 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 1 *</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp1" 
-                                            [(ngModel)]="newProducto.pvp1">
+                                            <input class="form-control " type="text" name="pvp1"
+                                                [(ngModel)]="newProducto.pvp1">
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 2 </label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp2" 
-                                            [(ngModel)]="newProducto.pvp2">
+                                            <input class="form-control " type="text" name="pvp2"
+                                                [(ngModel)]="newProducto.pvp2">
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 3</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp3" 
-                                            [(ngModel)]="newProducto.pvp3">
+                                            <input class="form-control " type="text" name="pvp3"
+                                                [(ngModel)]="newProducto.pvp3">
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 4</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp4" 
-                                            [(ngModel)]="newProducto.pvp4">
+                                            <input class="form-control " type="text" name="pvp4"
+                                                [(ngModel)]="newProducto.pvp4">
                                         </div>
                                     </div>
                                 </div>
@@ -289,7 +334,12 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-success text-white">Guardar</button>
+                            <button type="button" class="btn btn-success text-white" (click)="create(1)">
+                                Guardar
+                            </button>
+                            <button type="button" class="btn btn-info text-white" (click)="create(2)">
+                                Guardar y cerrar
+                            </button>
                             <button type="button" class="btn btn-secondary"
                                 (click)="ModalNew.hide(); resetForm()">Cerrar</button>
                         </div>
@@ -308,8 +358,7 @@
                     <h3 class="modal-title text-white fs-2 fw-bolder">
                         <i class="fas fa-edit"></i> Editar producto
                     </h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        (click)="ModalEdit.hide();">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalEdit.hide();">
                     </button>
                 </div>
 
@@ -324,17 +373,22 @@
                                 <div class="row">
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
-                                            <label>Código *</label>
-                                            <input class="form-control " type="text" 
-                                            name="codigo" 
-                                            [(ngModel)]="codigo">
+                                            <table class="table-bordered"
+                                                style="width: 100%; border-collapse: collapse;">
+                                                <tr>
+                                                    <td
+                                                        style="text-align: center; padding: 10px; border: 1px solid #ccc;">
+                                                        <img [src]="barCodeImage" [title]="'Código: ' + codigo"
+                                                            alt="Código de barras">
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </div>
                                     </div>
                                     <div class="col-lg-8 col-sm-8">
                                         <div class="mb-3">
                                             <label>Descripción</label>
-                                            <textarea class="form-control" name="descripcion" 
-                                                [(ngModel)]="descripcion"
+                                            <textarea class="form-control" name="descripcion" [(ngModel)]="descripcion"
                                                 rows="1" required>
                                             </textarea>
                                         </div>
@@ -342,8 +396,7 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Categoría *</label>
-                                            <select class="form-control" name="categoria_id" 
-                                                [(ngModel)]="categoria_id"
+                                            <select class="form-control" name="categoria_id" [(ngModel)]="categoria_id"
                                                 required>
                                                 <option *ngFor="let categoria of categorias" [value]="categoria.id">
                                                     {{categoria.categoria}}
@@ -354,8 +407,7 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Marca *</label>
-                                            <select class="form-control" name="marca_id" 
-                                                [(ngModel)]="marca_id"
+                                            <select class="form-control" name="marca_id" [(ngModel)]="marca_id"
                                                 required>
                                                 <option *ngFor="let marca of marcas" [value]="marca.id">
                                                     {{marca.marca}}
@@ -366,8 +418,7 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Línea *</label>
-                                            <select class="form-control" name="linea_id" 
-                                                [(ngModel)]="linea_id"
+                                            <select class="form-control" name="linea_id" [(ngModel)]="linea_id"
                                                 required>
                                                 <option *ngFor="let linea of lineas" [value]="linea.id">
                                                     {{linea.linea}}
@@ -378,8 +429,7 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3 ">
                                             <label>Proveedor *</label>
-                                            <select class="form-control" name="proveedor_id" 
-                                                [(ngModel)]="proveedor_id"
+                                            <select class="form-control" name="proveedor_id" [(ngModel)]="proveedor_id"
                                                 required>
                                                 <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">
                                                     {{proveedor.proveedor}}
@@ -390,40 +440,34 @@
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Precio de compra</label>
-                                            <input class="form-control " type="text" 
-                                            name="precioCompra" 
-                                            [(ngModel)]="precioCompra">
+                                            <input class="form-control " type="text" name="precioCompra"
+                                                [(ngModel)]="precioCompra">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Fecha de elaboración</label>
-                                            <input class="form-control " type="date" 
-                                            name="fechaElaboracion"
-                                            [(ngModel)]="fechaElaboracion">
+                                            <input class="form-control " type="date" name="fechaElaboracion"
+                                                [(ngModel)]="fechaElaboracion">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Fecha de vencimiento</label>
-                                            <input class="form-control " type="date" 
-                                            name="fechaVencimiento"
-                                            [(ngModel)]="fechaVencimiento">
+                                            <input class="form-control " type="date" name="fechaVencimiento"
+                                                [(ngModel)]="fechaVencimiento">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <label>Lote</label>
-                                            <input class="form-control " type="text" 
-                                            name="lote"
-                                            [(ngModel)]="lote">
+                                            <input class="form-control " type="text" name="lote" [(ngModel)]="lote">
                                         </div>
                                     </div>
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3 ">
                                             <label>Medición *</label>
-                                            <select class="form-control" name="medicion_id" 
-                                                [(ngModel)]="medicion_id"
+                                            <select class="form-control" name="medicion_id" [(ngModel)]="medicion_id"
                                                 required>
                                                 <option *ngFor="let medicion of tiposMedicion" [value]="medicion.id">
                                                     {{medicion.medicion}}
@@ -434,9 +478,7 @@
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3 ">
                                             <label>IVA *</label>
-                                            <select class="form-control" name="iva_id" 
-                                                [(ngModel)]="iva_id"
-                                                required>
+                                            <select class="form-control" name="iva_id" [(ngModel)]="iva_id" required>
                                                 <option *ngFor="let iva of tiposIva" [value]="iva.id">
                                                     {{iva.tipoIva}}
                                                 </option>
@@ -446,33 +488,25 @@
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 1*</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp1" 
-                                            [(ngModel)]="pvp1">
+                                            <input class="form-control " type="text" name="pvp1" [(ngModel)]="pvp1">
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 2</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp2" 
-                                            [(ngModel)]="pvp2">
+                                            <input class="form-control " type="text" name="pvp2" [(ngModel)]="pvp2">
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 3</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp3" 
-                                            [(ngModel)]="pvp3">
+                                            <input class="form-control " type="text" name="pvp3" [(ngModel)]="pvp3">
                                         </div>
                                     </div>
                                     <div class="col-lg-3 col-sm-3">
                                         <div class="mb-3">
                                             <label>PVP 4</label>
-                                            <input class="form-control " type="text" 
-                                            name="pvp4" 
-                                            [(ngModel)]="pvp4">
+                                            <input class="form-control " type="text" name="pvp4" [(ngModel)]="pvp4">
                                         </div>
                                     </div>
                                 </div>
@@ -499,8 +533,7 @@
                     <h3 class="modal-title text-white fs-2 fw-bolder">
                         <i class="fas fa-info-circle"></i> Información del producto
                     </h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        (click)="ModalSee.hide()">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalSee.hide()">
                     </button>
                 </div>
 
@@ -509,7 +542,16 @@
                         <tbody>
                             <tr>
                                 <td><b>Código:</b></td>
-                                <td>{{codigo}}</td>
+                                <td>
+                                    <table class="table-bordered" style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="text-align: center; padding: 10px; border: 1px solid #ccc;">
+                                                <img [src]="barCodeImage" [title]="'Código: ' + codigo"
+                                                    alt="Código de barras">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
                                 <td><b>Descripción:</b></td>
                                 <td>{{descripcion}}</td>
                             </tr>
@@ -570,7 +612,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    
+
                 </div>
 
                 <div class="modal-footer">

@@ -53,6 +53,9 @@ export class ProductosComponent implements OnInit {
   productos: any[] = [];
   id: number = 0;
   codigo: string = '';
+  barCodeImage: string = '';
+  barCodeImageNewProducto: string = '';
+  barCodeNewProducto: string = '';
   categoria_id: number = 0;
   marca_id: number = 0;
   linea_id: number = 0;
@@ -199,6 +202,8 @@ export class ProductosComponent implements OnInit {
    */
 
   openModalCreate() {
+    this.barCodeGenerateInput();
+    this.barCodeImageNewProducto = this.generateBarcodeImage(this.barCodeNewProducto);
     this.ModalNew?.show();
   }
 
@@ -221,6 +226,7 @@ export class ProductosComponent implements OnInit {
       response => {
         this.id = response.data.id;
         this.codigo = response.data.codigo;
+        this.barCodeImage = this.generateBarcodeImage(this.codigo);
         this.categoria_id = response.data.categoria_id;
         this.categoria = response.data.nombreCategoria;
         this.marca_id = response.data.marca_id;
@@ -295,10 +301,12 @@ export class ProductosComponent implements OnInit {
     );
   }
 
-  create() {
+  create(op: number) {
     let data = {
       data: {
-        codigo: this.newProducto.codigo,
+        codigo: !this.newProducto.codigo && this.barCodeImageNewProducto 
+          ? this.barCodeNewProducto 
+          : this.newProducto.codigo,
         categoria_id: this.newProducto.categoria_id,
         marca_id: this.newProducto.marca_id,
         linea_id: this.newProducto.linea_id,
@@ -324,7 +332,12 @@ export class ProductosComponent implements OnInit {
           this.toastr.success(response.message, '¡Listo!', { closeButton: true });
           this.ngOnInit();
           this.resetForm();
-          this.ModalNew?.hide();
+          if (op === 2) {
+            this.ModalNew?.hide();
+          } else {
+            this.barCodeGenerateInput();
+            this.barCodeImageNewProducto = this.generateBarcodeImage(this.barCodeNewProducto);
+          }
         }
       }
     );
@@ -432,16 +445,16 @@ export class ProductosComponent implements OnInit {
     Swal.fire({
       title: '<strong>¿Cuántos códigos de barras deseas generar?</strong>',
       html: `
-          <input type="number" id="input-number" class="form-control" placeholder="Cantidad de códigos">
-          <div class="mt-4" style="display: flex; align-items: center; justify-content: start; width: 100%;">
-            <label for="existing-code-checkbox">
-              <input type="checkbox" id="existing-code-checkbox" style="margin-right: 5px;">
-              Ya tengo un código de barras
-            </label>
-          </div>
-          <input type="text" id="existing-code-input" class="form-control" placeholder="Ingrese código existente" 
-            style="display: none; align-items: center; justify-content: start;">
-        `,
+        <input type="number" id="input-number" class="form-control" placeholder="Cantidad de códigos">
+        <div class="mt-4" style="display: flex; align-items: center; justify-content: start; width: 100%;">
+          <label for="existing-code-checkbox">
+            <input type="checkbox" id="existing-code-checkbox" style="margin-right: 5px;">
+            Ya tengo un código de barras
+          </label>
+        </div>
+        <input type="text" id="existing-code-input" class="form-control" placeholder="Ingrese código existente" 
+          style="display: none; align-items: center; justify-content: start;">
+      `,
       showCancelButton: true,
       confirmButtonText: 'Generar',
       cancelButtonText: 'Cancelar',
@@ -496,6 +509,50 @@ export class ProductosComponent implements OnInit {
     });
   }
 
+  printBarCode(barcode: string) {
+    Swal.fire({
+      title: '<strong>¿Cuántos códigos de barras de este producto deseas imprimir?</strong>',
+      html: `
+        <input type="number" id="input-number" class="form-control" placeholder="Cantidad de códigos">
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Imprimir',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const inputValue = (document.getElementById('input-number') as HTMLInputElement).value;
+
+        // Validaciones de entrada
+        if (!inputValue || isNaN(Number(inputValue)) || Number(inputValue) <= 0) {
+          Swal.showValidationMessage('Debe ingresar un número mayor que 0');
+          return;
+        }
+
+        return { quantity: Number(inputValue) };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const { quantity } = result.value;
+
+        const barcodesData = [];
+        for (let i = 0; i < quantity; i++) {
+          const barcodeBase64 = this.generateBarcodeImage(barcode);
+
+          // Añadir a la lista de datos del PDF
+          barcodesData.push({ image: barcodeBase64, width: 140, height: 50, margin: [0, 10, 0, 0] });
+        }
+
+        // Crear documento PDF y mostrar para imprimir
+        const docDefinition: any = {
+          pageSize: { width: 156, height: 'auto' },
+          pageMargins: [8, 8, 8, 8],
+          content: barcodesData
+        };
+
+        pdfMake.createPdf(docDefinition).print();
+      }
+    });
+  }
+
   generateUniqueRandomCode(): string {
     return Math.floor(100000000000 + Math.random() * 900000000000).toString();
   }
@@ -504,6 +561,18 @@ export class ProductosComponent implements OnInit {
     const canvas = document.createElement('canvas');
     JsBarcode(canvas, code, { format: 'CODE128', lineColor: '#000', width: 2, height: 50, displayValue: true });
     return canvas.toDataURL('image/png');
+  }
+
+  barCodeGenerateInput() {
+    this.newProducto.codigo = '';
+    this.barCodeNewProducto = this.generateUniqueRandomCode();
+    this.barCodeImageNewProducto = this.generateBarcodeImage(this.barCodeNewProducto);
+  }
+
+  resetBarCodeInput() {
+    this.newProducto.codigo = '';
+    this.barCodeNewProducto = '';
+    this.barCodeImageNewProducto = '';
   }
 
 }
