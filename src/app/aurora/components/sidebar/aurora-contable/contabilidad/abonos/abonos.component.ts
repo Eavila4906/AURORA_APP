@@ -34,6 +34,7 @@ export class AbonosComponent implements OnInit {
   abonos: any[] = [];
   id: number = 0;
   cabFactura_id: number = 0;
+  codigoFactura: string = '';
   monto: number = 0;
   fecha: string = this.AppService.getTimeZoneCurrentDate();
   descripcion: string = '';
@@ -142,6 +143,7 @@ export class AbonosComponent implements OnInit {
       response => {
         this.id = response.data.id;
         this.cabFactura_id = response.data.cabFactura_id,
+        this.codigoFactura = response.data.cab_factura.codigoFactura;
         this.monto = response.data.monto,
         this.fecha = response.data.fecha,
         this.descripcion = response.data.descripcion
@@ -226,12 +228,14 @@ export class AbonosComponent implements OnInit {
   //Search
   Search() {
     this.abonosFilter = this.abonos.filter((abono: {
+      cab_factura: { codigoFactura: string },
       fecha: string,
       descripcion: string
     }) => {
       let filter = true;
       if (this.search) {
-        filter = abono.fecha?.toLowerCase().includes(this.search.toLowerCase()) ||
+        filter = abono.cab_factura.codigoFactura?.toLowerCase().includes(this.search.toLowerCase()) ||
+          abono.fecha?.toLowerCase().includes(this.search.toLowerCase()) ||
           abono.descripcion?.toLowerCase().includes(this.search.toLowerCase());
       }
       return filter;

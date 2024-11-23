@@ -1,10 +1,10 @@
 <section *ngIf="permission_read" class="me-3">
     <div class="mb-3">
         <h1 class="h3 d-inline align-middle">Lista de abonos </h1>
-        <button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
+        <!--<button class="btn btn-success text-white" (click)="openModalCreate()" *ngIf="permission_create">
             Registrar
             <i class="fas fa-hand-holding-usd"></i>
-        </button>
+        </button>-->
     </div>
 
     <div class="row">
@@ -47,7 +47,7 @@
                                 <tr
                                     *ngFor="let abono of abonosFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
                                     <td>{{ i + 1 }}</td>
-                                    <td>{{ abono.cabFactura_id }}</td>
+                                    <td>{{ abono.cab_factura.codigoFactura }}</td>
                                     <td>{{ abono.monto }}</td>
                                     <td>{{ abono.fecha }}</td>
                                     <td>{{ abono.descripcion == null ? 'N/A' : abono.descripcion }}</td>
@@ -250,7 +250,7 @@
                         <tbody>
                             <tr>
                                 <td><b>Código de factura</b></td>
-                                <td>{{cabFactura_id}}</td>
+                                <td>{{codigoFactura}}</td>
                             </tr>
                             <tr>
                                 <td><b>Monto</b></td>

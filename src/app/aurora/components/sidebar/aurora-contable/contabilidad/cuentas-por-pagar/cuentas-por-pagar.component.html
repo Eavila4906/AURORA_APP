@@ -75,7 +75,7 @@
                                 <tr
                                     *ngFor="let cuentaPorPagar of cuentasPorPagarFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
                                     <td>{{ i + 1 }}</td>
-                                    <td>{{ cuentaPorPagar.receptor.nombre }}</td>
+                                    <td>{{ cuentaPorPagar.receptor.nombres }}</td>
                                     <td>{{ cuentaPorPagar.fechaEmision }}</td>
                                     <td>{{ cuentaPorPagar.total }}</td>
                                     <td>{{ cuentaPorPagar.totalAbonos }}</td>

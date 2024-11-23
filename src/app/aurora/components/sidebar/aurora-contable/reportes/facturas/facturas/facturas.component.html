@@ -47,7 +47,7 @@
                                 <tr
                                     *ngFor="let factura of facturasFilter | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
                                     <td>{{ i + 1 }}</td>
-                                    <td>{{ factura.id }}</td>
+                                    <td>{{ factura.codigoFactura }}</td>
                                     <td>{{ factura.tipoFactura }}</td>
                                     <td>{{ factura.emisor.nombres }}</td>
                                     <td>{{ factura.receptor.nombres }}</td>
@@ -100,10 +100,11 @@
                     <div class="container my-4 p-4 border rounded">
                         <div class="row">
                             <div class="col-12 text-center mb-3">
-                                <h2><b>Factura de {{ tipoFactura }} #{{ id }}</b></h2>
-                                <small><b>Estado:</b> {{ estado }}</small>
+                                <h2><b>Factura de {{ tipoFactura }}</b></h2>
                             </div>
                         </div>
+
+                        <hr>
 
                         <!-- Información del Emisor y Receptor -->
                         <div class="row mb-4">
@@ -128,7 +129,9 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <h5><b>Detalles de Factura</b></h5>
+                                <p>Código: {{ codigoFactura }}</p>
                                 <p>Fecha de Emisión: {{ fechaEmision }}</p>
+                                <p>Estado: {{ estado }}</p>
                                 <p>Factura Comercial Negociable: {{ facturaComercialNegociable }}</p>
                             </div>
                             <div class="col-md-6">
