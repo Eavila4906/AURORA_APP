@@ -57,6 +57,12 @@ export class ContableComponent implements OnInit {
   cantidad_egresosMovimientosContables: number = 0;
   total_egresosMovimientosContables: string = '$0';
 
+  cantidad_ivaFacturasVenta: number = 0;
+  total_ivaFacturasVenta: string = '$0';
+
+  cantidad_ivaFacturasCompra: number = 0;
+  total_ivaFacturasCompra: string = '$0';
+
   total_ingresos: string = '$0';
   total_egresos: string = '$0';
   total_ganancias: string = '$0';
@@ -141,6 +147,12 @@ export class ContableComponent implements OnInit {
 
         this.cantidad_egresosMovimientosContables = response.data[0].cantidad_egresosMovimientosContables;
         this.total_egresosMovimientosContables = response.data[0].total_egresosMovimientosContables;
+
+        this.cantidad_ivaFacturasVenta = response.data[0].cantidad_ivaFacturasVenta;
+        this.total_ivaFacturasVenta = response.data[0].total_ivaFacturasVenta;
+
+        this.cantidad_ivaFacturasCompra = response.data[0].cantidad_ivaFacturasCompra;
+        this.total_ivaFacturasCompra = response.data[0].total_ivaFacturasCompra;
 
         this.total_ingresos = response.data[0].total_ingresos;
         this.total_egresos = response.data[0].total_egresos;
@@ -279,6 +291,36 @@ export class ContableComponent implements OnInit {
                 { text: 'Egresos', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_egresosMovimientosContables, style: 'tableBody', alignment: 'left' },
                 { text: '$'+this.total_egresosMovimientosContables, style: 'tableBody', alignment: 'left' },
+              ]
+            ]
+          },
+          layout: 'lightHorizontalLines' // Agregar líneas horizontales ligeras
+        },
+        '***************************',
+        { text: `IVA en facturas`, style: 'titles', alignment: 'center' },
+        '------------------------------------------',
+        {
+          table: {
+            widths: ['*', '*', '*'],
+            body: [
+              // Cabecera de la tabla
+              [
+                { text: 'Item', style: 'tableHeader', alignment: 'left', },
+                { text: 'Cantidad', style: 'tableHeader', alignment: 'left', },
+                { text: 'Total', style: 'tableHeader', alignment: 'left', }
+              ],
+              // Contenido
+              [
+                // Ventas
+                { text: 'Ventas', style: 'tableBody', alignment: 'left' },
+                { text: this.cantidad_ivaFacturasVenta, style: 'tableBody', alignment: 'left' },
+                { text: '$'+this.total_ivaFacturasVenta, style: 'tableBody', alignment: 'left' },
+              ],
+              [
+                // Compras
+                { text: 'Compras', style: 'tableBody', alignment: 'left' },
+                { text: this.cantidad_ivaFacturasCompra, style: 'tableBody', alignment: 'left' },
+                { text: '$'+this.total_ivaFacturasCompra, style: 'tableBody', alignment: 'left' },
               ]
             ]
           },
