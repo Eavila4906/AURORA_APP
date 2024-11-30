@@ -809,7 +809,7 @@ export class ComprarComponent implements OnInit {
       { text: item.descripcion, style: 'tableBody', alignment: 'left' },
       { text: item.cantidad, style: 'tableBody', alignment: 'left' },
       { text: `${item.precioUnitario}`, style: 'tableBody', alignment: 'left' },
-      { text: `${(item.precioUnitario * item.cantidad).toFixed(2)}`, style: 'tableBody', alignment: 'left' }
+      { text: `${item.valorTotal}`, style: 'tableBody', alignment: 'left' }
     ]);
 
     const docDefinition: any = {
