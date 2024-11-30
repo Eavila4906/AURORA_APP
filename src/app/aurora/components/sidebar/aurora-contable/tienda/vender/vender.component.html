@@ -160,6 +160,14 @@
                                                             No se encontraron resultados.
                                                         </div>
                                                     </div>
+                                                    <div class="col-lg-8 col-sm-8 position-relative">
+                                                        <label>
+                                                            <input type="checkbox" name="facturarConIva" 
+                                                            [(ngModel)]="facturarConIva"
+                                                            (change)="productosEnFactura.length > 0 ? actualizarIvaProductos() : null">
+                                                            <small> Facturar con IVA</small>
+                                                        </label>
+                                                    </div>
                                                 </div>
 
                                             </div>
@@ -195,7 +203,7 @@
                                     <th>Iva</th>
                                     <th>Descuento</th>
                                     <th>Valor total</th>
-                                    <th>Valor ice</th>
+                                    <!--<th>Valor ice</th>-->
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -205,27 +213,44 @@
                                     <td>{{producto.codigo}}</td>
                                     <td>
                                         <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
-                                        <div class="col-md-6">
-                                            <input class="form-control" name="cantidad{{i}}" min="1"
+                                        <div class="col-md-12">
+                                            <input class="formControlPersonality" name="cantidad{{i}}" min="1"
                                                 [(ngModel)]="producto.cantidad"
-                                                (input)="validarInputTipoNumber(producto, 1)" type="number"
-                                                (input)="calcularTotalProducto(producto)">
+                                                (input)="producto.cantidad = producto.cantidad || 1; validarInputTipoNumber(producto, 1)" type="number"
+                                                (input)="calcularTotalProducto(producto)" style="width: 80px; height: 35px;">
                                         </div>
                                     </td>
                                     <td>{{producto.descripcion}}</td>
                                     <td>{{producto.precioUnitario}}</td>
-                                    <td>{{producto.iva}}</td>
                                     <td>
-                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
-                                        <div class="col-md-6">
-                                            <input class="form-control" name="descuento{{i}}" min="0"
-                                                [(ngModel)]="producto.descuento"
-                                                (input)="validarInputTipoNumber(producto, 2)" type="number"
-                                                (input)="calcularTotalProducto(producto)">
+                                        <div>
+                                            <select class="formControlPersonality" name="iva{{i}}" [(ngModel)]="producto.iva_id"
+                                                (change)="calcularTotalProducto(producto)"
+                                                style="height: 35px;">
+                                                <option *ngFor="let tipo of tiposIva" [value]="tipo.id">
+                                                    {{ tipo.tipoIva }}
+                                                </option>
+                                            </select>
                                         </div>
                                     </td>
-                                    <td>{{producto.valorTotal}}</td>
-                                    <td>{{producto.valorIce}}</td>
+                                    <td>
+                                        <input type="hidden" name="producto_id" [(ngModel)]="producto.id">
+                                        <div class="horizontal-group">
+                                            <input class="formControlPersonality" name="descuento{{i}}" min="0"
+                                            [(ngModel)]="producto.descuento"
+                                            (input)="producto.descuento = producto.descuento || 0; validarInputTipoNumber(producto, 2)" type="number"
+                                            style="width: 70px; height: 35px;">
+                                            <select class="formControlPersonality" name="tipoDescuento{{i}}" 
+                                                [(ngModel)]="producto.tipoDescuento"
+                                                (change)="calcularTotalProducto(producto)"
+                                                style="height: 35px;">
+                                                <option value="%" title="Porcentaje">%</option>
+                                                <option value="$" title="Dolar/es">$</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>{{producto.valorTotalConIva}}</td>
+                                    <!--<td>{{producto.valorIce}}</td>-->
                                     <td>
                                         <button class="btn btn-danger btn-sm" role="button" (click)="deleteProducto(i)"
                                             title="Eliminar">

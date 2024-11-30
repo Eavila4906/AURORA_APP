@@ -7,7 +7,7 @@ import { Decimal } from 'decimal.js';
 import * as pdfMake from "pdfmake/build/pdfmake";
 
 import { AppService } from 'src/app/services/app.service';
-import { FacturasService } from '../services/facturas.service'; 
+import { FacturasService } from '../services/facturas.service';
 import { PerfilService } from '../../configuracion/facturacion/perfil/services/perfil.service';
 import { PuntosDeEmisionService } from '../../configuracion/facturacion/puntos-de-emision/services/puntos-de-emision.service';
 import { ProductosService } from '../../gestion/productos/services/productos.service';
@@ -112,15 +112,21 @@ export class ComprarComponent implements OnInit {
   formasDePago: any[] = [];
   formasDePagoEnFactura: any[] = [];
 
+  tiposIva: any[] = [];
+  facturarConIva: boolean = false;
+
   productosEnFactura: {
     id: number;
     codigo: any;
     cantidad: number;
     descripcion: string,
     precioUnitario: number;
+    iva_id: number;
     iva: string;
+    tipoDescuento: string;
     descuento: number;
     valorTotal: number;
+    valorTotalConIva: any;
     valorIce: number;
   }[] = [];
 
@@ -178,6 +184,7 @@ export class ComprarComponent implements OnInit {
     this.getProductos();
     this.getProveedores();
     this.getFormasDePago();
+    this.getTiposIva();
   }
 
   /**
@@ -281,6 +288,14 @@ export class ComprarComponent implements OnInit {
     );
   }
 
+  getTiposIva() {
+    this.OtherServicesService.getTiposIva().subscribe(
+      response => {
+        this.tiposIva = response.data.filter((tipo: any) => tipo.estado === 'Activo');
+      }
+    );
+  }
+
   abonosEnFactura: any[] = [];
   abonosStructure = {
     monto: 0,
@@ -356,9 +371,9 @@ export class ComprarComponent implements OnInit {
           cantidad: producto.cantidad,
           descripcion: producto.descripcion,
           precioUnitario: producto.precioUnitario,
-          iva: producto.iva,
+          iva: this.tiposIva.find(tipo => tipo.id == producto.iva_id).tipoIva,
           descuento: producto.descuento,
-          valorTotal: producto.valorTotal,
+          valorTotal: producto.valorTotalConIva,
           valorIce: producto.valorIce
         })),
         auditoria: this.AppService.getDataAuditoria('create')
@@ -471,9 +486,12 @@ export class ComprarComponent implements OnInit {
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
         precioUnitario: productoSeleccionado.precioCompra,
+        iva_id: productoSeleccionado.iva_id,
         iva: productoSeleccionado.iva,
+        tipoDescuento: '%',
         descuento: 0,
         valorTotal: 0,
+        valorTotalConIva: 0,
         valorIce: 0
       };
       this.productosEnFactura.push(newProducto);
@@ -493,47 +511,96 @@ export class ComprarComponent implements OnInit {
 
   calcularTotalProducto(producto: any) {
     const precio = new Decimal(producto.precioUnitario);
-    const cantidad = new Decimal(producto.cantidad);
-    const descuento = new Decimal(producto.descuento);
+    const cantidad = new Decimal(producto.cantidad) || 0;
+    const descuento = new Decimal(producto.descuento) || 0;
 
     if (precio.isNaN() || cantidad.isNaN() || descuento.isNaN()) {
       return;
     }
 
-    let precioConDescuento = precio.sub(descuento);
+    let precioConDescuento: Decimal;
+
+    if (producto.tipoDescuento === '%') {
+      // Descuento en porcentaje, se aplica sobre el precio unitario
+      precioConDescuento = precio.mul(new Decimal(1).minus(descuento.div(100)));
+    } else {
+      // Descuento en valor monetario
+      precioConDescuento = precio.sub(descuento);
+    }
 
     if (precioConDescuento.lessThan(0)) {
-      precioConDescuento = new Decimal(0);
+      precioConDescuento = new Decimal(0); // Asegurar que no sea negativo
     }
 
     const valorTotal = precioConDescuento.mul(cantidad);
     producto.valorTotal = valorTotal.toFixed(2);
-    this.updateTotales();
+    this.updateTotales();  // Actualizamos los totales después de calcular el total del producto
+  }
+
+  calcularDescuento(tipoDescuento: string, valorTotalConIva: Decimal, descuento: Decimal): Decimal {
+    let descuentoCalculado: Decimal = new Decimal(0);
+
+    if (tipoDescuento == '%') {
+      // Descuento en porcentaje sobre el valor total con IVA
+      descuentoCalculado = valorTotalConIva.mul(descuento).div(100);
+    } else if (tipoDescuento == '$') {
+      // Descuento en valor monetario, no puede ser mayor que el valor total con IVA
+      descuentoCalculado = descuento;
+      if (descuentoCalculado.greaterThan(valorTotalConIva)) {
+        descuentoCalculado = valorTotalConIva;
+      }
+    }
+    return descuentoCalculado;
   }
 
   updateTotales() {
-    let subtotalSinIva = new Decimal(0);
-    let subtotalConIva = new Decimal(0);
-    let totalDescuento = new Decimal(0);
-    let totalIva = new Decimal(0);
+    let subtotalSinIva = new Decimal(0); // Total sin IVA y sin descuentos
+    let totalIva = new Decimal(0);       // IVA acumulado
+    let totalDescuento = new Decimal(0); // Descuento acumulado
+    let totalConIva = new Decimal(0);    // Total con IVA antes de aplicar descuento
+    let totalFinal = new Decimal(0);     // Total final con descuento aplicado
 
     this.productosEnFactura.forEach(producto => {
-      const valorTotal = new Decimal(producto.valorTotal);
-      const iva = new Decimal(producto.iva.replace('%', '')); // Convertir porcentaje a número
-      const valorIva = valorTotal.mul(iva).div(100);
+      const precioUnitario = new Decimal(producto.precioUnitario);
+      const cantidad = new Decimal(producto.cantidad);
+      const descuento = new Decimal(producto.descuento);
 
-      subtotalSinIva = subtotalSinIva.add(valorTotal);
-      subtotalConIva = subtotalConIva.add(valorTotal.add(valorIva));
-      totalDescuento = totalDescuento.add(new Decimal(producto.descuento));
-      totalIva = totalIva.add(valorIva);
+      // 1. Calcular valor total sin IVA
+      const valorTotalSinIva = precioUnitario.mul(cantidad);
+
+      // 2. Calcular IVA
+      const ivaSeleccionado = this.tiposIva.find(tipo => tipo.id == producto.iva_id);
+      const ivaPorcentaje = new Decimal(ivaSeleccionado.tipoIva.replace('%', ''));
+      const valorIva = valorTotalSinIva.mul(ivaPorcentaje).div(100);
+
+      // 3. Calcular valor total con IVA antes del descuento
+      const valorTotalConIva = valorTotalSinIva.add(valorIva);
+
+      // 4. Calcular descuento
+      const descuentoCalculado = this.calcularDescuento(producto.tipoDescuento, valorTotalConIva, descuento);
+
+      // 5. Calcular total final (con IVA menos descuento)
+      const valorFinal = valorTotalConIva.minus(descuentoCalculado);
+
+      // Acumular resultados
+      subtotalSinIva = subtotalSinIva.add(valorTotalSinIva); // Total sin IVA
+      totalIva = totalIva.add(valorIva);                     // IVA acumulado
+      totalDescuento = totalDescuento.add(descuentoCalculado); // Descuento acumulado
+      totalConIva = totalConIva.add(valorTotalConIva);         // Total con IVA antes del descuento
+      totalFinal = totalFinal.add(valorFinal);                // Total final después del descuento
+
+      // Guardar valor final en el producto
+      producto.valorTotalConIva = valorFinal.toFixed(2);
     });
 
-    this.subtotalSinIva = subtotalSinIva.toFixed(2);
-    this.subtotalConIva = subtotalConIva.toFixed(2);
-    this.totalDescuento = totalDescuento.toFixed(2);
-    this.totalIva = totalIva.toFixed(2);
-    this.total = subtotalConIva.toFixed(2);
+    // Actualizar los totales en el componente
+    this.subtotalSinIva = subtotalSinIva.toFixed(2);   // Total sin IVA
+    this.totalIva = totalIva.toFixed(2);               // IVA total
+    this.totalDescuento = totalDescuento.toFixed(2);   // Descuento total
+    this.subtotalConIva = totalConIva.toFixed(2);      // Total con IVA antes del descuento
+    this.total = totalFinal.toFixed(2);                // Total final con descuento
   }
+
 
   validarInputTipoNumber(producto: any, op: number) {
     if (op === 1) {
@@ -555,7 +622,7 @@ export class ComprarComponent implements OnInit {
       title: '<strong>¿Esta seguro que desea limpiar esta orden?</strong>',
       showCancelButton: true,
       focusConfirm: false,
-      confirmButtonText: 'Si, eliminar',
+      confirmButtonText: 'Si, limpiar',
       cancelButtonText: 'No, cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
@@ -742,7 +809,7 @@ export class ComprarComponent implements OnInit {
       { text: item.descripcion, style: 'tableBody', alignment: 'left' },
       { text: item.cantidad, style: 'tableBody', alignment: 'left' },
       { text: `${item.precioUnitario}`, style: 'tableBody', alignment: 'left' },
-      { text: `${(item.precioUnitario * item.cantidad).toFixed(2)}`, style: 'tableBody', alignment: 'left' }
+      { text: `${item.valorTotal}`, style: 'tableBody', alignment: 'left' }
     ]);
 
     const docDefinition: any = {
@@ -784,27 +851,27 @@ export class ComprarComponent implements OnInit {
         { text: `Total IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
         { text: `Total: $${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
-        { 
-          text: `Estado: ${data.data.cabecera.estado === 'Por cobrar' 
-            ? 'Por pagar' 
+        {
+          text: `Estado: ${data.data.cabecera.estado === 'Por cobrar'
+            ? 'Por pagar'
             : data.data.cabecera.estado === 'Pagada'
-            ? 'Pagado' 
-            : data.data.cabecera.estado
-          }`, 
+              ? 'Pagado'
+              : data.data.cabecera.estado
+            }`,
           style: 'info', alignment: 'right'
         },
         {
-          text: data.data.abonos 
+          text: data.data.abonos
             ? `Total de abono: $${data.data.abonos[0].monto.toFixed(2)}`
-            : '', 
+            : '',
           style: 'info', alignment: 'right'
         },
         {
           text: data.data.abonos
             ? `Total pendiente: $${(data.data.cabecera.total - data.data.abonos[0].monto).toFixed(2)}`
-            : '', 
+            : '',
           style: 'info', alignment: 'right'
-        },     
+        },
       ],
       styles: {
         header: { fontSize: 12, bold: true },
