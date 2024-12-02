@@ -160,8 +160,14 @@
                                                             No se encontraron resultados.
                                                         </div>
                                                     </div>
+                                                    <div class="col-lg-12 col-sm-12 position-relative">
+                                                        <label>
+                                                            <input type="checkbox" name="otrosProductos" 
+                                                            [(ngModel)]="otrosProductos">
+                                                            <small> Otros productos / servicios</small>
+                                                        </label>
+                                                    </div>
                                                 </div>
-
                                             </div>
                                             <!-- Totales en la esquina -->
                                             <div class="col-lg-3 col-sm-3 text-right">
@@ -174,6 +180,49 @@
                                                     totalDescuento}}<br>
                                                     <b>Total IVA: </b>{{totalIva === 0 ? '0.00' : totalIva}}<br>
                                                     <b>Total: </b>{{total === 0 ? '0.00' : total}}
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3" *ngIf="otrosProductos">
+                                                <hr>
+                                                <div class="col-lg-1 col-sm-1">
+                                                    <div class="mb-3">
+                                                        <label>Cantidad *</label>
+                                                        <input class="form-control" type="number" min="1" name="cantidad-ops"
+                                                            [(ngModel)]="cantidadOPS">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-5 col-sm-5">
+                                                    <div class="mb-3">
+                                                        <label>Descripción *</label>
+                                                        <textarea class="form-control" type="text" rows="1" name="descripcion-ops"
+                                                            [(ngModel)]="descripcionOPS">
+                                                        </textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-1 col-sm-1">
+                                                    <div class="mb-3">
+                                                        <label>Precio unit. *</label>
+                                                        <input class="form-control" type="number" name="precioUnitario-ops"
+                                                            [(ngModel)]="precioUnitarioOPS">
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-1 col-sm-1">
+                                                    <div class="mb-3">
+                                                        <label>IVA *</label>
+                                                        <select class="form-control" name="iva-ops" [(ngModel)]="ivaOPS">
+                                                            <option *ngFor="let tipo of tiposIva" [value]="tipo.id">
+                                                                {{ tipo.tipoIva }}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-1 col-sm-1">
+                                                    <div class="mt-4">
+                                                        <button class="btn btn-success text-white"
+                                                            (click)="addOtrosProductos()">
+                                                            Añadir
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
