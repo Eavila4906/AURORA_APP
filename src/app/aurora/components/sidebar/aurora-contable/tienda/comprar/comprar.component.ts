@@ -113,7 +113,13 @@ export class ComprarComponent implements OnInit {
   formasDePagoEnFactura: any[] = [];
 
   tiposIva: any[] = [];
-  facturarConIva: boolean = false;
+
+  otrosProductos: boolean = false;
+
+  cantidadOPS: number = 1;
+  descripcionOPS: string = '';
+  precioUnitarioOPS: number = 0.00;
+  ivaOPS: number = 1;
 
   productosEnFactura: {
     id: number;
@@ -367,7 +373,7 @@ export class ComprarComponent implements OnInit {
           estado: this.estado
         },
         productos: this.productosEnFactura.map(producto => ({
-          producto_id: producto.id,
+          producto_id: producto.id == 0 ? null : producto.id,
           cantidad: producto.cantidad,
           descripcion: producto.descripcion,
           precioUnitario: producto.precioUnitario,
@@ -499,6 +505,37 @@ export class ComprarComponent implements OnInit {
     }
 
     this.resetBusquedaProducto();
+  }
+
+  resetFormOPS() {
+    this.cantidadOPS = 1;
+    this.descripcionOPS = '';
+    this.precioUnitarioOPS = 0;
+    this.ivaOPS = 1;
+  }
+
+  addOtrosProductos() {
+    if (!this.cantidadOPS || !this.descripcionOPS || !this.precioUnitarioOPS || !this.ivaOPS) {
+      this.toastr.warning('Todos los campos son obligatorios', '¡Atención!', { closeButton: true });
+      return;
+    }
+    const newProducto = {
+      id: 0,
+      codigo: 'N/A',
+      cantidad: this.cantidadOPS,
+      descripcion: this.descripcionOPS,
+      precioUnitario: this.precioUnitarioOPS,
+      iva_id: this.ivaOPS,
+      iva: '',
+      tipoDescuento: '%',
+      descuento: 0,
+      valorTotal: 0,
+      valorTotalConIva: 0,
+      valorIce: 0
+    };
+    this.productosEnFactura.push(newProducto);
+    this.calcularTotalProducto(newProducto);
+    this.resetFormOPS();
   }
 
   resetBusquedaProducto() {
