@@ -159,6 +159,7 @@ export class ComprarComponent implements OnInit {
     this.newProveedor.telefono = '';
     this.newProveedor.email = '';
     this.newProveedor.direccion = '';
+    this.resetFormOPS();
   }
 
   constructor(

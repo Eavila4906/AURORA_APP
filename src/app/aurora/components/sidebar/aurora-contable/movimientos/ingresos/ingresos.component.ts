@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -23,6 +23,8 @@ export class IngresosComponent implements OnInit {
   @ViewChild('ModalNew') ModalNew?: ModalDirective;
   @ViewChild('ModalEdit') ModalEdit?: ModalDirective;
   @ViewChild('ModalSee') ModalSee?: ModalDirective;
+  @ViewChild('searchInput', { static: false }) searchInput?: ElementRef;
+  @ViewChild('searchInputEdit', { static: false }) searchInputEdit?: ElementRef;
 
   permission_read: boolean = true;
   permission_create: boolean = true;
@@ -39,7 +41,13 @@ export class IngresosComponent implements OnInit {
   estado: string = 'Activo';
 
   productos: any[] = [];
-  productosSelected: { id: number, producto_id?: number, descripcion: string, cantidad: 0 }[] = [];
+  productosSelected: { 
+    id: number, 
+    codigo: string,
+    producto_id?: number, 
+    descripcion: string, 
+    cantidad: number
+  }[] = [];
 
   newIngreso: Ingreso = {
     movimiento_id: 1,
@@ -135,6 +143,7 @@ export class IngresosComponent implements OnInit {
         this.productosSelected = response.data.productos.map( (producto: any) => { 
           return { 
             id: producto.id,
+            codigo: producto.producto.codigo,
             producto_id: producto.producto_id, 
             descripcion: producto.descripcion, 
             cantidad: producto.cantidad 
@@ -242,6 +251,23 @@ export class IngresosComponent implements OnInit {
    */
 
   //Search
+  productosFilterSelected: any[] =[];
+  barCodeOption: boolean = false;
+
+  barCode() {
+    this.barCodeOption = !this.barCodeOption;
+    this.resetBusquedaProducto();
+  }
+
+  resetBusquedaProducto() {
+    if (this.searchInput && this.searchInputEdit) {
+      this.search = '';
+      this.searchInput.nativeElement.value = '';
+      this.searchInputEdit.nativeElement.value = '';
+    }
+    this.productosFilter = this.productos;
+  }
+
   Search(op: number) {
     if (op == 1) {
       this.ingresosFilter = this.ingresos.filter((ingreso: { fecha: string }) => {
@@ -252,14 +278,16 @@ export class IngresosComponent implements OnInit {
         return filter;
       });
     } else {
-      this.productosFilter = this.productos.filter((producto: { codigo: string, descripcion: string }) => {
-        let filter = true;
-        if (this.search) {
-          filter = producto.codigo.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.descripcion.toLowerCase().includes(this.search.toLowerCase());
-        }
-        return filter;
-      });
+      this.productosFilter = this.productos.filter(producto =>
+        producto.codigo.includes(this.search) ||
+        producto.descripcion.toLowerCase().includes(this.search.toLowerCase())
+      );
+  
+      // Si hay solo un producto filtrado, agrégalo automáticamente
+      if (this.barCodeOption && this.productosFilter.length === 1) {
+        this.onRowClick(this.productosFilter[0]);
+        this.resetBusquedaProducto();
+      }
     }
   }
 
@@ -273,7 +301,44 @@ export class IngresosComponent implements OnInit {
   }
 
   public onRowClick(item: any) {
-    this.productosSelected.push({ id: item.id, descripcion: item.descripcion, cantidad: 0 });
+    const productoExistente = this.productosSelected.find(producto => producto.codigo === item.codigo);
+
+    if (productoExistente) {
+      productoExistente.cantidad += 1;
+    } else {
+      Swal.fire({
+        title: '<strong>¿Cuántos productos deseas ingresar?</strong>',
+        html: `
+          <b>Código: </b>${item.codigo}<br>
+          <b>Producto: </b>${item.descripcion}<br><br>
+          <input type="number" id="input-number" class="form-control" min="1" value="1">
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+          const inputValue = (document.getElementById('input-number') as HTMLInputElement).value;
+  
+          // Validaciones de entrada
+          if (!inputValue || isNaN(Number(inputValue)) || Number(inputValue) <= 0) {
+            Swal.showValidationMessage('Debe ingresar un número mayor que 0');
+            return;
+          }
+  
+          return { quantity: Number(inputValue) };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const { quantity } = result.value;
+          this.productosSelected.push({ 
+            id: item.id, 
+            codigo: item.codigo, 
+            descripcion: item.descripcion, 
+            cantidad: quantity 
+          });
+        }
+      });
+    }
   }
 
   public deleteProducto(index: number, idProducto?: number) {
