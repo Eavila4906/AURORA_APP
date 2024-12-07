@@ -49,6 +49,7 @@ export class FacturasComponent implements OnInit {
   subTotalSinIva: number = 0;
   subTotalConIva: number = 0;
   totalDescuento: number = 0;
+  subtotal: number = 0;
   totalIva: number = 0;
   totalServicio: number = 0;
   total: number = 0;
@@ -142,6 +143,7 @@ export class FacturasComponent implements OnInit {
         this.subTotalSinIva = response.data.subtotalSinIva;
         this.subTotalConIva = response.data.subtotalConIva;
         this.totalDescuento = response.data.totalDescuento;
+        this.subtotal = response.data.subtotal;
         this.totalIva = response.data.totalIva;
         this.totalServicio = response.data.totalServicio;
         this.total = response.data.total;
@@ -218,10 +220,10 @@ export class FacturasComponent implements OnInit {
               stack: [
                 { text: 'Receptor', style: 'subheader' },
                 { text: `${this.receptor.nombres}`, bold: true },
-                { text: `RUC/Ced/Pass: ${this.receptor.numeroIdentificacion}` },
-                { text: `Teléfono: ${this.receptor.telefono}` },
-                { text: `Email: ${this.receptor.email}` },
-                { text: `Dirección: ${this.receptor.direccion}` }
+                { text: `RUC/Ced/Pass: ${!this.receptor.numeroIdentificacion ? '9999999999' : this.receptor.numeroIdentificacion}` },
+                { text: `Teléfono: ${!this.receptor.telefono ? 'N/A' : this.receptor.telefono}` },
+                { text: `Email: ${!this.receptor.email ? 'N/A' : this.receptor.email}` },
+                { text: `Dirección: ${!this.receptor.direccion ? 'N/A' : this.receptor.direccion}` }
               ]
             }
           ]
@@ -245,11 +247,12 @@ export class FacturasComponent implements OnInit {
               width: '50%',
               stack: [
                 { text: 'Totales', style: 'subheader' },
-                { text: `Subtotal Sin IVA: $${this.subTotalSinIva}` },
-                { text: `Subtotal Con IVA: $${this.subTotalConIva}` },
-                { text: `Total Descuento: $${this.totalDescuento}` },
-                { text: `Total IVA: $${this.totalIva}` },
-                { text: `Total Servicio: $${this.totalServicio}` },
+                { text: `Subtotal con IVA: $${this.subTotalConIva}` },
+                { text: `Subtotal sin IVA: $${this.subTotalSinIva}` },
+                { text: `Descuento: $${this.totalDescuento}` },
+                { text: `Subtotal: $${this.subtotal}` },
+                { text: `IVA: $${this.totalIva}` },
+                //{ text: `Total Servicio: $${this.totalServicio}` },
                 { text: `Total: $${this.total}`, style: 'total' }
               ]
             }
@@ -268,16 +271,16 @@ export class FacturasComponent implements OnInit {
                 { text: 'Cantidad', fillColor: '#f8f9fa', bold: true },
                 { text: 'Descripción', fillColor: '#f8f9fa', bold: true },
                 { text: 'Precio Unitario', fillColor: '#f8f9fa', bold: true },
-                { text: 'IVA', fillColor: '#f8f9fa', bold: true },
                 { text: 'Descuento', fillColor: '#f8f9fa', bold: true },
+                { text: 'IVA', fillColor: '#f8f9fa', bold: true },
                 { text: 'Valor Total', fillColor: '#f8f9fa', bold: true }
               ],
               ...this.productosEnFactura.map(producto => ([
                 producto.cantidad,
                 producto.descripcion,
                 `$${producto.precioUnitario}`,
-                producto.iva,
                 `$${producto.descuento}`,
+                producto.iva,
                 `$${producto.valorTotal}`
               ]))
             ]
