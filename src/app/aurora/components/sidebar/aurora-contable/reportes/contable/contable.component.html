@@ -52,12 +52,7 @@
                                     </button>
                                 </div>
                             </div>
-
-                            
                         </div>
-
-                       
-
                     </form>
 
                     <hr>
@@ -75,37 +70,58 @@
                             <div class="col-md-4">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <i class="fas fa-cash-register fa-2x"></i>
-                                        <p class="mt-2">Ingresos: <b>{{total_ingresos}} USD</b></p>
+                                        <i class="fas fa-cash-register fa-2x"
+                                            title="Los ingresos se obtienen a partir de los totales de las facturas de ventas"></i>
+                                        <p class="mt-2">
+                                            <span class="comments">
+                                                Ingresos: <b>{{total_ingresos}} USD</b>
+                                                <span class="comments-box">
+                                                    Los ingresos se obtienen a partir de los totales de las facturas de ventas.
+                                                </span>
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <i class="fas fa-wallet fa-2x"></i>
-                                        <p class="mt-2">Egresos: <b>{{total_egresos}} USD</b></p>
+                                        <i class="fas fa-wallet fa-2x"
+                                            title="Los egresos se obtienen a partir de los totales de las facturas de compras"></i>
+                                        <p class="mt-2">
+                                            <span class="comments">
+                                                Egresos: <b>{{total_egresos}} USD</b>
+                                                <span class="comments-box">
+                                                    Los egresos se obtienen a partir de los totales de las facturas de compras.
+                                                </span>
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card text-center">
-                                    <div class="card-body">
+                                    <div class="card-body">                                 
                                         <i class="fas fa-dollar-sign fa-2x"></i>
                                         <p class="mt-2">
-                                            Ganancias: 
-                                            <span *ngIf="contabilidadPositiva">
-                                                <span class="text-success"><b>{{total_ganancias}} USD</b></span>
-                                            </span>
-                                            <span *ngIf="!contabilidadPositiva">
-                                                <span class="text-danger"><b>{{total_ganancias}} USD</b></span>
+                                            <span class="comments">
+                                                Ganancias: 
+                                                <span *ngIf="contabilidadPositiva">
+                                                    <span class="text-success"><b>{{total_ganancias}} USD</b></span>
+                                                </span>
+                                                <span *ngIf="!contabilidadPositiva">
+                                                    <span class="text-danger"><b>{{total_ganancias}} USD</b></span>
+                                                </span>
+                                                <span class="comments-box">
+                                                    Las ganancias se obtienen a partir de los ingresos y egresos, sin tomar en cuenta el IVA cobrado en las facturas de ventas.
+                                                </span>
                                             </span>
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
+                        
                         <!-- Sección de Tarjetas Inferiores -->
                         <div class="col-md-12 mb-3">
                             <div class="card text-center">
