@@ -129,7 +129,7 @@
                                             </thead>
                                             <tbody>
                                                 <tr *ngFor="let producto of productosSelected; let i = index">
-                                                    <td>{{producto.id}}</td>
+                                                    <td>{{producto.codigo}}</td>
                                                     <td>{{producto.descripcion}}</td>
                                                     <td>
                                                         <input type="hidden" name="producto_id" [(ngModel)]="producto.producto_id">
@@ -153,10 +153,32 @@
                             <div class="col-lg-5 col-md-12">
                                 <div class="col-12">
                                     <div class="row">
-                                        <div class="col-lg-12 col-sm-6 mt-4">
-                                            <input class="form-control" name="searchProducto"
-                                            type="text" placeholder="Buscar" (input)="Search(2)"
-                                            [(ngModel)]="search">
+                                        <div class="col-lg-12 col-sm-6">
+                                            <label>Código / Descripción |
+                                                <span (click)="barCode()">
+                                                    <span *ngIf="barCodeOption">
+                                                        <i class="fas fa-barcode text-success"
+                                                            title="Desactivar proceso automático por código de barra"></i>
+                                                    </span>
+                                                    <span *ngIf="!barCodeOption">
+                                                        <i class="fas fa-barcode text-muted"
+                                                            title="Activar proceso automático por código de barra"></i>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="search" (click)="resetBusquedaProducto()"
+                                                    class="ms-2">
+                                                    <i class="fas fa-times text-danger"
+                                                        title="Limpiar campo de búsqueda"></i>
+                                                </span>
+                                                <span *ngIf="!search" class="ms-2">
+                                                    <i class="fas fa-times text-muted"
+                                                        title="Limpiar campo de búsqueda"></i>
+                                                </span>
+                                            </label>
+                                            <input class="form-control" name="searchProducto" placeholder="Buscar"
+                                            (input)="Search(2)"
+                                            [(ngModel)]="search"
+                                            #searchInputEdit>
                                         </div>
                                         <br>
                                         <div class=" col-lg-12 col-sm-6 mt-4">
@@ -249,7 +271,7 @@
                                             </thead>
                                             <tbody>
                                                 <tr *ngFor="let producto of productosSelected; let i = index">
-                                                    <td>{{producto.producto_id ? producto.producto_id : producto.id}}</td>
+                                                    <td>{{producto.codigo}}</td>
                                                     <td>{{producto.descripcion}}</td>
                                                     <td>
                                                         <input type="hidden" name="producto_id" [(ngModel)]="producto.producto_id">
@@ -273,10 +295,32 @@
                             <div class="col-lg-5 col-md-12">
                                 <div class="col-12">
                                     <div class="row">
-                                        <div class="col-lg-12 col-sm-6 mt-4">
-                                            <input class="form-control" name="searchProducto"
-                                            type="text" placeholder="Buscar" (input)="Search(2)"
-                                            [(ngModel)]="search">
+                                        <div class="col-lg-12 col-sm-6">
+                                            <label>Código / Descripción |
+                                                <span (click)="barCode()">
+                                                    <span *ngIf="barCodeOption">
+                                                        <i class="fas fa-barcode text-success"
+                                                            title="Desactivar proceso automático por código de barra"></i>
+                                                    </span>
+                                                    <span *ngIf="!barCodeOption">
+                                                        <i class="fas fa-barcode text-muted"
+                                                            title="Activar proceso automático por código de barra"></i>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="search" (click)="resetBusquedaProducto()"
+                                                    class="ms-2">
+                                                    <i class="fas fa-times text-danger"
+                                                        title="Limpiar campo de búsqueda"></i>
+                                                </span>
+                                                <span *ngIf="!search" class="ms-2">
+                                                    <i class="fas fa-times text-muted"
+                                                        title="Limpiar campo de búsqueda"></i>
+                                                </span>
+                                            </label>
+                                            <input class="form-control" name="searchProducto-edit" placeholder="Buscar"
+                                            (input)="Search(2)"
+                                            [(ngModel)]="search"
+                                            #searchInput>
                                         </div>
                                         <br>
                                         <div class=" col-lg-12 col-sm-6 mt-4">

@@ -26,6 +26,7 @@ interface CabeceraFactura {
   subtotalSinIva: number;
   subtotalConIva: number;
   totalDescuento: number;
+  subtotal: number;
   totalIva: number;
   totalServicio: number;
   total: number;
@@ -92,6 +93,7 @@ export class VenderComponent implements OnInit {
   subtotalSinIva: any = 0.00;
   subtotalConIva: any = 0.00;
   totalDescuento: any = 0.00;
+  subtotal: any = 0.00;
   totalIva: any = 0.00;
   total: any = 0.00;
   estado: string = '';
@@ -123,8 +125,9 @@ export class VenderComponent implements OnInit {
     iva: string;
     tipoDescuento: string;
     descuento: number;
+    descuentoCalculado: any;
     valorTotal: number;
-    valorTotalConIva: any;
+    valorTotalProducto: any;
     valorIce: number;
   }[] = [];
 
@@ -360,6 +363,7 @@ export class VenderComponent implements OnInit {
           subtotalSinIva: this.subtotalSinIva,
           subtotalConIva: this.subtotalConIva,
           totalDescuento: this.totalDescuento,
+          subtotal: this.subtotal,
           totalIva: this.totalIva,
           totalServicio: 0,
           total: this.total,
@@ -371,8 +375,8 @@ export class VenderComponent implements OnInit {
           descripcion: producto.descripcion,
           precioUnitario: producto.precioUnitario,
           iva: this.tiposIva.find(tipo => tipo.id == producto.iva_id).tipoIva,
-          descuento: producto.descuento,
-          valorTotal: producto.valorTotalConIva,
+          descuento: producto.descuentoCalculado,
+          valorTotal: producto.valorTotalProducto,
           valorIce: producto.valorIce
         })),
         auditoria: this.AppService.getDataAuditoria('create')
@@ -490,8 +494,9 @@ export class VenderComponent implements OnInit {
         iva: productoSeleccionado.iva,
         tipoDescuento: '%',
         descuento: 0,
+        descuentoCalculado: 0,
         valorTotal: 0,
-        valorTotalConIva: 0,
+        valorTotalProducto: 0,
         valorIce: 0
       };
       this.productosEnFactura.push(newProducto);
@@ -532,7 +537,7 @@ export class VenderComponent implements OnInit {
     }
 
     const valorTotal = precioConDescuento.mul(cantidad);
-    producto.valorTotal = valorTotal.toFixed(2);
+    producto.valorTotalProducto = valorTotal.toFixed(2);
     this.updateTotales();  // Actualizamos los totales después de calcular el total del producto
   }
 
@@ -553,51 +558,71 @@ export class VenderComponent implements OnInit {
   }
 
   updateTotales() {
-    let subtotalSinIva = new Decimal(0); // Total sin IVA y sin descuentos
-    let totalIva = new Decimal(0);       // IVA acumulado
-    let totalDescuento = new Decimal(0); // Descuento acumulado
-    let totalConIva = new Decimal(0);    // Total con IVA antes de aplicar descuento
-    let totalFinal = new Decimal(0);     // Total final con descuento aplicado
+    let subtotalConIva = new Decimal(0); // Subtotal de productos que tienen IVA
+    let subtotalSinIva = new Decimal(0); // Subtotal de productos que no tienen IVA
+    let totalDescuento = new Decimal(0); // Descuento
+    let subtotal = new Decimal(0);       // Subtotal de aplicando descuento
+    let totalIva = new Decimal(0);       // IVA
+    let totalFinal = new Decimal(0);     // Total, subtotal imcluyendo IVA
 
     this.productosEnFactura.forEach(producto => {
-      const precioUnitario = new Decimal(producto.precioUnitario);
+      // Se obtienen los precios unitarios
+      const precioProductoSinIva = new Decimal(
+        producto.iva_id == 1 ?
+        producto.precioUnitario :
+        0
+      );
+      const precioProductoConIva = new Decimal(
+        producto.iva_id == 2 || producto.iva_id == 3 ?
+        producto.precioUnitario : 0
+      );
+
+      // Se optiene la cantidad y descuento
       const cantidad = new Decimal(producto.cantidad);
       const descuento = new Decimal(producto.descuento);
+      
+      // Se calcula el precio del producto con la cantidad
+      let valorTotalSinIva, valorTotalSinIvaSinDescuento;
+      let valorTotalConIva, valorTotalConIvaSinDescuento;
 
-      // 1. Calcular valor total sin IVA
-      const valorTotalSinIva = precioUnitario.mul(cantidad);
+      valorTotalConIva = precioProductoConIva.mul(cantidad);
+      valorTotalSinIva = precioProductoSinIva.mul(cantidad);
 
-      // 2. Calcular IVA
+      valorTotalConIvaSinDescuento = precioProductoConIva.mul(cantidad);
+      valorTotalSinIvaSinDescuento = precioProductoSinIva.mul(cantidad);
+      
+      // Se suma valorTotalConIva y valorTotalSinIva
+      let valorTotalConSinIva = new Decimal(0);
+      valorTotalConSinIva = valorTotalConSinIva.add(valorTotalConIva);
+      valorTotalConSinIva = valorTotalConSinIva.add(valorTotalSinIva);
+
+      // Se optiene el descuento en caso que exista descuento
+      const descuentoCalculado = this.calcularDescuento(producto.tipoDescuento, valorTotalConSinIva, descuento);
+      producto.descuentoCalculado = descuentoCalculado.toFixed(2);
+
+      // Se calcula el subtotal entre la suma de los productos con y sin IVA, y se le resta el descuento
+      subtotal = subtotal.add(valorTotalConSinIva).minus(descuentoCalculado);
+
+      // Se obtiene el valor del IVA calculando el valorTotalConIva menos el descuento
       const ivaSeleccionado = this.tiposIva.find(tipo => tipo.id == producto.iva_id);
       const ivaPorcentaje = new Decimal(ivaSeleccionado.tipoIva.replace('%', ''));
-      const valorIva = valorTotalSinIva.mul(ivaPorcentaje).div(100);
-
-      // 3. Calcular valor total con IVA antes del descuento
-      const valorTotalConIva = valorTotalSinIva.add(valorIva);
-
-      // 4. Calcular descuento
-      const descuentoCalculado = this.calcularDescuento(producto.tipoDescuento, valorTotalConIva, descuento);
-
-      // 5. Calcular total final (con IVA menos descuento)
-      const valorFinal = valorTotalConIva.minus(descuentoCalculado);
+      const valorIva = valorTotalConIva.minus(descuentoCalculado).mul(ivaPorcentaje).div(100);
 
       // Acumular resultados
-      subtotalSinIva = subtotalSinIva.add(valorTotalSinIva); // Total sin IVA
-      totalIva = totalIva.add(valorIva);                     // IVA acumulado
-      totalDescuento = totalDescuento.add(descuentoCalculado); // Descuento acumulado
-      totalConIva = totalConIva.add(valorTotalConIva);         // Total con IVA antes del descuento
-      totalFinal = totalFinal.add(valorFinal);                // Total final después del descuento
-
-      // Guardar valor final en el producto
-      producto.valorTotalConIva = valorFinal.toFixed(2);
+      subtotalConIva = subtotalConIva.add(valorTotalConIvaSinDescuento); // Se acumula el subtotal con IVA
+      subtotalSinIva = subtotalSinIva.add(valorTotalSinIvaSinDescuento); // Se acumula el subtotal sin IVA
+      totalIva = totalIva.add(valorIva);                                 // Se acumula el IVA
+      totalDescuento = totalDescuento.add(descuentoCalculado);           // Se acumula el descuento
+      totalFinal = new Decimal(subtotal.toNumber()+totalIva.toNumber()); // Se acumula el total sumando el subtotal con el IVA
     });
 
     // Actualizar los totales en el componente
-    this.subtotalSinIva = subtotalSinIva.toFixed(2);   // Total sin IVA
-    this.totalIva = totalIva.toFixed(2);               // IVA total
-    this.totalDescuento = totalDescuento.toFixed(2);   // Descuento total
-    this.subtotalConIva = totalConIva.toFixed(2);      // Total con IVA antes del descuento
-    this.total = totalFinal.toFixed(2);                // Total final con descuento
+    this.subtotalConIva = subtotalConIva.toFixed(2);   // Subtotal con IVA
+    this.subtotalSinIva = subtotalSinIva.toFixed(2);   // Subtotal sin IVA
+    this.totalDescuento = totalDescuento.toFixed(2);   // Descuento
+    this.subtotal = subtotal.toFixed(2);               // Subtotal
+    this.totalIva = totalIva.toFixed(2);               // IVA
+    this.total = totalFinal.toFixed(2);                // Total
   }
 
   validarInputTipoNumber(producto: any, op: number) {
@@ -652,6 +677,7 @@ export class VenderComponent implements OnInit {
     this.subtotalSinIva = 0;
     this.subtotalConIva = 0;
     this.totalDescuento = 0;
+    this.subtotal = 0;
     this.totalIva = 0;
     this.total = 0;
     this.search = '';
@@ -819,7 +845,6 @@ export class VenderComponent implements OnInit {
     this.productosEnFactura.forEach(producto => this.calcularTotalProducto(producto));
   }
 
-
   // Imprimir comprobante
   public comprobante(data: any, codigo: any) {
     const tipoFactura = data.data.cabecera.tipoFactura.toUpperCase();
@@ -844,7 +869,7 @@ export class VenderComponent implements OnInit {
         { text: `${codigo}`, style: 'info', alignment: 'center' },
         '------------------------------------------',
         { text: `Cliente: ${data.data.cabecera.receptor}`, style: 'dataCliente' },
-        { text: `RUC/Ced/Pass: ${!data.data.cabecera.numeroIdentificacion ? '0000000009' : data.data.cabecera.numeroIdentificacion}`, style: 'dataCliente' },
+        { text: `RUC/Ced/Pass: ${!data.data.cabecera.numeroIdentificacion ? '9999999999' : data.data.cabecera.numeroIdentificacion}`, style: 'dataCliente' },
         '***************************',
         {
           table: {
@@ -864,10 +889,11 @@ export class VenderComponent implements OnInit {
           layout: 'lightHorizontalLines' // Agregar líneas horizontales ligeras
         },
         '***************************',
-        { text: `Subtotal sin IVA: $${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
         { text: `Subtotal con IVA: $${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total descuento: $${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
-        { text: `Total IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal sin IVA: $${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Descuento: $${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal: $${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
+        { text: `IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
         { text: `Total: $${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
         {

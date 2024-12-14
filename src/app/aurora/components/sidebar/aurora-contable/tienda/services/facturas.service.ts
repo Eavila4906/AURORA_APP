@@ -34,6 +34,15 @@ export class FacturasService {
     );
   }
 
+  edit(data: any) {
+    const url = this.AuthService.AuroraApiContable + `/factura/edit/${data.data.cabecera.id}`;
+    return this.http.put<any>(url, data).pipe(
+      catchError(error => {
+        return throwError(error.error.message);
+      })
+    );
+  }
+
   /**
    * MORE FUNCTIONS
    */
@@ -41,6 +50,15 @@ export class FacturasService {
   getFormasDePago() {
     const url = this.AuthService.AuroraApiContable + '/formas_de_pago';
     return this.http.get<any>(url);
+  }
+
+  deleteProducto(id: number) {
+    const url = this.AuthService.AuroraApiContable + `/factura/delete/producto/${id}`;
+    return this.http.delete<any>(url).pipe(
+      catchError(error => {
+        return throwError(error.error.message);
+      })
+    );
   }
 
 }
