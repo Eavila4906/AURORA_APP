@@ -1,19 +1,57 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import * as pdfMake from "pdfmake/build/pdfmake";
+import { Decimal } from 'decimal.js';
 
 import { AppService } from 'src/app/services/app.service';
 import { CuentasPorCobrarService } from './services/cuentas-por-cobrar.service';
 import { AbonosService } from '../abonos/services/abonos.service';  
+import { ProductosService } from '../../gestion/productos/services/productos.service';
+import { FacturasService } from '../../tienda/services/facturas.service';
+import { OtherServicesService } from 'src/app/services/other-services/other-services.service';
+
 interface Abono {
   cabFactura_id: number;
   monto: number;
   fecha: string;
   descripcion: string;
 }
+
+interface CabeceraFactura {
+  id: number;
+  tipoFactura: string;
+  perfil_id: number;
+  perfil: string;
+  fechaEmision: string;
+  puntoEmision_id: number;
+  facturaComercialNegociable: string;
+  receptor_id: number;
+  receptor: string;
+  numeroIdentificacion: string;
+  subtotalSinIva: number;
+  subtotalConIva: number;
+  totalDescuento: number;
+  subtotal: number;
+  totalIva: number;
+  totalServicio: number;
+  total: number;
+  estado: string;
+}
+
+interface DataStructureFactura {
+  data: {
+    cabecera: CabeceraFactura;
+    productos: any[];
+    auditoria: any;
+    formasPago?: any[];
+    observaciones?: any[];
+    abonos?: any[]
+  }
+}
+
 @Component({
   selector: 'app-cuentas-por-cobrar',
   templateUrl: './cuentas-por-cobrar.component.html',
@@ -21,6 +59,10 @@ interface Abono {
 })
 export class CuentasPorCobrarComponent implements OnInit {
   @ViewChild('ModalNewAbono') ModalNewAbono?: ModalDirective;
+  @ViewChild('ModalEdit') ModalEdit?: ModalDirective;
+  @ViewChild('ModalAddFormasDePago') ModalAddFormasDePago?: ModalDirective;
+  @ViewChild('ModalAddObservacion') ModalAddObservacion?: ModalDirective;
+  @ViewChild('searchInput', { static: false }) searchInput?: ElementRef;
 
   permission_read: boolean = true;
   permission_create: boolean = true;
@@ -44,6 +86,76 @@ export class CuentasPorCobrarComponent implements OnInit {
 
   cuentasPorCobrar: any[] = [];
 
+  codigoFactura: string = '';
+  perfil_id: number = 0;
+  tipoFactura: string = '';
+  fechaEmision: string = this.AppService.getTimeZoneCurrentDate();
+  puntoEmision_id: number = 0;
+  facturaComercialNegociable: string = 'NO';
+  receptor_id: number = 0;
+  subtotalSinIva: any = 0.00;
+  subtotalConIva: any = 0.00;
+  totalDescuento: any = 0.00;
+  subtotal: any = 0.00;
+  totalIva: any = 0.00;
+  total: any = 0.00;
+  estado: string = '';
+
+  perfil: any;
+  puntosEmision: any[] = [];
+
+  productos: any[] = [];
+  productosFilter: any[] = [];
+  productosFilterSelected: any[] = [];
+
+  tiposIva: any[] = [];
+  facturarConIva: boolean = true;
+
+  productosEnFactura: {
+    detFactura_id: number;
+    id: number;
+    codigo: any;
+    cantidad: number;
+    descripcion: string,
+    precioUnitario: number;
+    iva_id: number;
+    iva: string;
+    tipoDescuento: string;
+    descuento: number;
+    descuentoCalculado: any;
+    valorTotal: number;
+    valorTotalProducto: any;
+    valorIce: number;
+  }[] = [];
+
+  productosEnFacturaCompare: {
+    id: number;
+    codigo: any;
+    cantidad: number;
+    descripcion: string,
+    precioUnitario: number;
+    iva_id: number;
+    iva: string;
+    tipoDescuento: string;
+    descuento: number;
+    descuentoCalculado: any;
+    valorTotal: number;
+    valorTotalProducto: any;
+    valorIce: number;
+  }[] = [];
+
+
+  formasPagoEnFactura: any[] = [];
+  observacionesEnFactura: any[] = [];
+
+  abonosEnFactura: any[] = [];
+  abonosStructure = {
+    monto: 0,
+    descripcion: ''
+  };
+
+  barCodeOption: boolean = false;
+
   //Search
   searchByRange: boolean = false;
   search: string = '';
@@ -56,7 +168,7 @@ export class CuentasPorCobrarComponent implements OnInit {
   resetForm() {
     this.newAbono.cabFactura_id = 0;
     this.newAbono.monto = 0;
-    this.newAbono.fecha = '';
+    this.newAbono.fecha = this.AppService.getTimeZoneCurrentDate();
     this.newAbono.descripcion = '';
 
     this.cabFactura_id = 0;
@@ -66,6 +178,9 @@ export class CuentasPorCobrarComponent implements OnInit {
     private AppService: AppService,
     private CuentasPorCobrarService: CuentasPorCobrarService,
     private AbonosService: AbonosService,
+    private ProductosService: ProductosService,
+    private FacturasServices: FacturasService,
+    private OtherServicesService: OtherServicesService,
     private toastr: ToastrService,
     private router: Router
   ) { }
@@ -105,6 +220,9 @@ export class CuentasPorCobrarComponent implements OnInit {
         this.loading = false;
       }
     );
+
+    this.getProductos();
+    this.getTiposIva();
   }
 
   /**
@@ -115,6 +233,11 @@ export class CuentasPorCobrarComponent implements OnInit {
     this.dataPrintComprobante = data;
     this.cabFactura_id = data.id;
     this.ModalNewAbono?.show();
+  }
+
+  openModalEdit(id: number) {
+    this.getFactura(id);
+    this.ModalEdit?.show();
   }
 
   /**
@@ -230,6 +353,151 @@ export class CuentasPorCobrarComponent implements OnInit {
     );
   }
 
+  getProductos() {
+    this.ProductosService.getAll().subscribe(
+      response => {
+        this.productos = response.data.filter((producto: any) => producto.estado === 'Activo');
+        this.productosFilter = this.productos;
+      }
+    );
+  }
+
+  getTiposIva() {
+    this.OtherServicesService.getTiposIva().subscribe(
+      response => {
+        this.tiposIva = response.data.filter((tipo: any) => tipo.estado === 'Activo');
+      }
+    );
+  }
+
+  getFactura(id: number) {
+    this.FacturasServices.get(id).subscribe(
+      response => {
+        this.cabFactura_id = response.data.id;
+        this.codigoFactura = response.data.codigoFactura;
+        this.tipoFactura = response.data.tipoFactura;
+        this.fechaEmision = response.data.fechaEmision;
+        this.facturaComercialNegociable = response.data.facturaComercialNegociable;
+        this.perfil_id = response.data.perfil_id;
+        this.perfil = response.data.emisor.nombres;
+        this.puntoEmision_id = response.data.puntoEmision_id;
+        this.receptor_id = response.data.receptor_id;
+        this.selectedOption = response.data.receptor.nombres;
+        this.numIdentificacionSelected = response.data.receptor.numeroIdentificacion;
+        this.subtotalConIva = response.data.subtotalConIva;
+        this.subtotalSinIva = response.data.subtotalSinIva;
+        this.totalDescuento = response.data.totalDescuento;
+        this.totalDescuento = response.data.totalDescuento;
+        this.subtotal = response.data.subtotal;
+        this.subtotal = response.data.subtotal;
+        this.totalIva = response.data.totalIva;
+        this.totalIva = response.data.totalIva;
+        this.total = response.data.total;
+        
+        this.productosEnFactura = response.data.productos.map((producto: any) => ({
+          detFactura_id: producto.id,
+          id: producto.productos.id,
+          codigo: producto.productos.codigo,
+          cantidad: producto.cantidad,
+          descripcion: producto.descripcion,
+          precioUnitario: producto.precioUnitario,
+          iva_id: this.tiposIva.find((tipo: any) => tipo.tipoIva === producto.iva)?.id, 
+          iva: producto.iva,
+          tipoDescuento: '$', 
+          descuento: producto.descuento,
+          descuentoCalculado: producto.descuento,
+          valorTotal: producto.valorTotal,
+          valorTotalProducto: producto.valorTotal,
+          valorIce: producto.valorIce
+        }));
+
+        this.formasPagoEnFactura = response.data.formasDePago;
+        this.observacionesEnFactura = response.data.observaciones;
+        this.abonosEnFactura = response.data.abonos;
+      }
+    );
+  }
+
+  editFactura(id: number, op: number) {
+    if (this.productosEnFactura.length === 0) {
+      this.toastr.warning('Tiene que agregar al menos un producto en la lista de venta', '¡Listo!', { closeButton: true });
+      return;
+    }
+
+    if (op === 2) {
+      this.estado = 'Pagada';
+    } else {
+      this.estado = 'Por cobrar';
+    }
+
+    let data: DataStructureFactura = {
+      data: {
+        cabecera: {
+          id: this.cabFactura_id,
+          tipoFactura: this.tipoFactura,
+          perfil_id: this.perfil_id,
+          perfil: this.perfil,
+          fechaEmision: this.fechaEmision,
+          puntoEmision_id: this.puntoEmision_id,
+          facturaComercialNegociable: this.facturaComercialNegociable,
+          receptor_id: this.receptor_id,
+          receptor: this.selectedOption,
+          numeroIdentificacion: this.numIdentificacionSelected,
+          subtotalSinIva: this.subtotalSinIva,
+          subtotalConIva: this.subtotalConIva,
+          totalDescuento: this.totalDescuento,
+          subtotal: this.subtotal,
+          totalIva: this.totalIva,
+          totalServicio: 0,
+          total: this.total,
+          estado: this.estado
+        },
+        productos: this.productosEnFactura.map(producto => ({
+          producto_id: producto.id,
+          cantidad: producto.cantidad,
+          descripcion: producto.descripcion,
+          precioUnitario: producto.precioUnitario,
+          iva: this.tiposIva.find(tipo => tipo.id == producto.iva_id).tipoIva,
+          descuento: producto.descuentoCalculado,
+          valorTotal: producto.valorTotalProducto,
+          valorIce: producto.valorIce
+        })),
+        formasPago: this.formasPagoEnFactura.length === 1 ? this.formasPagoEnFactura.map((item: any) => ({
+          formaPago_id: item.formaPago_id,
+          formaPago: item.formaPago,
+          valor: this.total,
+          plazo: item.plazo,
+          tiempo: item.tiempo
+        })) : this.formasPagoEnFactura,
+        observaciones: this.observacionesEnFactura,
+        abonos: this.abonosEnFactura,
+        auditoria: this.AppService.getDataAuditoria('edit')
+      }
+    };
+
+    this.FacturasServices.edit(data).subscribe(
+      response => {
+        if (response.data) {
+          this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+          this.ModalEdit?.hide();
+          this.ngOnInit();
+          Swal.fire({
+            icon: 'warning',
+            title: '<strong>¿Desea imprimir el comprobante?</strong>',
+            showCancelButton: true,
+            focusConfirm: false,
+            confirmButtonText: 'Si, imprimir',
+            cancelButtonText: 'No, cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.comprobanteEditFactura(data, response.data.cabecera.codigoFactura);
+            }
+          })
+        }
+      }
+
+    );
+  }
   /**
    * MORE FUNCTIONS
    */
@@ -356,6 +624,317 @@ export class CuentasPorCobrarComponent implements OnInit {
     };
 
     pdfMake.createPdf(docDefinition).print();
+  }
+
+  public comprobanteEditFactura(data: any, codigo: any) {
+    const tipoFactura = data.data.cabecera.tipoFactura.toUpperCase();
+
+    const productos = data.data.productos.map((item: any) => [
+      { text: item.descripcion, style: 'tableBody', alignment: 'left' },
+      { text: item.cantidad, style: 'tableBody', alignment: 'left' },
+      { text: `${item.precioUnitario}`, style: 'tableBody', alignment: 'left' },
+      { text: `${(item.valorTotal)}`, style: 'tableBody', alignment: 'left' }
+    ]);
+
+    const docDefinition: any = {
+      pageSize: {
+        width: 156,
+        height: 'auto'
+      },
+      pageMargins: [8, 8, 8, 8], // Márgenes personalizados (izquierda, arriba, derecha, abajo)
+      content: [
+        '***************************',
+        { text: `COMPROBANTE DE PAGO`, style: 'header', alignment: 'center' },
+        { text: `${data.data.cabecera.perfil}`, style: 'titleEmpresa', alignment: 'center' },
+        { text: `${codigo}`, style: 'info', alignment: 'center' },
+        '------------------------------------------',
+        { text: `Cliente: ${data.data.cabecera.receptor}`, style: 'dataCliente' },
+        { text: `RUC/Ced/Pass: ${!data.data.cabecera.numeroIdentificacion ? '9999999999' : data.data.cabecera.numeroIdentificacion}`, style: 'dataCliente' },
+        '***************************',
+        {
+          table: {
+            widths: ['auto', 'auto', 'auto', 'auto'],
+            body: [
+              // Cabecera de la tabla
+              [
+                { text: 'Descrip.', style: 'tableHeader', alignment: 'left', margin: [0, 0, 0, 0] },
+                { text: 'Cant.', style: 'tableHeader', alignment: 'left', margin: [0, 0, 0, 0] },
+                { text: 'P. unit.', style: 'tableHeader', alignment: 'left', margin: [0, 0, 0, 0] },
+                { text: 'Valor', style: 'tableHeader', alignment: 'left', margin: [0, 0, 0, 0] }
+              ],
+              // Contenido de la tabla con los productos
+              ...productos
+            ]
+          },
+          layout: 'lightHorizontalLines' // Agregar líneas horizontales ligeras
+        },
+        '***************************',
+        { text: `Subtotal con IVA: $${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal sin IVA: $${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Descuento: $${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal: $${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
+        { text: `IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
+        { text: `Total: $${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
+        '------------------------------------------',
+        {
+          text: `Estado: ${data.data.cabecera.estado === 'Por cobrar'
+            ? 'Por pagar'
+            : data.data.cabecera.estado === 'Pagada'
+              ? 'Pagado'
+              : data.data.cabecera.estado
+            }`,
+          style: 'info', alignment: 'right'
+        },
+      ],
+      styles: {
+        header: { fontSize: 12, bold: true },
+        titleEmpresa: { fontSize: 10, bold: true },
+        titles: { fontSize: 8, bold: true },
+        info: { fontSize: 8 },
+        dataCliente: { fontSize: 8 },
+        totales: { fontSize: 8 },
+        tableHeader: { fontSize: 8, bold: true },
+        tableBody: { fontSize: 7, bold: true }
+      },
+    };
+
+    pdfMake.createPdf(docDefinition).print();
+  }
+
+  barCode() {
+    this.barCodeOption = !this.barCodeOption;
+    this.resetBusquedaProducto();
+  }
+
+  filterProductos() {
+    if (!this.search || this.search.trim() === '') {
+      this.productosFilterSelected = [];
+      return;
+    }
+
+    this.productosFilterSelected = this.productosFilter.filter(producto =>
+      producto.codigo.includes(this.search) ||
+      producto.descripcion.toLowerCase().includes(this.search.toLowerCase())
+    );
+
+    // Si hay solo un producto filtrado, agrégalo automáticamente
+    if (this.barCodeOption && this.productosFilterSelected.length === 1) {
+      this.selectProducto(this.productosFilterSelected[0]);
+      this.resetBusquedaProducto();
+    }
+  }
+
+  selectProducto(productoSeleccionado: any) {
+    const productoExistente = this.productosEnFactura.find(producto => producto.codigo === productoSeleccionado.codigo);
+
+    if (productoExistente) {
+      productoExistente.cantidad += 1;
+      this.calcularTotalProducto(productoExistente);
+    } else {
+      const newProducto = {
+        detFactura_id: 0,
+        id: productoSeleccionado.id,
+        codigo: productoSeleccionado.codigo,
+        cantidad: 1,
+        descripcion: productoSeleccionado.descripcion,
+        precioUnitario: productoSeleccionado.pvp1,
+        iva_id: this.facturarConIva ? productoSeleccionado.iva_id : 1,
+        iva: productoSeleccionado.iva,
+        tipoDescuento: '%',
+        descuento: 0,
+        descuentoCalculado: 0,
+        valorTotal: 0,
+        valorTotalProducto: 0,
+        valorIce: 0
+      };
+      this.productosEnFactura.push(newProducto);
+      this.calcularTotalProducto(newProducto);
+    }
+    this.resetBusquedaProducto();
+  }
+
+  resetBusquedaProducto() {
+    if (this.searchInput) {
+      this.search = '';
+      this.searchInput.nativeElement.value = '';
+    }
+    this.productosFilterSelected = [];
+  }
+
+  calcularTotalProducto(producto: any) {
+    const precio = new Decimal(producto.precioUnitario);
+    const cantidad = new Decimal(producto.cantidad) || 0;
+    const descuento = new Decimal(producto.descuento) || 0;
+
+    if (precio.isNaN() || cantidad.isNaN() || descuento.isNaN()) {
+      return;
+    }
+
+    let precioConDescuento: Decimal;
+
+    if (producto.tipoDescuento === '%') {
+      // Descuento en porcentaje, se aplica sobre el precio unitario
+      precioConDescuento = precio.mul(new Decimal(1).minus(descuento.div(100)));
+    } else {
+      // Descuento en valor monetario
+      precioConDescuento = precio.sub(descuento);
+    }
+
+    if (precioConDescuento.lessThan(0)) {
+      precioConDescuento = new Decimal(0); // Asegurar que no sea negativo
+    }
+
+    const valorTotal = precioConDescuento.mul(cantidad);
+    producto.valorTotalProducto = valorTotal.toFixed(2);
+    this.updateTotales();  // Actualizamos los totales después de calcular el total del producto
+  }
+
+  calcularDescuento(tipoDescuento: string, valorTotalConIva: Decimal, descuento: Decimal): Decimal {
+    let descuentoCalculado: Decimal = new Decimal(0);
+
+    if (tipoDescuento == '%') {
+      // Descuento en porcentaje sobre el valor total con IVA
+      descuentoCalculado = valorTotalConIva.mul(descuento).div(100);
+    } else if (tipoDescuento == '$') {
+      // Descuento en valor monetario, no puede ser mayor que el valor total con IVA
+      descuentoCalculado = descuento;
+      if (descuentoCalculado.greaterThan(valorTotalConIva)) {
+        descuentoCalculado = valorTotalConIva;
+      }
+    }
+    return descuentoCalculado;
+  }
+
+  updateTotales() {
+    let subtotalConIva = new Decimal(0); // Subtotal de productos que tienen IVA
+    let subtotalSinIva = new Decimal(0); // Subtotal de productos que no tienen IVA
+    let totalDescuento = new Decimal(0); // Descuento
+    let subtotal = new Decimal(0);       // Subtotal de aplicando descuento
+    let totalIva = new Decimal(0);       // IVA
+    let totalFinal = new Decimal(0);     // Total, subtotal imcluyendo IVA
+
+    this.productosEnFactura.forEach(producto => {
+      // Se obtienen los precios unitarios
+      const precioProductoSinIva = new Decimal(
+        producto.iva_id == 1 ?
+        producto.precioUnitario :
+        0
+      );
+      const precioProductoConIva = new Decimal(
+        producto.iva_id == 2 || producto.iva_id == 3 ?
+        producto.precioUnitario : 0
+      );
+
+      // Se optiene la cantidad y descuento
+      const cantidad = new Decimal(producto.cantidad);
+      const descuento = new Decimal(producto.descuento);
+      
+      // Se calcula el precio del producto con la cantidad
+      let valorTotalSinIva, valorTotalSinIvaSinDescuento;
+      let valorTotalConIva, valorTotalConIvaSinDescuento;
+
+      valorTotalConIva = precioProductoConIva.mul(cantidad);
+      valorTotalSinIva = precioProductoSinIva.mul(cantidad);
+
+      valorTotalConIvaSinDescuento = precioProductoConIva.mul(cantidad);
+      valorTotalSinIvaSinDescuento = precioProductoSinIva.mul(cantidad);
+      
+      // Se suma valorTotalConIva y valorTotalSinIva
+      let valorTotalConSinIva = new Decimal(0);
+      valorTotalConSinIva = valorTotalConSinIva.add(valorTotalConIva);
+      valorTotalConSinIva = valorTotalConSinIva.add(valorTotalSinIva);
+
+      // Se optiene el descuento en caso que exista descuento
+      const descuentoCalculado = this.calcularDescuento(producto.tipoDescuento, valorTotalConSinIva, descuento);
+      producto.descuentoCalculado = descuentoCalculado.toFixed(2);
+
+      // Se calcula el subtotal entre la suma de los productos con y sin IVA, y se le resta el descuento
+      subtotal = subtotal.add(valorTotalConSinIva).minus(descuentoCalculado);
+
+      // Se obtiene el valor del IVA calculando el valorTotalConIva menos el descuento
+      const ivaSeleccionado = this.tiposIva.find(tipo => tipo.id == producto.iva_id);
+      const ivaPorcentaje = new Decimal(ivaSeleccionado.tipoIva.replace('%', ''));
+      const valorIva = valorTotalConIva.minus(descuentoCalculado).mul(ivaPorcentaje).div(100);
+
+      // Acumular resultados
+      subtotalConIva = subtotalConIva.add(valorTotalConIvaSinDescuento); // Se acumula el subtotal con IVA
+      subtotalSinIva = subtotalSinIva.add(valorTotalSinIvaSinDescuento); // Se acumula el subtotal sin IVA
+      totalIva = totalIva.add(valorIva);                                 // Se acumula el IVA
+      totalDescuento = totalDescuento.add(descuentoCalculado);           // Se acumula el descuento
+      totalFinal = new Decimal(subtotal.toNumber()+totalIva.toNumber()); // Se acumula el total sumando el subtotal con el IVA
+    });
+
+    // Actualizar los totales en el componente
+    this.subtotalConIva = subtotalConIva.toFixed(2);   // Subtotal con IVA
+    this.subtotalSinIva = subtotalSinIva.toFixed(2);   // Subtotal sin IVA
+    this.totalDescuento = totalDescuento.toFixed(2);   // Descuento
+    this.subtotal = subtotal.toFixed(2);               // Subtotal
+    this.totalIva = totalIva.toFixed(2);               // IVA
+    this.total = totalFinal.toFixed(2);                // Total
+  }
+
+  validarInputTipoNumber(producto: any, op: number) {
+    if (op === 1) {
+      if (producto.cantidad < 1) {
+        producto.cantidad = 1;
+      }
+      this.calcularTotalProducto(producto);
+    } else {
+      if (producto.descuento < 0) {
+        producto.descuento = 0;
+      }
+      this.calcularTotalProducto(producto);
+    }
+  }
+
+  deleteProducto(id: number, index: number) {
+    Swal.fire({
+      icon: 'warning',
+      title: '<strong>¿Esta seguro que desea eliminar este registro?</strong>',
+      showCancelButton: true,
+      focusConfirm: false,
+      confirmButtonText: 'Si, eliminar',
+      cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.FacturasServices.deleteProducto(id).subscribe(
+          response => {
+            if (response.data) {
+              this.toastr.success(response.message, '¡Listo!', {closeButton: true});
+            }
+          }
+        );
+        this.productosEnFactura.splice(index, 1);
+        this.updateTotales();
+      }
+    })
+  }
+
+  /**
+   * Select con buscador
+   */
+
+  selectedOption: any = null;
+  numIdentificacionSelected: any = null;
+  dropdownOpen = false;
+
+  actualizarIvaProductos(): void {
+    this.productosEnFactura.forEach(productoFactura => {
+      // Busca el producto correspondiente en la lista `productos`
+      const productoOriginal = this.productos.find(
+        prod => prod.codigo === productoFactura.codigo
+      );
+
+      if (productoOriginal) {
+        // Toma el IVA del producto original
+        productoFactura.iva_id = this.facturarConIva
+          ? productoOriginal.iva_id // Aplica el IVA registrado en el producto
+          : this.tiposIva[0].id; // Si no se factura con IVA, aplica el primero de la lista tiposIva
+      }
+    });
+
+    // Recalcular los totales de todos los productos
+    this.productosEnFactura.forEach(producto => this.calcularTotalProducto(producto));
   }
 
 }
