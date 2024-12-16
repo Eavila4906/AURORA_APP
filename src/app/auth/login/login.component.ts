@@ -31,6 +31,11 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
+    if (!this.email || !this.password) {
+      this.toastr.warning('Todos los campos son obligatorios', '¡Atención!', { closeButton: true });
+      return;
+    }
+
     this.AuthService.login(this.email, this.password).subscribe(
       response => {
         if (response.data.access_token) {

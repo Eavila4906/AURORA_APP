@@ -9,12 +9,14 @@ import { AuthService } from 'src/app/auth/services/auth.service';
   providedIn: 'root'
 })
 export class PerfilService {
-  codigoEmpresa: any = localStorage.getItem('empresa');
-
   constructor(
     private AuthService: AuthService, 
     private http: HttpClient
   ) { }
+
+  get codigoEmpresa() {
+    return localStorage.getItem('empresa');
+  }
 
   get() {
     const url = this.AuthService.AuroraApiContable + '/perfil_de_factura/'+this.codigoEmpresa;

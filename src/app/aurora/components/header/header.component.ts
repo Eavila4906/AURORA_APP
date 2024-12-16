@@ -39,26 +39,32 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.AppService.getMenu().subscribe(
-      response => {
-        const modulesArray: any = Object.values(response.data);
-
-        modulesArray.forEach((module: any) => {
-          if (module.submodules && !Array.isArray(module.submodules)) {
-            module.submodules = Object.values(module.submodules);
-          }
+    const storedMenu = localStorage.getItem('menu');
+    if (!storedMenu) {
+      this.AppService.getMenu().subscribe(
+        response => {
+          const modulesArray: any = Object.values(response.data);
   
-          module.submodules.forEach((submodule: any) => {
-            if (submodule.items && !Array.isArray(submodule.items)) {
-              submodule.items = Object.values(submodule.items);
+          modulesArray.forEach((module: any) => {
+            if (module.submodules && !Array.isArray(module.submodules)) {
+              module.submodules = Object.values(module.submodules);
             }
+    
+            module.submodules.forEach((submodule: any) => {
+              if (submodule.items && !Array.isArray(submodule.items)) {
+                submodule.items = Object.values(submodule.items);
+              }
+            });
           });
-        });
-
-        this.menu = this.buildFullPaths(modulesArray);
-        localStorage.setItem('menu', JSON.stringify(this.menu));
-      }
-    );
+  
+          this.menu = this.buildFullPaths(modulesArray);
+          localStorage.setItem('menu', JSON.stringify(this.menu));
+        }
+      );
+    } else {
+      this.menu = storedMenu ? JSON.parse(storedMenu) : [];
+    }
+    
   }
 
   esRutaActual(ruta: string): boolean {
