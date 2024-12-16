@@ -14,7 +14,7 @@ export class ValidarRolesGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
-    const validarRol = this.appService.validarRolesPorNombre();
+    const validarRol = this.appService.validarUsuario().role;
 
     if (!validarRol.includes("Mesero")) {
       return true;

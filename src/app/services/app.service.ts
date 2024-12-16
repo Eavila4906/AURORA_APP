@@ -44,20 +44,73 @@ export class AppService {
     };
   }
 
-  /*validarRoles() {
-    let rol = localStorage.getItem('rol');
-    if (rol !== null) {
-      let data = JSON.parse(rol);
-      console.log(data[0].rol)
-      return data[0].rol;
-    }
-  }*/
-
   userData() {
     const url = this.getAuroraApiCore() + `/authenticated/user`;
     return this.http.get<any>(url)
   }
 
+  validarUsuario(): any {
+    const role = localStorage.getItem('rol');
+    const roleId = localStorage.getItem('rolId');
+    const empresa = localStorage.getItem('empresa');
+
+    this.userData().subscribe(response => {
+      const userData = response?.data;
+
+      if (userData !== null) {
+        let mensajesErrores = [];
+
+        // Validar rol
+        if (role) {
+          const existeRol = userData.roles?.some((roleObj: any) => roleObj.rol === role);
+          if (!existeRol) {
+            mensajesErrores.push('Usted no cuenta con este rol asignado.');
+          }
+        }
+
+        // Validar rolId
+        if (roleId) {
+          const existeRolId = userData.roles?.some((roleObj: any) => roleObj.id == roleId);
+          if (!existeRolId) {
+            mensajesErrores.push('Usted no cuenta con este rol asignado.');
+          }
+        }
+
+        // Validar empresa
+        if (empresa) {
+          const existeEmpresa = userData.companies?.some((companyObj: any) => companyObj.id == empresa);
+          if (!existeEmpresa) {
+            mensajesErrores.push('Usted no está asignado a esta empresa.');
+          }
+        }
+
+        // Si hay errores, cerrar sesión
+        if (mensajesErrores.length > 0) {
+          const mensajeFinal = mensajesErrores.join(' ');
+          const url = this.getAuroraApiCore() + '/logout';
+
+          this.http.post(url, null, this.httpHeader()).pipe(
+            catchError(() => {
+              return throwError('Ha ocurrido un error, intentelo más tarde.');
+            })
+          ).subscribe(response => {
+            if (response) {
+              this.toastr.warning('Se ha cerrado la sesión porque se detectó una acción mal intencionada.', '¡Atención!', { closeButton: true, timeOut: 12000 });
+              this.toastr.error(mensajeFinal, '¡Error!', { closeButton: true, timeOut: 12000 });
+              localStorage.clear();
+              this.router.navigate(['/login']);
+            }
+          });
+        }
+      } else {
+        this.toastr.error('No existe una sesión activa.', '¡Error!', { closeButton: true });
+      }
+    });
+
+    return {roleId: roleId, role: role, empresa: empresa};
+  }
+
+  /*
   validarRolesPorNombre(): any {
     var userDataString: any = [];
     const role = localStorage.getItem('rol');
@@ -198,18 +251,18 @@ export class AppService {
 
     return empresa;
   }
+  */
 
   getMenu() {
-    const id = this.validarRolesPorId();
-    this.validarEmpresa();
+    const id = this.validarUsuario().roleId;
+
     const url = this.getAuroraApiCore() + `/menu`;
     const body = { 'role': localStorage.getItem('rolId') };
     return this.http.post<any>(url, body);
   }
 
   getPermissions(id: number, type: string) {
-    const rId = this.validarRolesPorId();
-    this.validarEmpresa();
+    const rId = this.validarUsuario().roleId;
 
     if (type === 'module') {
       const url = this.getAuroraApiCore() + `/permissions/module/${id}/role/${rId}`;
@@ -221,13 +274,6 @@ export class AppService {
       const url = this.getAuroraApiCore() + `/permissions_item/item/${id}/role/${rId}`;
       return this.http.get<any>(url);
     }
-  }
-
-  getPermissionsModules() {
-    const id = this.validarRolesPorId();
-    this.validarEmpresa();
-    const url = this.getAuroraApiCore + `/permissions/modules/${id}`;
-    return this.http.get<any>(url);
   }
 
   getEntityModulation(currentPath: string): any {
@@ -289,7 +335,7 @@ export class AppService {
       if (op === 'create') {
         return {
           usrCreador: userdata.user?.username,
-          codigoEmpresa: codigoEmpresa 
+          codigoEmpresa: codigoEmpresa
         };
       } else {
         return {
@@ -298,7 +344,7 @@ export class AppService {
       }
     }
 
-    return null;  
+    return null;
   }
 
   padNumber(num: number, length: number = 7): string {
