@@ -117,6 +117,7 @@ export class CuentasPorCobrarComponent implements OnInit {
     codigo: any;
     cantidad: number;
     descripcion: string,
+    preciosVenta: any,
     precioUnitario: number;
     iva_id: number;
     iva: string;
@@ -127,23 +128,6 @@ export class CuentasPorCobrarComponent implements OnInit {
     valorTotalProducto: any;
     valorIce: number;
   }[] = [];
-
-  productosEnFacturaCompare: {
-    id: number;
-    codigo: any;
-    cantidad: number;
-    descripcion: string,
-    precioUnitario: number;
-    iva_id: number;
-    iva: string;
-    tipoDescuento: string;
-    descuento: number;
-    descuentoCalculado: any;
-    valorTotal: number;
-    valorTotalProducto: any;
-    valorIce: number;
-  }[] = [];
-
 
   formasPagoEnFactura: any[] = [];
   observacionesEnFactura: any[] = [];
@@ -400,6 +384,12 @@ export class CuentasPorCobrarComponent implements OnInit {
           codigo: producto.productos.codigo,
           cantidad: producto.cantidad,
           descripcion: producto.descripcion,
+          preciosVenta: [
+            {pvp: producto.productos.pvp1},
+            {pvp: producto.productos.pvp2},
+            {pvp: producto.productos.pvp3},
+            {pvp: producto.productos.pvp4},
+          ].filter(p => p.pvp > 0),
           precioUnitario: producto.precioUnitario,
           iva_id: this.tiposIva.find((tipo: any) => tipo.tipoIva === producto.iva)?.id, 
           iva: producto.iva,
@@ -737,6 +727,12 @@ export class CuentasPorCobrarComponent implements OnInit {
         codigo: productoSeleccionado.codigo,
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
+        preciosVenta: [
+          {pvp: productoSeleccionado.pvp1},
+          {pvp: productoSeleccionado.pvp2},
+          {pvp: productoSeleccionado.pvp3},
+          {pvp: productoSeleccionado.pvp4},
+        ].filter(p => p.pvp > 0),
         precioUnitario: productoSeleccionado.pvp1,
         iva_id: this.facturarConIva ? productoSeleccionado.iva_id : 1,
         iva: productoSeleccionado.iva,
