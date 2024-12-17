@@ -120,6 +120,7 @@ export class VenderComponent implements OnInit {
     codigo: any;
     cantidad: number;
     descripcion: string,
+    preciosVenta: any,
     precioUnitario: number;
     iva_id: number;
     iva: string;
@@ -479,7 +480,7 @@ export class VenderComponent implements OnInit {
 
   selectProducto(productoSeleccionado: any) {
     const productoExistente = this.productosEnFactura.find(producto => producto.codigo === productoSeleccionado.codigo);
-
+    
     if (productoExistente) {
       productoExistente.cantidad += 1;
       this.calcularTotalProducto(productoExistente);
@@ -489,6 +490,12 @@ export class VenderComponent implements OnInit {
         codigo: productoSeleccionado.codigo,
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
+        preciosVenta: [
+          {pvp: productoSeleccionado.pvp1},
+          {pvp: productoSeleccionado.pvp2},
+          {pvp: productoSeleccionado.pvp3},
+          {pvp: productoSeleccionado.pvp4},
+        ].filter(p => p.pvp > 0),
         precioUnitario: productoSeleccionado.pvp1,
         iva_id: this.facturarConIva ? productoSeleccionado.iva_id : 1,
         iva: productoSeleccionado.iva,
