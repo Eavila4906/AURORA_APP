@@ -136,13 +136,13 @@
                             </div>
                             <div class="col-md-6">
                                 <h5><b>Totales</b></h5>
-                                <p>Subtotal con IVA: ${{ subTotalConIva }}</p>
-                                <p>Subtotal sin IVA: ${{ subTotalSinIva }}</p>
-                                <p>Descuento: ${{ totalDescuento }}</p>
-                                <p>Subtotal: ${{ subtotal }}</p>
-                                <p>IVA: ${{ totalIva }}</p>
+                                <p>Subtotal con IVA: {{ subTotalConIva }}</p>
+                                <p>Subtotal sin IVA: {{ subTotalSinIva }}</p>
+                                <p>Descuento: {{ totalDescuento }}</p>
+                                <p>Subtotal: {{ subtotal }}</p>
+                                <p>IVA: {{ totalIva }}</p>
                                 <!--<p>Total Servicio: ${{ totalServicio }}</p>-->
-                                <h4>Total: ${{ total }}</h4>
+                                <h4>Total: {{ total }}</h4>
                             </div>
                         </div>
 
@@ -164,10 +164,10 @@
                                     <tr *ngFor="let producto of productosEnFactura">
                                         <td>{{ producto.cantidad }}</td>
                                         <td>{{ producto.descripcion }}</td>
-                                        <td>${{ producto.precioUnitario }}</td>
-                                        <td>${{ producto.descuento }}</td>
+                                        <td>{{ producto.precioUnitario }}</td>
+                                        <td>{{ producto.descuento }}</td>
                                         <td>{{ producto.iva }}</td>
-                                        <td>${{ producto.valorTotal }}</td>
+                                        <td>{{ producto.valorTotal }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -188,7 +188,7 @@
                                 <tbody *ngIf="formasDePagoEnFactura else elseBlockFormasDePago">
                                     <tr *ngFor="let pago of formasDePagoEnFactura">
                                         <td>{{ pago.formaPago }}</td>
-                                        <td>${{ pago.valor }}</td>
+                                        <td>{{ pago.valor }}</td>
                                         <td>{{ pago.plazo }}</td>
                                         <td>{{ pago.tiempo }}</td>
                                     </tr>
@@ -218,8 +218,8 @@
                                 </thead>
                                 <tbody *ngIf="abonosEnFactura else elseBlockAbonos">
                                     <tr *ngFor="let abono of abonosEnFactura">
-                                        <td>${{ abono.monto }}</td>
-                                        <td>${{ abono.saldo }}</td>
+                                        <td>{{ abono.monto }}</td>
+                                        <td>{{ abono.saldo }}</td>
                                         <td>{{ abono.fecha }}</td>
                                         <td>{{ abono.descripcion }}</td>
                                         <td>{{ abono.estado }}</td>
