@@ -129,6 +129,7 @@ export class CuentasPorCobrarComponent implements OnInit {
     valorIce: number;
   }[] = [];
 
+  formasDePago: any[] = [];
   formasPagoEnFactura: any[] = [];
   observacionesEnFactura: any[] = [];
 
@@ -207,6 +208,7 @@ export class CuentasPorCobrarComponent implements OnInit {
 
     this.getProductos();
     this.getTiposIva();
+    this.getFormasDePago();
   }
 
   /**
@@ -354,6 +356,14 @@ export class CuentasPorCobrarComponent implements OnInit {
     );
   }
 
+  getFormasDePago() {
+    this.FacturasServices.getFormasDePago().subscribe(
+      response => {
+        this.formasDePago = response.data.filter((tipo: any) => tipo.estado === 'Activo');
+      }
+    );
+  }
+
   getFactura(id: number) {
     this.FacturasServices.get(id).subscribe(
       response => {
@@ -465,6 +475,94 @@ export class CuentasPorCobrarComponent implements OnInit {
       }
     };
 
+
+    if (op === 2) {
+      Swal.fire({
+        title: '<strong>¿Desea confirmar el pago?</strong>',
+        html: `
+          <label for="monto">Monto recibido</label>
+          <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
+          ${this.formasPagoEnFactura.length === 0 ? `
+            <label style="margin-top: 15px;">Forma de pago</label>
+            <select id="formaPagoSelect" class="form-control" required>
+              ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
+            </select>
+          ` : ''}
+          <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
+        `,
+        showCancelButton: true,
+        focusConfirm: false,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        didOpen: () => {
+          const montoInput = <HTMLInputElement>document.getElementById('monto');
+          const cambioDiv = document.getElementById('cambio');
+          const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
+          const total = Number(data.data.cabecera.total);
+      
+          montoInput.value = total.toFixed(2);
+      
+          montoInput.addEventListener('input', () => {
+            const montoRecibido = Number(montoInput.value);
+      
+            if (montoRecibido < 0) {
+              montoInput.value = '0';
+            }
+      
+            const cambio = Math.max(0, montoRecibido - total);
+            if (cambioDiv) {
+              cambioDiv.innerHTML = `Cambio: ${cambio.toFixed(2)}`;
+            }
+          });
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const montoRecibido = Number((<HTMLInputElement>document.getElementById('monto')).value);
+          const total = data.data.cabecera.total;
+          let cambio = 0;
+      
+          if (montoRecibido >= total) {
+            cambio = montoRecibido - total;
+          }
+      
+          const observaciones = [
+            {
+              nombre: 'Pago',
+              descripcion: montoRecibido.toFixed(2)
+            }
+          ];
+      
+          if (cambio > 0) {
+            observaciones.push({
+              nombre: 'Cambio',
+              descripcion: cambio.toFixed(2)
+            });
+          }
+      
+          if (!data.data.observaciones) {
+            data.data.observaciones = [];
+          }
+          data.data.observaciones.push(...observaciones);
+
+          if (this.formasPagoEnFactura.length === 0) {
+            const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
+            const formaPagoId = Number(formaPagoSelect.value);
+            data.data.formasPago = [{
+              formaPago_id: formaPagoId,
+              valor: this.total,
+              tiempo: 'Dia/s',
+              plazo: 1
+            }];
+          }
+          this.edit(data);
+        }
+      });      
+    } else {
+      this.edit(data);
+    }
+  }
+
+  edit(data: any) {
     this.FacturasServices.edit(data).subscribe(
       response => {
         if (response.data) {
@@ -587,15 +685,16 @@ export class CuentasPorCobrarComponent implements OnInit {
         '------------------------------------------',
         { text: `Código: ${dataAbono.codigoFactura}`, style: 'info'},
         { text: `Cliente: ${data.receptor.nombres}`, style: 'dataCliente' },
-        { text: `RUC/Ced/Pass: ${data.receptor.numeroIdentificacion}`, style: 'dataCliente' },
+        { text: `RUC/Ced/Pass: ${!data.receptor.numeroIdentificacion ? '9999999999' : data.receptor.numeroIdentificacion}`, style: 'dataCliente' },
         '***************************',
         body,
         '***************************',
-        { text: `Subtotal sin IVA: $${data.subtotalSinIva}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal con IVA: $${data.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total descuento: $${data.totalDescuento}`, style: 'totales', alignment: 'right' },
-        { text: `Total IVA: $${data.totalIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total: $${data.total}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal con IVA: ${data.subtotalConIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal sin IVA: ${data.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Descuento: ${data.totalDescuento}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal: ${data.subtotal}`, style: 'totales', alignment: 'right' },
+        { text: `IVA: ${data.totalIva}`, style: 'totales', alignment: 'right' },
+        { text: `Total: ${data.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
         { 
           text: `Estado: ${estado }`, style: 'info', alignment: 'right'
@@ -659,12 +758,12 @@ export class CuentasPorCobrarComponent implements OnInit {
           layout: 'lightHorizontalLines' // Agregar líneas horizontales ligeras
         },
         '***************************',
-        { text: `Subtotal con IVA: $${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal sin IVA: $${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
-        { text: `Descuento: $${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal: $${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
-        { text: `IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total: $${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal con IVA: ${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal sin IVA: ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Descuento: ${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal: ${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
+        { text: `IVA: ${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
+        { text: `Total: ${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
         {
           text: `Estado: ${data.data.cabecera.estado === 'Por cobrar'
@@ -673,6 +772,18 @@ export class CuentasPorCobrarComponent implements OnInit {
               ? 'Pagado'
               : data.data.cabecera.estado
             }`,
+          style: 'info', alignment: 'right'
+        },
+        {
+          text: data.data.observaciones && data.data.observaciones.find((ob: any) => ob.nombre === 'Pago') && data.data.observaciones.find((ob: any) => ob.nombre === 'Cambio')
+            ? `Monto: ${data.data.observaciones.find((ob: any) => ob.nombre === 'Pago').descripcion}`
+            : '',
+          style: 'info', alignment: 'right'
+        },
+        {
+          text: data.data.observaciones && data.data.observaciones.find((ob: any) => ob.nombre === 'Cambio')
+            ? `Cambio: ${data.data.observaciones.find((ob: any) => ob.nombre === 'Cambio').descripcion}`
+            : '',
           style: 'info', alignment: 'right'
         },
       ],

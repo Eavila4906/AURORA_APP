@@ -145,7 +145,36 @@ export class VenderComponent implements OnInit {
   tiposIdentificacion: any[] = [];
   tipoIdentificacion: string = '';
 
+  formaPagoStructure = {
+    formaPago_id: 0,
+    formaPago: '',
+    valor: 0,
+    plazo: 1,
+    tiempo: 'Día/s'
+  };
+
+  observacionesStructure = {
+    nombre: '',
+    descripcion: ''
+  }
+
+  abonosEnFactura: any[] = [];
+  abonosStructure = {
+    monto: 0,
+    descripcion: ''
+  };
+
+  observacionesEnFactura: any[] = [];
+
   search: string = '';
+  searchClientes: string = '';
+
+  barCodeOption: boolean = false;
+
+  selectedOption: any = null;
+  numIdentificacionSelected: any = null;
+  dropdownOpen = false;
+
 
   resetForm() {
     this.newCliente.nombres = '';
@@ -201,6 +230,12 @@ export class VenderComponent implements OnInit {
 
     if (this.productosEnFactura.length === 0) {
       this.toastr.warning('Tiene que agregar al menos un producto en la lista de venta', '¡Listo!', { closeButton: true });
+      return;
+    }
+
+    if (this.formasDePagoEnFactura.length === 0) {
+      this.toastr.warning('Defina las formas de pago', '¡Atención!', { closeButton: true });
+      this.ModalAddFormasDePago?.show();
       return;
     }
 
@@ -299,33 +334,30 @@ export class VenderComponent implements OnInit {
     );
   }
 
-  abonosEnFactura: any[] = [];
-  abonosStructure = {
-    monto: 0,
-    descripcion: ''
-  };
-
-  observacionesEnFactura: any[] = [];
-
   createFactura(op: number) {
     if (this.receptor_id === 0) {
-      this.toastr.warning('Tiene que seleccionar un cliente o consumidor final', '¡Listo!', { closeButton: true });
+      this.toastr.warning('Tiene que seleccionar un cliente o consumidor final', '¡Atención!', { closeButton: true });
       return;
     }
 
     if (this.productosEnFactura.length === 0) {
-      this.toastr.warning('Tiene que agregar al menos un producto en la lista de venta', '¡Listo!', { closeButton: true });
+      this.toastr.warning('Tiene que agregar al menos un producto en la lista de venta', '¡Atención!', { closeButton: true });
       return;
     }
 
     if (op === 1) {
       this.estado = 'Pagada';
     } else if (op === 2) {
+      if (this.formasDePagoEnFactura.length === 0) {
+        this.toastr.warning('Defina las formas de pago', '¡Atención!', { closeButton: true });
+        this.ModalAddFormasDePago?.show();
+        return;
+      }
       this.estado = 'Por cobrar';
     } else {
       if (this.abonosStructure.monto != 0) {
         if (this.abonosStructure.monto > this.total) {
-          this.toastr.warning('El monto del abono no puede ser superior al total de la factura', '¡Listo!', { closeButton: true });
+          this.toastr.warning('El monto del abono no puede ser superior al total de la factura', '¡Atención!', { closeButton: true });
           return;
         }
         if (this.abonosStructure.monto == this.total) {
@@ -333,7 +365,7 @@ export class VenderComponent implements OnInit {
           return;
         }
         if (this.abonosStructure.monto < 0) {
-          this.toastr.warning('El monto del abono no puede ser un valor negativo', '¡Listo!', { closeButton: true });
+          this.toastr.warning('El monto del abono no puede ser un valor negativo', '¡Atención!', { closeButton: true });
           return;
         }
         this.abonosEnFactura.push({ ...this.abonosStructure });
@@ -343,7 +375,7 @@ export class VenderComponent implements OnInit {
         }
         this.ModalSaveAndAbonar?.hide();
       } else {
-        this.toastr.warning('El monto del abono no puede ser 0', '¡Listo!', { closeButton: true });
+        this.toastr.warning('El monto del abono no puede ser 0', '¡Atención!', { closeButton: true });
         return;
       }
       this.estado = 'Por cobrar';
@@ -396,6 +428,93 @@ export class VenderComponent implements OnInit {
       data.data.abonos = this.abonosEnFactura;
     }
 
+    if (op === 1) {
+      Swal.fire({
+        title: '<strong>¿Desea confirmar el pago?</strong>',
+        html: `
+          <label for="monto">Monto recibido</label>
+          <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
+          ${this.formasDePagoEnFactura.length === 0 ? `
+            <label style="margin-top: 15px;">Forma de pago</label>
+            <select id="formaPagoSelect" class="form-control" required>
+              ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
+            </select>
+          ` : ''}
+          <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
+        `,
+        showCancelButton: true,
+        focusConfirm: false,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        didOpen: () => {
+          const montoInput = <HTMLInputElement>document.getElementById('monto');
+          const cambioDiv = document.getElementById('cambio');
+          const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
+          const total = Number(data.data.cabecera.total);
+      
+          montoInput.value = total.toFixed(2);
+      
+          montoInput.addEventListener('input', () => {
+            const montoRecibido = Number(montoInput.value);
+      
+            if (montoRecibido < 0) {
+              montoInput.value = '0';
+            }
+      
+            const cambio = Math.max(0, montoRecibido - total);
+            if (cambioDiv) {
+              cambioDiv.innerHTML = `Cambio: ${cambio.toFixed(2)}`;
+            }
+          });
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const montoRecibido = Number((<HTMLInputElement>document.getElementById('monto')).value);
+          const total = data.data.cabecera.total;
+          let cambio = 0;
+      
+          if (montoRecibido >= total) {
+            cambio = montoRecibido - total;
+          }
+      
+          const observaciones = [
+            {
+              nombre: 'Pago',
+              descripcion: montoRecibido.toFixed(2)
+            }
+          ];
+      
+          if (cambio > 0) {
+            observaciones.push({
+              nombre: 'Cambio',
+              descripcion: cambio.toFixed(2)
+            });
+          }
+      
+          if (!data.data.observaciones) {
+            data.data.observaciones = [];
+          }
+          data.data.observaciones.push(...observaciones);
+
+          if (this.formasDePagoEnFactura.length === 0) {
+            const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
+            const formaPagoId = Number(formaPagoSelect.value);
+            data.data.formasPago = [{
+              formaPago_id: formaPagoId,
+              valor: this.total,
+              tiempo: 'Dia/s',
+              plazo: 1
+            }];
+          }
+          this.create(data);
+        }
+      });      
+    } else {
+      this.create(data);
+    }
+  }
+
+  create(data: any) {
     this.VenderService.create(data).subscribe(
       response => {
         if (response.data) {
@@ -415,7 +534,6 @@ export class VenderComponent implements OnInit {
           })
         }
       }
-
     );
   }
 
@@ -449,8 +567,6 @@ export class VenderComponent implements OnInit {
    * MORE FUNCTIONS
    */
 
-  barCodeOption: boolean = false;
-
   barCode() {
     this.barCodeOption = !this.barCodeOption;
     this.resetBusquedaProducto();
@@ -480,7 +596,7 @@ export class VenderComponent implements OnInit {
 
   selectProducto(productoSeleccionado: any) {
     const productoExistente = this.productosEnFactura.find(producto => producto.codigo === productoSeleccionado.codigo);
-    
+
     if (productoExistente) {
       productoExistente.cantidad += 1;
       this.calcularTotalProducto(productoExistente);
@@ -491,10 +607,10 @@ export class VenderComponent implements OnInit {
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
         preciosVenta: [
-          {pvp: productoSeleccionado.pvp1},
-          {pvp: productoSeleccionado.pvp2},
-          {pvp: productoSeleccionado.pvp3},
-          {pvp: productoSeleccionado.pvp4},
+          { pvp: productoSeleccionado.pvp1 },
+          { pvp: productoSeleccionado.pvp2 },
+          { pvp: productoSeleccionado.pvp3 },
+          { pvp: productoSeleccionado.pvp4 },
         ].filter(p => p.pvp > 0),
         precioUnitario: productoSeleccionado.pvp1,
         iva_id: this.facturarConIva ? productoSeleccionado.iva_id : 1,
@@ -576,18 +692,18 @@ export class VenderComponent implements OnInit {
       // Se obtienen los precios unitarios
       const precioProductoSinIva = new Decimal(
         producto.iva_id == 1 ?
-        producto.precioUnitario :
-        0
+          producto.precioUnitario :
+          0
       );
       const precioProductoConIva = new Decimal(
         producto.iva_id == 2 || producto.iva_id == 3 ?
-        producto.precioUnitario : 0
+          producto.precioUnitario : 0
       );
 
       // Se optiene la cantidad y descuento
       const cantidad = new Decimal(producto.cantidad);
       const descuento = new Decimal(producto.descuento);
-      
+
       // Se calcula el precio del producto con la cantidad
       let valorTotalSinIva, valorTotalSinIvaSinDescuento;
       let valorTotalConIva, valorTotalConIvaSinDescuento;
@@ -597,7 +713,7 @@ export class VenderComponent implements OnInit {
 
       valorTotalConIvaSinDescuento = precioProductoConIva.mul(cantidad);
       valorTotalSinIvaSinDescuento = precioProductoSinIva.mul(cantidad);
-      
+
       // Se suma valorTotalConIva y valorTotalSinIva
       let valorTotalConSinIva = new Decimal(0);
       valorTotalConSinIva = valorTotalConSinIva.add(valorTotalConIva);
@@ -620,7 +736,7 @@ export class VenderComponent implements OnInit {
       subtotalSinIva = subtotalSinIva.add(valorTotalSinIvaSinDescuento); // Se acumula el subtotal sin IVA
       totalIva = totalIva.add(valorIva);                                 // Se acumula el IVA
       totalDescuento = totalDescuento.add(descuentoCalculado);           // Se acumula el descuento
-      totalFinal = new Decimal(subtotal.toNumber()+totalIva.toNumber()); // Se acumula el total sumando el subtotal con el IVA
+      totalFinal = new Decimal(subtotal.toNumber() + totalIva.toNumber()); // Se acumula el total sumando el subtotal con el IVA
     });
 
     // Actualizar los totales en el componente
@@ -668,7 +784,7 @@ export class VenderComponent implements OnInit {
       formaPago_id: 0,
       formaPago: '',
       valor: 0,
-      plazo: 0,
+      plazo: 1,
       tiempo: 'Día/s'
     };
     this.observacionesEnFactura = [];
@@ -707,14 +823,6 @@ export class VenderComponent implements OnInit {
       }
     })
   }
-
-  formaPagoStructure = {
-    formaPago_id: 0,
-    formaPago: '',
-    valor: 0,
-    plazo: 0,
-    tiempo: 'Día/s'
-  };
 
   onFormaPagoChange(event: any) {
     const selectedId = event.target.value;
@@ -759,11 +867,6 @@ export class VenderComponent implements OnInit {
     })
   }
 
-  observacionesStructure = {
-    nombre: '',
-    descripcion: ''
-  }
-
   addObservacion() {
     if (!this.observacionesStructure.nombre || !this.observacionesStructure.descripcion) {
       this.toastr.warning('Todos los campos son obligatorios para añadir una observación', '¡Listo!', { closeButton: true });
@@ -796,10 +899,6 @@ export class VenderComponent implements OnInit {
    * Select con buscador
    */
 
-  selectedOption: any = null;
-  numIdentificacionSelected: any = null;
-  dropdownOpen = false;
-
   // Método para seleccionar una opción
   selectOption(option: any) {
     this.selectedOption = option.nombresCompletos;
@@ -818,8 +917,6 @@ export class VenderComponent implements OnInit {
       this.clientesFilter = this.clientes;
     }
   }
-
-  searchClientes: string = '';
 
   searchCliente() {
     this.clientesFilter = this.clientes.filter((cliente: { nombres: string, apellidos: string, numeroIdentificacion: string }) => {
@@ -896,12 +993,12 @@ export class VenderComponent implements OnInit {
           layout: 'lightHorizontalLines' // Agregar líneas horizontales ligeras
         },
         '***************************',
-        { text: `Subtotal con IVA: $${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal sin IVA: $${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
-        { text: `Descuento: $${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal: $${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
-        { text: `IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total: $${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal con IVA: ${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal sin IVA: ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Descuento: ${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal: ${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
+        { text: `IVA: ${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
+        { text: `Total: ${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
         {
           text: `Estado: ${data.data.cabecera.estado === 'Por cobrar'
@@ -913,14 +1010,26 @@ export class VenderComponent implements OnInit {
           style: 'info', alignment: 'right'
         },
         {
-          text: data.data.abonos
-            ? `Total de abono: $${data.data.abonos[0].monto.toFixed(2)}`
+          text: data.data.observaciones && data.data.observaciones.find((ob: any) => ob.nombre === 'Pago') && data.data.observaciones.find((ob: any) => ob.nombre === 'Cambio')
+            ? `Monto: ${data.data.observaciones.find((ob: any) => ob.nombre === 'Pago').descripcion}`
+            : '',
+          style: 'info', alignment: 'right'
+        },
+        {
+          text: data.data.observaciones && data.data.observaciones.find((ob: any) => ob.nombre === 'Cambio')
+            ? `Cambio: ${data.data.observaciones.find((ob: any) => ob.nombre === 'Cambio').descripcion}`
             : '',
           style: 'info', alignment: 'right'
         },
         {
           text: data.data.abonos
-            ? `Total pendiente: $${(data.data.cabecera.total - data.data.abonos[0].monto).toFixed(2)}`
+            ? `Total de abono: ${data.data.abonos[0].monto.toFixed(2)}`
+            : '',
+          style: 'info', alignment: 'right'
+        },
+        {
+          text: data.data.abonos
+            ? `Total pendiente: ${(data.data.cabecera.total - data.data.abonos[0].monto).toFixed(2)}`
             : '',
           style: 'info', alignment: 'right'
         },
