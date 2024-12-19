@@ -76,7 +76,7 @@ export class CuentasPorCobrarComponent implements OnInit {
 
   cabFactura_id: number = 0;
   dataPrintComprobante: any;
-
+  
   newAbono: Abono = {
     cabFactura_id: 0,
     monto: 0,
@@ -231,22 +231,101 @@ export class CuentasPorCobrarComponent implements OnInit {
    */
 
   pagar(dataCuenta: any) {
+    console.log(dataCuenta);
+  
     Swal.fire({
-      icon: 'warning',
-      title: '<strong>¿Deseas completar el pago de esta cuenta por cobrar?</strong>',
+      title: '<strong>¿Desea confirmar el pago?</strong>',
+      html: `
+        <label for="monto">Monto recibido</label>
+        <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
+        ${dataCuenta.formasPago.length === 0 ? `
+          <label style="margin-top: 15px;">Forma de pago</label>
+          <select id="formaPagoSelect" class="form-control" required>
+            ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
+          </select>
+        ` : ''}
+        <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
+      `,
       showCancelButton: true,
       focusConfirm: false,
-      confirmButtonText: 'Si, pagar',
-      cancelButtonText: 'No, cancelar'
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar',
+      didOpen: () => {
+        const montoInput = <HTMLInputElement>document.getElementById('monto');
+        const cambioDiv = document.getElementById('cambio');
+        const total = Number(dataCuenta.abonos.length === 0 ? dataCuenta.total : dataCuenta.abonos[dataCuenta.abonos.length - 1].saldo);
+    
+        montoInput.value = total.toFixed(2);
+    
+        montoInput.addEventListener('input', () => {
+          const montoRecibido = Number(montoInput.value);
+    
+          if (montoRecibido < 0) {
+            montoInput.value = '0';
+          }
+    
+          const cambio = Math.max(0, montoRecibido - total);
+          if (cambioDiv) {
+            cambioDiv.innerHTML = `Cambio: ${cambio.toFixed(2)}`;
+          }
+        });
+      }
     }).then((result) => {
       if (result.isConfirmed) {
-        let data = {
+        let data: any = {
           data: {
             cabFactura_id: dataCuenta.id,
+            formasPago: [],
+            observaciones: [],
             auditoria: this.AppService.getDataAuditoria('edit')
           }
         };
+        const montoRecibido = Number((<HTMLInputElement>document.getElementById('monto')).value);
+        const total = dataCuenta.abonos.length === 0 ? dataCuenta.total : dataCuenta.abonos[dataCuenta.abonos.length - 1].saldo;
+        let cambio = 0;
     
+        if (montoRecibido >= total) {
+          cambio = montoRecibido - total;
+        }
+    
+        const observaciones = [
+          {
+            nombre: 'Cuenta pagada',
+            descripcion: 'La cuenta ha sido pagada'
+          },
+          {
+            nombre: 'Pago',
+            descripcion: montoRecibido.toFixed(2)
+          }
+        ];
+    
+        if (cambio > 0) {
+          observaciones.push({
+            nombre: 'Cambio',
+            descripcion: cambio.toFixed(2)
+          });
+        }
+
+        data.data.observaciones.push(...observaciones);
+
+        if (dataCuenta.formasPago.length === 0) {
+          const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
+          const formaPagoId = Number(formaPagoSelect.value);
+          let valorFormaPago;
+          if (dataCuenta.abonos.length > 0) {
+            valorFormaPago = dataCuenta.total
+          } else if (dataCuenta.abonos.length === 0) {
+            valorFormaPago = total;
+          }
+
+          data.data.formasPago = [{
+            formaPago_id: formaPagoId,
+            valor: valorFormaPago,
+            tiempo: 'Dia/s',
+            plazo: 1
+          }];
+        }
+
         this.CuentasPorCobrarService.pagarCuenta(data).subscribe(
           response => {
             if (response.data) {

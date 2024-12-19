@@ -233,12 +233,6 @@ export class VenderComponent implements OnInit {
       return;
     }
 
-    if (this.formasDePagoEnFactura.length === 0) {
-      this.toastr.warning('Defina las formas de pago', '¡Atención!', { closeButton: true });
-      this.ModalAddFormasDePago?.show();
-      return;
-    }
-
     this.ModalSaveAndAbonar?.show();
   }
 
@@ -348,11 +342,6 @@ export class VenderComponent implements OnInit {
     if (op === 1) {
       this.estado = 'Pagada';
     } else if (op === 2) {
-      if (this.formasDePagoEnFactura.length === 0) {
-        this.toastr.warning('Defina las formas de pago', '¡Atención!', { closeButton: true });
-        this.ModalAddFormasDePago?.show();
-        return;
-      }
       this.estado = 'Por cobrar';
     } else {
       if (this.abonosStructure.monto != 0) {
