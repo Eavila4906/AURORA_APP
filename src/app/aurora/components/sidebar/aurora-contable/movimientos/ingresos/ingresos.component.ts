@@ -75,6 +75,8 @@ export class IngresosComponent implements OnInit {
     this.fecha = this.AppService.getTimeZoneCurrentDate();
     this.observacion = '';
     this.estado = 'Activo';
+
+    this.resetBusquedaProducto();
   }
 
   constructor(

@@ -247,13 +247,13 @@ export class FacturasComponent implements OnInit {
               width: '50%',
               stack: [
                 { text: 'Totales', style: 'subheader' },
-                { text: `Subtotal con IVA: $${this.subTotalConIva}` },
-                { text: `Subtotal sin IVA: $${this.subTotalSinIva}` },
-                { text: `Descuento: $${this.totalDescuento}` },
-                { text: `Subtotal: $${this.subtotal}` },
-                { text: `IVA: $${this.totalIva}` },
-                //{ text: `Total Servicio: $${this.totalServicio}` },
-                { text: `Total: $${this.total}`, style: 'total' }
+                { text: `Subtotal con IVA: ${this.subTotalConIva}` },
+                { text: `Subtotal sin IVA: ${this.subTotalSinIva}` },
+                { text: `Descuento: ${this.totalDescuento}` },
+                { text: `Subtotal: ${this.subtotal}` },
+                { text: `IVA: ${this.totalIva}` },
+                //{ text: `Total Servicio: ${this.totalServicio}` },
+                { text: `Total: ${this.total}`, style: 'total' }
               ]
             }
           ]
@@ -278,10 +278,10 @@ export class FacturasComponent implements OnInit {
               ...this.productosEnFactura.map(producto => ([
                 producto.cantidad,
                 producto.descripcion,
-                `$${producto.precioUnitario}`,
-                `$${producto.descuento}`,
+                `${producto.precioUnitario}`,
+                `${producto.descuento}`,
                 producto.iva,
-                `$${producto.valorTotal}`
+                `${producto.valorTotal}`
               ]))
             ]
           }
@@ -305,7 +305,7 @@ export class FacturasComponent implements OnInit {
                 this.formasDePagoEnFactura && this.formasDePagoEnFactura.length > 0
                   ? this.formasDePagoEnFactura.map(pago => ([
                     pago.formaPago,
-                    `$${pago.valor}`,
+                    `${pago.valor}`,
                     pago.plazo,
                     pago.tiempo
                   ]))
@@ -333,8 +333,8 @@ export class FacturasComponent implements OnInit {
               ...(
                 this.abonosEnFactura && this.abonosEnFactura.length > 0
                   ? this.abonosEnFactura.map(abono => ([
-                    `$${abono.monto}`,
-                    `$${abono.saldo}`,
+                    `${abono.monto}`,
+                    `${abono.saldo}`,
                     abono.fecha,
                     abono.descripcion,
                     abono.estado

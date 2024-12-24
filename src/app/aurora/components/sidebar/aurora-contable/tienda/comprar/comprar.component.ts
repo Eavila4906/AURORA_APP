@@ -152,7 +152,35 @@ export class ComprarComponent implements OnInit {
   tiposIdentificacion: any[] = [];
   tipoIdentificacion: string = '';
 
+  abonosEnFactura: any[] = [];
+  abonosStructure = {
+    monto: 0,
+    descripcion: ''
+  };
+
+  observacionesEnFactura: any[] = [];
+
+  formaPagoStructure = {
+    formaPago_id: 0,
+    formaPago: '',
+    valor: 0,
+    plazo: 0,
+    tiempo: 'Día/s'
+  };
+
+  observacionesStructure = {
+    nombre: '',
+    descripcion: ''
+  }
+
   search: string = '';
+  searchProveedores: string = '';
+
+  selectedOption: any = null;
+  numIdentificacionSelected: any = null;
+  dropdownOpen = false;
+
+  barCodeOption: boolean = false;
 
   resetForm() {
     this.newProveedor.proveedor = '';
@@ -306,14 +334,6 @@ export class ComprarComponent implements OnInit {
     );
   }
 
-  abonosEnFactura: any[] = [];
-  abonosStructure = {
-    monto: 0,
-    descripcion: ''
-  };
-
-  observacionesEnFactura: any[] = [];
-
   createFactura(op: number) {
     if (this.receptor_id === 0) {
       this.toastr.warning('Tiene que seleccionar un cliente o consumidor final', '¡Listo!', { closeButton: true });
@@ -454,8 +474,6 @@ export class ComprarComponent implements OnInit {
   /**
    * MORE FUNCTIONS
    */
-
-  barCodeOption: boolean = false;
 
   barCode() {
     this.barCodeOption = !this.barCodeOption;
@@ -701,7 +719,7 @@ export class ComprarComponent implements OnInit {
       formaPago_id: 0,
       formaPago: '',
       valor: 0,
-      plazo: 0,
+      plazo: 1,
       tiempo: 'Día/s'
     };
     this.observacionesEnFactura = [];
@@ -717,6 +735,7 @@ export class ComprarComponent implements OnInit {
     this.subtotalSinIva = 0;
     this.subtotalConIva = 0;
     this.totalDescuento = 0;
+    this.subtotal = 0;
     this.totalIva = 0;
     this.total = 0;
     this.search = '';
@@ -739,14 +758,6 @@ export class ComprarComponent implements OnInit {
       }
     })
   }
-
-  formaPagoStructure = {
-    formaPago_id: 0,
-    formaPago: '',
-    valor: 0,
-    plazo: 0,
-    tiempo: 'Día/s'
-  };
 
   onFormaPagoChange(event: any) {
     const selectedId = event.target.value;
@@ -791,11 +802,6 @@ export class ComprarComponent implements OnInit {
     })
   }
 
-  observacionesStructure = {
-    nombre: '',
-    descripcion: ''
-  }
-
   addObservacion() {
     if (!this.observacionesStructure.nombre || !this.observacionesStructure.descripcion) {
       this.toastr.warning('Todos los campos son obligatorios para añadir una observación', '¡Listo!', { closeButton: true });
@@ -828,10 +834,6 @@ export class ComprarComponent implements OnInit {
    * Select con buscador
    */
 
-  selectedOption: any = null;
-  numIdentificacionSelected: any = null;
-  dropdownOpen = false;
-
   // Método para seleccionar una opción
   selectOption(option: any) {
     this.selectedOption = option.proveedor;
@@ -850,8 +852,6 @@ export class ComprarComponent implements OnInit {
       this.proveedoresFilter = this.proveedores;
     }
   }
-
-  searchProveedores: string = '';
 
   searchProveedor() {
     this.proveedoresFilter = this.proveedores.filter((proveedor: { proveedor: string, numeroIdentificacion: string }) => {
@@ -908,11 +908,12 @@ export class ComprarComponent implements OnInit {
           layout: 'lightHorizontalLines' // Agregar líneas horizontales ligeras
         },
         '***************************',
-        { text: `Subtotal sin IVA: $${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal con IVA: $${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total descuento: $${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
-        { text: `Total IVA: $${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
-        { text: `Total: $${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal con IVA: ${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal sin IVA: ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Descuento: ${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal: ${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
+        { text: `IVA: ${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },
+        { text: `Total: ${data.data.cabecera.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
         {
           text: `Estado: ${data.data.cabecera.estado === 'Por cobrar'

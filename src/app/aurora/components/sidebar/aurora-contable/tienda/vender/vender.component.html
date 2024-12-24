@@ -219,7 +219,18 @@
                                         </div>
                                     </td>
                                     <td>{{producto.descripcion}}</td>
-                                    <td>{{producto.precioUnitario}}</td>
+                                    <td>
+                                        <div>
+                                            <select class="formControlPersonality" name="precioUnitario{{i}}" 
+                                                [(ngModel)]="producto.precioUnitario"
+                                                (change)="calcularTotalProducto(producto)"
+                                                style="height: 35px; width: 100px">
+                                                <option *ngFor="let pvp of producto.preciosVenta; let j = index" [value]="pvp.pvp">
+                                                    {{pvp.pvp}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </td>
                                     <td>
                                         <div>
                                             <select class="formControlPersonality" name="iva{{i}}" [(ngModel)]="producto.iva_id"

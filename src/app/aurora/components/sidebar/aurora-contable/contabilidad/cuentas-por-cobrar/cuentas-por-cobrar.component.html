@@ -199,10 +199,18 @@
                                                         (click)="editFactura(cabFactura_id, 1)">
                                                         <i class="fas fa-save"></i>
                                                     </button>
-                                                    <button class="btn btn-info text-white ms-1" title="Guardar y pagar"
-                                                        (click)="editFactura(cabFactura_id, 2)">
-                                                        <i class="fas fa-cash-register"></i>
-                                                    </button>
+                                                    <span *ngIf="abonosEnFactura.length === 0 ; else elseBtnGuardarPagar">
+                                                        <button class="btn btn-info text-white ms-1" title="Guardar y pagar"
+                                                            (click)="editFactura(cabFactura_id, 2)">
+                                                            <i class="fas fa-cash-register"></i>
+                                                        </button>
+                                                    </span>
+                                                    <ng-template #elseBtnGuardarPagar>
+                                                        <button class="btn btn-info text-white ms-1" title="Guardar y pagar"
+                                                            disabled>
+                                                            <i class="fas fa-cash-register"></i>
+                                                        </button>
+                                                    </ng-template>
                                                     <button class="btn btn-warning ms-1" title="Salir"
                                                         (click)="ModalEdit.hide()">
                                                         <i class="fas fa-reply"></i>
@@ -306,7 +314,18 @@
                                                         </div>
                                                     </td>
                                                     <td>{{producto.descripcion}}</td>
-                                                    <td>{{producto.precioUnitario}}</td>
+                                                    <td>
+                                                        <div>
+                                                            <select class="formControlPersonality" name="precioUnitario{{i}}" 
+                                                                [(ngModel)]="producto.precioUnitario"
+                                                                (change)="calcularTotalProducto(producto)"
+                                                                style="height: 35px; width: 100px">
+                                                                <option *ngFor="let pvp of producto.preciosVenta" [value]="pvp.pvp">
+                                                                    {{pvp.pvp}}
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                    </td>
                                                     <td>
                                                         <div>
                                                             <select class="formControlPersonality" name="iva{{i}}" [(ngModel)]="producto.iva_id"

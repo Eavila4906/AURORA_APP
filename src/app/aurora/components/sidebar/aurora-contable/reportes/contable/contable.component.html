@@ -12,7 +12,8 @@
                             <div class="col-lg-2 col-sm-2">
                                 <div class="mb-3">
                                     <label>Rango</label>
-                                    <select class="form-control" name="tipoOp" [(ngModel)]="tipoOp">
+                                    <select class="form-control" name="tipoOp" [(ngModel)]="tipoOp"
+                                        (change)="resetRangoPersonalizado()">
                                         <option value="Dia">Día</option>
                                         <option value="Semana">Semana</option>
                                         <option value="Mes">Mes</option>

@@ -28,44 +28,44 @@ export class ContableComponent implements OnInit {
   opcion: string = '';
 
   cantidad_ventas: number = 0;
-  total_ventas: string = '$0';
+  total_ventas: number = 0;
 
   cantidad_compras: number = 0;
-  total_compras: string = '$0';
+  total_compras: number = 0;
 
   cantidad_cuentasPorCobrar: number = 0;
-  total_cuentasPorCobrar: string = '$0';
+  total_cuentasPorCobrar: number = 0;
 
   cantidad_cuentasPorPagar: number = 0;
-  total_cuentasPorPagar: string = '$0';
+  total_cuentasPorPagar: number = 0;
 
   cantidad_abonosCuentasPorCobrar: number = 0;
-  total_abonosCuentasPorCobrar: string = '$0';
+  total_abonosCuentasPorCobrar: number = 0;
 
   cantidad_abonosCuentasPorPagar: number = 0;
-  total_abonosCuentasPorPagar: string = '$0';
+  total_abonosCuentasPorPagar: number = 0;
 
   cantidad_ventasPagadas: number = 0;
-  total_ventasPagadas: string = '$0';
+  total_ventasPagadas: number = 0;
 
   cantidad_comprasPagadas: number = 0;
-  total_comprasPagadas: string = '$0';
+  total_comprasPagadas: number = 0;
 
   cantidad_ingresosMovimientosContables: number = 0;
   total_ingresosMovimientosContables: string = '$0';
 
   cantidad_egresosMovimientosContables: number = 0;
-  total_egresosMovimientosContables: string = '$0';
+  total_egresosMovimientosContables: number = 0;
 
   cantidad_ivaFacturasVenta: number = 0;
-  total_ivaFacturasVenta: string = '$0';
+  total_ivaFacturasVenta: number = 0;
 
   cantidad_ivaFacturasCompra: number = 0;
-  total_ivaFacturasCompra: string = '$0';
+  total_ivaFacturasCompra: number = 0;
 
-  total_ingresos: string = '$0';
-  total_egresos: string = '$0';
-  total_ganancias: string = '$0';
+  total_ingresos: number = 0;
+  total_egresos: number = 0;
+  total_ganancias: number = 0;
 
   contabilidadPositiva: boolean = false;
 
@@ -77,6 +77,11 @@ export class ContableComponent implements OnInit {
     this.tipoOp = 'Dia';
 
     this.reportes = false;
+  }
+
+  resetRangoPersonalizado() {
+    this.fechaInicio = this.AppService.getTimeZoneCurrentDate();
+    this.fechaFin = this.AppService.getTimeZoneCurrentDate();
   }
 
   constructor(
@@ -198,25 +203,25 @@ export class ContableComponent implements OnInit {
                 // Ventas
                 { text: 'Ventas', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_ventas, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_ventas, style: 'tableBody', alignment: 'left' },
+                { text: this.total_ventas, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Ventas pagadas
                 { text: 'Ventas pagadas', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_ventasPagadas, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_ventasPagadas, style: 'tableBody', alignment: 'left' },
+                { text: this.total_ventasPagadas, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Cuentas por cobrar
                 { text: 'Cuentas por cobrar', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_cuentasPorCobrar, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_cuentasPorCobrar, style: 'tableBody', alignment: 'left' },
+                { text: this.total_cuentasPorCobrar, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Abonos en cuentas por cobrar
                 { text: 'Abonos en cuentas por cobrar', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_abonosCuentasPorCobrar, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_abonosCuentasPorCobrar, style: 'tableBody', alignment: 'left' },
+                { text: this.total_abonosCuentasPorCobrar, style: 'tableBody', alignment: 'left' },
               ]
             ]
           },
@@ -242,25 +247,25 @@ export class ContableComponent implements OnInit {
                 // Compras
                 { text: 'Compras', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_compras, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_compras, style: 'tableBody', alignment: 'left' },
+                { text: this.total_compras, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Compras pagadas
                 { text: 'Compras pagadas', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_comprasPagadas, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_comprasPagadas, style: 'tableBody', alignment: 'left' },
+                { text: this.total_comprasPagadas, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Cuentas por pagar
                 { text: 'Cuentas por pagar', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_cuentasPorPagar, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_cuentasPorPagar, style: 'tableBody', alignment: 'left' },
+                { text: this.total_cuentasPorPagar, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Abonos en cuentas por pagar
                 { text: 'Abonos en cuentas por pagar', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_abonosCuentasPorPagar, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_abonosCuentasPorPagar, style: 'tableBody', alignment: 'left' },
+                { text: this.total_abonosCuentasPorPagar, style: 'tableBody', alignment: 'left' },
               ]
             ]
           },
@@ -284,13 +289,13 @@ export class ContableComponent implements OnInit {
                 // Ingresos
                 { text: 'Ingresos', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_ingresosMovimientosContables, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_ingresosMovimientosContables, style: 'tableBody', alignment: 'left' },
+                { text: this.total_ingresosMovimientosContables, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Egresos
                 { text: 'Egresos', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_egresosMovimientosContables, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_egresosMovimientosContables, style: 'tableBody', alignment: 'left' },
+                { text: this.total_egresosMovimientosContables, style: 'tableBody', alignment: 'left' },
               ]
             ]
           },
@@ -314,13 +319,13 @@ export class ContableComponent implements OnInit {
                 // Ventas
                 { text: 'Ventas', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_ivaFacturasVenta, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_ivaFacturasVenta, style: 'tableBody', alignment: 'left' },
+                { text: this.total_ivaFacturasVenta, style: 'tableBody', alignment: 'left' },
               ],
               [
                 // Compras
                 { text: 'Compras', style: 'tableBody', alignment: 'left' },
                 { text: this.cantidad_ivaFacturasCompra, style: 'tableBody', alignment: 'left' },
-                { text: '$'+this.total_ivaFacturasCompra, style: 'tableBody', alignment: 'left' },
+                { text: this.total_ivaFacturasCompra, style: 'tableBody', alignment: 'left' },
               ]
             ]
           },
@@ -328,9 +333,9 @@ export class ContableComponent implements OnInit {
         },
         '***************************',
 
-        { text: `Ingresos: $${this.total_ingresos}`, style: 'info', alignment: 'right' },
-        { text: `Egresos: $${this.total_egresos}`, style: 'info', alignment: 'right' },
-        { text: `Ganancias: $${this.total_ganancias}`, style: 'info', alignment: 'right' },
+        { text: `Ingresos: ${this.total_ingresos}`, style: 'info', alignment: 'right' },
+        { text: `Egresos: ${this.total_egresos}`, style: 'info', alignment: 'right' },
+        { text: `Ganancias: ${this.total_ganancias}`, style: 'info', alignment: 'right' },
       ],
       styles: {
         header: { fontSize: 12, bold: true },
