@@ -735,6 +735,7 @@ export class ComprarComponent implements OnInit {
     this.subtotalSinIva = 0;
     this.subtotalConIva = 0;
     this.totalDescuento = 0;
+    this.subtotal = 0;
     this.totalIva = 0;
     this.total = 0;
     this.search = '';
