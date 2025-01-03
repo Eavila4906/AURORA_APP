@@ -71,6 +71,10 @@ import { PerfilComponent } from './components/sidebar/aurora-contable/configurac
 import { FacturasComponent } from './components/sidebar/aurora-contable/reportes/facturas/facturas/facturas.component';
 import { MovimientosComponent } from './components/sidebar/aurora-contable/contabilidad/movimientos/movimientos.component';
 import { SistemaComponent } from './components/sidebar/aurora-contable/configuracion/sistema/sistema.component';
+import { NuevaComponent } from './components/sidebar/aurora-contable/ordenes-de-trabajo/nueva/nueva.component';
+import { PendientesComponent } from './components/sidebar/aurora-contable/ordenes-de-trabajo/pendientes/pendientes.component';
+import { AtendidasComponent } from './components/sidebar/aurora-contable/ordenes-de-trabajo/atendidas/atendidas.component';
+import { ConfigurarComponent } from './components/sidebar/aurora-contable/ordenes-de-trabajo/turnos/configurar/configurar.component';
 
 @NgModule({
   providers: [
@@ -129,7 +133,11 @@ import { SistemaComponent } from './components/sidebar/aurora-contable/configura
     SpinnerComponentComponent,
     FacturasComponent,
     MovimientosComponent,
-    SistemaComponent
+    SistemaComponent,
+    NuevaComponent,
+    PendientesComponent,
+    AtendidasComponent,
+    ConfigurarComponent
   ],
   imports: [
     BrowserModule,

@@ -7,11 +7,12 @@ import * as pdfMake from "pdfmake/build/pdfmake";
 import { Decimal } from 'decimal.js';
 
 import { AppService } from 'src/app/services/app.service';
-import { CuentasPorCobrarService } from './services/cuentas-por-cobrar.service';
-import { AbonosService } from '../abonos/services/abonos.service';  
+import { CuentasPorCobrarService } from '../../contabilidad/cuentas-por-cobrar/services/cuentas-por-cobrar.service';
+import { AbonosService } from '../../contabilidad/abonos/services/abonos.service';
 import { ProductosService } from '../../gestion/productos/services/productos.service';
 import { FacturasService } from '../../tienda/services/facturas.service';
 import { OtherServicesService } from 'src/app/services/other-services/other-services.service';
+import { OrdenesService } from '../services/ordenes.service';
 
 interface Abono {
   cabFactura_id: number;
@@ -48,19 +49,21 @@ interface DataStructureFactura {
     auditoria: any;
     formasPago?: any[];
     observaciones?: any[];
-    abonos?: any[]
+    abonos?: any[];
+    ordenTrabajo?: any;
   }
 }
 
 @Component({
-  selector: 'app-cuentas-por-cobrar',
-  templateUrl: './cuentas-por-cobrar.component.html',
-  styleUrls: ['./cuentas-por-cobrar.component.css']
+  selector: 'app-pendientes',
+  templateUrl: './pendientes.component.html',
+  styleUrls: ['./pendientes.component.css']
 })
-export class CuentasPorCobrarComponent implements OnInit {
+export class PendientesComponent implements OnInit {
+
   @ViewChild('ModalNewAbono') ModalNewAbono?: ModalDirective;
   @ViewChild('ModalEdit') ModalEdit?: ModalDirective;
-  @ViewChild('ModalAddFormasDePago') ModalAddFormasDePago?: ModalDirective;
+  @ViewChild('ModalAddObservaciones') ModalAddObservaciones?: ModalDirective;
   @ViewChild('ModalAddObservacion') ModalAddObservacion?: ModalDirective;
   @ViewChild('searchInput', { static: false }) searchInput?: ElementRef;
 
@@ -76,7 +79,7 @@ export class CuentasPorCobrarComponent implements OnInit {
 
   cabFactura_id: number = 0;
   dataPrintComprobante: any;
-  
+
   newAbono: Abono = {
     cabFactura_id: 0,
     monto: 0,
@@ -84,7 +87,34 @@ export class CuentasPorCobrarComponent implements OnInit {
     descripcion: ''
   };
 
-  cuentasPorCobrar: any[] = [];
+  ordenes: any[] = [];
+  orden_id: number = 0;
+  codigoOrden: string = '';
+  fechaOrden: string = '';
+  fechaOrdenOriginal: string = '';
+  descripcionOrden: string = '';
+  estadoOrden: string = '';
+
+  generarTurno: boolean = false;
+  turno_id: number = 0;
+  fechaTurno: string = '';
+  turno: number = 0;
+
+  vehiculo_id: number = 0;
+  veh_descripcion: string = '';
+  marca: string = '';
+  modelo: string = '';
+  cilindraje: string = '';
+  color: string = '';
+  anio: number = 0;
+  placa: string = '';
+
+  mantenimientosVehiculoStructure = {
+    tipo: '',
+    observaciones: ''
+  }
+
+  mantenimientoVehiculo: any[] = [];
 
   codigoFactura: string = '';
   perfil_id: number = 0;
@@ -145,7 +175,7 @@ export class CuentasPorCobrarComponent implements OnInit {
   searchByRange: boolean = false;
   searchCuenta: string = '';
   search: string = '';
-  cuentasPorCobrarFilter: any[] = [];
+  ordenesFilter: any[] = [];
 
   //Paginate
   currentPage = 1;
@@ -167,6 +197,7 @@ export class CuentasPorCobrarComponent implements OnInit {
     private ProductosService: ProductosService,
     private FacturasServices: FacturasService,
     private OtherServicesService: OtherServicesService,
+    private OrdenesService: OrdenesService,
     private toastr: ToastrService,
     private router: Router
   ) { }
@@ -183,26 +214,10 @@ export class CuentasPorCobrarComponent implements OnInit {
       }
     );
 
-    this.CuentasPorCobrarService.getAll().subscribe(
+    this.OrdenesService.getPendientes().subscribe(
       response => {
-        this.cuentasPorCobrar = response.data.map((factura: any) => {
-          // Verificar si la factura tiene abonos
-          if (factura.abonos && factura.abonos.length > 0) {
-            // Sumar el total de los abonos
-            factura.totalAbonos = factura.abonos
-              .map((abono: any) => parseFloat(abono.monto))
-              .reduce((sum: number, monto: number) => sum + monto, 0);
-    
-            // Obtener el saldo del último abono
-            const ultimoAbono = factura.abonos[factura.abonos.length - 1];
-            factura.saldo = ultimoAbono.saldo;
-          } else {
-            factura.totalAbonos = 0;
-            factura.saldo = factura.total;
-          }
-          return factura;
-        }).sort((a: any, b: any) => b.id - a.id);
-        this.cuentasPorCobrarFilter = this.cuentasPorCobrar;
+        this.ordenes = response.data.sort((a: any, b: any) => b.orden.id - a.orden.id);
+        this.ordenesFilter = this.ordenes;
         this.loading = false;
       }
     );
@@ -216,9 +231,10 @@ export class CuentasPorCobrarComponent implements OnInit {
    * MODALS
    */
 
-  openModalAbonar(data: any) {
+  openModalAbonar(data: any, orden_id: any) {
     this.dataPrintComprobante = data;
     this.cabFactura_id = data.id;
+    this.orden_id = orden_id;
     this.ModalNewAbono?.show();
   }
 
@@ -227,24 +243,59 @@ export class CuentasPorCobrarComponent implements OnInit {
     this.ModalEdit?.show();
   }
 
+  openModalAddObservaciones(id: number) {
+    this.getFactura(id);
+    this.ModalAddObservaciones?.show();
+  }
+
   /**
    * SERVICES
    */
+  marcarOrdenAtendida(id: number) {
+    Swal.fire({
+      title: '<strong>¿Deseas confirmar la orden atendida?</strong>',
+      showCancelButton: true,
+      focusConfirm: false,
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.OrdenesService.attend(id).subscribe(
+          response => {
+            if (response.data) {
+              this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+              this.ngOnInit();
+            }
+          }
+        );
+      }
+    });
+  }
+
+  atenderOrden(id: number) {
+    this.OrdenesService.attend(id).subscribe(
+      response => {
+        if (response.data) {
+          this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+        }
+      }
+    );
+  }
 
   pagar(dataCuenta: any) {
     Swal.fire({
       title: '<strong>¿Desea confirmar el pago?</strong>',
       html: `
-        <label for="monto">Monto recibido</label>
-        <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
-        ${dataCuenta.formasPago.length === 0 ? `
-          <label style="margin-top: 15px;">Forma de pago</label>
-          <select id="formaPagoSelect" class="form-control" required>
-            ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
-          </select>
-        ` : ''}
-        <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
-      `,
+          <label for="monto">Monto recibido</label>
+          <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
+          ${dataCuenta.formasPago.length === 0 ? `
+            <label style="margin-top: 15px;">Forma de pago</label>
+            <select id="formaPagoSelect" class="form-control" required>
+              ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
+            </select>
+          ` : ''}
+          <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
+        `,
       showCancelButton: true,
       focusConfirm: false,
       confirmButtonText: 'Confirmar',
@@ -253,16 +304,16 @@ export class CuentasPorCobrarComponent implements OnInit {
         const montoInput = <HTMLInputElement>document.getElementById('monto');
         const cambioDiv = document.getElementById('cambio');
         const total = Number(dataCuenta.abonos.length === 0 ? dataCuenta.total : dataCuenta.abonos[dataCuenta.abonos.length - 1].saldo);
-    
+
         montoInput.value = total.toFixed(2);
-    
+
         montoInput.addEventListener('input', () => {
           const montoRecibido = Number(montoInput.value);
-    
+
           if (montoRecibido < 0) {
             montoInput.value = '0';
           }
-    
+
           const cambio = Math.max(0, montoRecibido - total);
           if (cambioDiv) {
             cambioDiv.innerHTML = `Cambio: ${cambio.toFixed(2)}`;
@@ -282,11 +333,11 @@ export class CuentasPorCobrarComponent implements OnInit {
         const montoRecibido = Number((<HTMLInputElement>document.getElementById('monto')).value);
         const total = dataCuenta.abonos.length === 0 ? dataCuenta.total : dataCuenta.abonos[dataCuenta.abonos.length - 1].saldo;
         let cambio = 0;
-    
+
         if (montoRecibido >= total) {
           cambio = montoRecibido - total;
         }
-    
+
         const observaciones = [
           {
             nombre: 'Cuenta pagada',
@@ -297,7 +348,7 @@ export class CuentasPorCobrarComponent implements OnInit {
             descripcion: montoRecibido.toFixed(2)
           }
         ];
-    
+
         if (cambio > 0) {
           observaciones.push({
             nombre: 'Cambio',
@@ -329,6 +380,7 @@ export class CuentasPorCobrarComponent implements OnInit {
           response => {
             if (response.data) {
               this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+              this.atenderOrden(dataCuenta.orden.id);
               this.ngOnInit();
               Swal.fire({
                 icon: 'warning',
@@ -349,7 +401,7 @@ export class CuentasPorCobrarComponent implements OnInit {
     });
   }
 
-  abonar() {
+  abonar(orden_id: number) {
     let data = {
       data: {
         cabFactura_id: this.cabFactura_id,
@@ -364,6 +416,7 @@ export class CuentasPorCobrarComponent implements OnInit {
       response => {
         if (response.data) {
           this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+          this.atenderOrden(orden_id);
           this.ngOnInit();
           this.resetForm();
           this.ModalNewAbono?.hide();
@@ -389,19 +442,19 @@ export class CuentasPorCobrarComponent implements OnInit {
       fechaInicio: this.fechaInicio,
       fechaFin: this.fechaFin
     };
-    
+
     this.loading = true;
 
     this.CuentasPorCobrarService.byRange(data).subscribe(
       response => {
-        this.cuentasPorCobrar = response.data.map((factura: any) => {
+        this.ordenes = response.data.map((factura: any) => {
           // Verificar si la factura tiene abonos
           if (factura.abonos && factura.abonos.length > 0) {
             // Sumar el total de los abonos
             factura.totalAbonos = factura.abonos
               .map((abono: any) => parseFloat(abono.monto))
               .reduce((sum: number, monto: number) => sum + monto, 0);
-    
+
             // Obtener el saldo del último abono
             const ultimoAbono = factura.abonos[factura.abonos.length - 1];
             factura.saldo = ultimoAbono.saldo;
@@ -411,7 +464,7 @@ export class CuentasPorCobrarComponent implements OnInit {
           }
           return factura;
         }).sort((a: any, b: any) => b.id - a.id);
-        this.cuentasPorCobrarFilter = this.cuentasPorCobrar
+        this.ordenesFilter = this.ordenes
         this.loading = false;
       }
     );
@@ -442,6 +495,15 @@ export class CuentasPorCobrarComponent implements OnInit {
     );
   }
 
+  getOrden(id: number) {
+    this.FacturasServices.get(id).subscribe(
+      response => {
+        this.orden_id = response.data.id;
+        this.cabFactura_id = response.data.cabFactura_id;
+      }
+    );
+  }
+
   getFactura(id: number) {
     this.FacturasServices.get(id).subscribe(
       response => {
@@ -465,7 +527,7 @@ export class CuentasPorCobrarComponent implements OnInit {
         this.totalIva = response.data.totalIva;
         this.totalIva = response.data.totalIva;
         this.total = response.data.total;
-        
+
         this.productosEnFactura = response.data.productos.map((producto: any) => ({
           detFactura_id: producto.id,
           id: producto.productos.id,
@@ -473,15 +535,15 @@ export class CuentasPorCobrarComponent implements OnInit {
           cantidad: producto.cantidad,
           descripcion: producto.descripcion,
           preciosVenta: [
-            {pvp: producto.productos.pvp1},
-            {pvp: producto.productos.pvp2},
-            {pvp: producto.productos.pvp3},
-            {pvp: producto.productos.pvp4},
+            { pvp: producto.productos.pvp1 },
+            { pvp: producto.productos.pvp2 },
+            { pvp: producto.productos.pvp3 },
+            { pvp: producto.productos.pvp4 },
           ].filter(p => p.pvp > 0),
           precioUnitario: producto.precioUnitario,
-          iva_id: this.tiposIva.find((tipo: any) => tipo.tipoIva === producto.iva)?.id, 
+          iva_id: this.tiposIva.find((tipo: any) => tipo.tipoIva === producto.iva)?.id,
           iva: producto.iva,
-          tipoDescuento: '$', 
+          tipoDescuento: '$',
           descuento: producto.descuento,
           descuentoCalculado: producto.descuento,
           valorTotal: producto.valorTotal,
@@ -492,11 +554,33 @@ export class CuentasPorCobrarComponent implements OnInit {
         this.formasPagoEnFactura = response.data.formasDePago;
         this.observacionesEnFactura = response.data.observaciones;
         this.abonosEnFactura = response.data.abonos;
+
+        this.orden_id = response.data.orden.id;
+        this.codigoOrden = response.data.orden.codigoOrden;
+        this.fechaOrden = response.data.orden.fecha;
+        this.fechaOrdenOriginal = response.data.orden.fecha;
+        this.descripcionOrden = response.data.orden.descripcion;
+        this.estadoOrden = response.data.orden.estado;
+
+        this.turno_id = response.data.orden.turno.id;
+        this.fechaTurno = response.data.orden.turno.fecha;
+        this.turno = response.data.orden.turno.turno;
+
+        this.vehiculo_id = response.data.orden.vehiculo.id;
+        this.veh_descripcion = response.data.orden.vehiculo.descripcion;
+        this.marca = response.data.orden.vehiculo.marca;
+        this.modelo = response.data.orden.vehiculo.modelo;
+        this.cilindraje = response.data.orden.vehiculo.cilindraje;
+        this.color = response.data.orden.vehiculo.color;
+        this.anio = response.data.orden.vehiculo.anio;
+        this.placa = response.data.orden.vehiculo.placa;
+
+        this.mantenimientoVehiculo = response.data.orden.mantenimientoVehiculo;
       }
     );
   }
 
-  editFactura(id: number, op: number) {
+  editFactura(id: number, orden_id: number, op: number) {
     if (this.productosEnFactura.length === 0) {
       this.toastr.warning('Tiene que agregar al menos un producto en la lista de venta', '¡Listo!', { closeButton: true });
       return;
@@ -549,6 +633,17 @@ export class CuentasPorCobrarComponent implements OnInit {
         })) : this.formasPagoEnFactura,
         observaciones: this.observacionesEnFactura,
         abonos: this.abonosEnFactura,
+        ordenTrabajo: {
+          fecha: this.fechaOrden,
+          descripcion: this.descripcionOrden,
+          estado: op === 2 ? 'Atendida' : this.estadoOrden,
+          mantenimientoVehiculo: this.mantenimientoVehiculo.map(item => ({
+            orden_id: this.orden_id,
+            tipo: item.tipo,
+            observaciones: item.observaciones,
+          })),
+          generarTurno: this.fechaOrden != this.fechaOrdenOriginal ? true : this.generarTurno
+        },
         auditoria: this.AppService.getDataAuditoria('edit')
       }
     };
@@ -558,16 +653,16 @@ export class CuentasPorCobrarComponent implements OnInit {
       Swal.fire({
         title: '<strong>¿Desea confirmar el pago?</strong>',
         html: `
-          <label for="monto">Monto recibido</label>
-          <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
-          ${this.formasPagoEnFactura.length === 0 ? `
-            <label style="margin-top: 15px;">Forma de pago</label>
-            <select id="formaPagoSelect" class="form-control" required>
-              ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
-            </select>
-          ` : ''}
-          <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
-        `,
+            <label for="monto">Monto recibido</label>
+            <input id="monto" type="number" class="form-control" placeholder="Ingrese el monto recibido" min="0">
+            ${this.formasPagoEnFactura.length === 0 ? `
+              <label style="margin-top: 15px;">Forma de pago</label>
+              <select id="formaPagoSelect" class="form-control" required>
+                ${this.formasDePago.map(fp => `<option value="${fp.id}">${fp.formaPago}</option>`).join('')}
+              </select>
+            ` : ''}
+            <label id="cambio" style="margin-top: 15px; font-size: 18px; color: #333;">Cambio: 0.00</label>
+          `,
         showCancelButton: true,
         focusConfirm: false,
         confirmButtonText: 'Confirmar',
@@ -577,16 +672,16 @@ export class CuentasPorCobrarComponent implements OnInit {
           const cambioDiv = document.getElementById('cambio');
           const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
           const total = Number(data.data.cabecera.total);
-      
+
           montoInput.value = total.toFixed(2);
-      
+
           montoInput.addEventListener('input', () => {
             const montoRecibido = Number(montoInput.value);
-      
+
             if (montoRecibido < 0) {
               montoInput.value = '0';
             }
-      
+
             const cambio = Math.max(0, montoRecibido - total);
             if (cambioDiv) {
               cambioDiv.innerHTML = `Cambio: ${cambio.toFixed(2)}`;
@@ -598,25 +693,25 @@ export class CuentasPorCobrarComponent implements OnInit {
           const montoRecibido = Number((<HTMLInputElement>document.getElementById('monto')).value);
           const total = data.data.cabecera.total;
           let cambio = 0;
-      
+
           if (montoRecibido >= total) {
             cambio = montoRecibido - total;
           }
-      
+
           const observaciones = [
             {
               nombre: 'Pago',
               descripcion: montoRecibido.toFixed(2)
             }
           ];
-      
+
           if (cambio > 0) {
             observaciones.push({
               nombre: 'Cambio',
               descripcion: cambio.toFixed(2)
             });
           }
-      
+
           if (!data.data.observaciones) {
             data.data.observaciones = [];
           }
@@ -634,7 +729,7 @@ export class CuentasPorCobrarComponent implements OnInit {
           }
           this.edit(data);
         }
-      });      
+      });
     } else {
       this.edit(data);
     }
@@ -664,23 +759,47 @@ export class CuentasPorCobrarComponent implements OnInit {
 
     );
   }
+
+  anularOrden(id: number) {
+    Swal.fire({
+      title: '<strong>¿Deseas anular la orden?</strong>',
+      showCancelButton: true,
+      focusConfirm: false,
+      confirmButtonText: 'Anular',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.OrdenesService.annular(id).subscribe(
+          response => {
+            if (response.data) {
+              this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+              this.ngOnInit();
+            }
+          }
+        );
+      }
+    });
+  }
   /**
    * MORE FUNCTIONS
    */
 
   //Search
   Search() {
-    this.cuentasPorCobrarFilter = this.cuentasPorCobrar.filter((cuenta: { 
+    this.ordenesFilter = this.ordenes.filter((cuenta: {
       codigoFactura: string,
       fechaEmision: string,
-      receptor: { nombres: string, numeroIdentificacion: string, }
+      receptor: { nombres: string, numeroIdentificacion: string },
+      orden: { codigoOrden: string, fecha: string }
     }) => {
       let filter = true;
       if (this.searchCuenta) {
         filter = cuenta.codigoFactura?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
-        cuenta.fechaEmision?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
-        cuenta.receptor.nombres?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
-        cuenta.receptor.numeroIdentificacion?.toLowerCase().includes(this.searchCuenta.toLowerCase());
+          cuenta.fechaEmision?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
+          cuenta.receptor.nombres?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
+          cuenta.receptor.numeroIdentificacion?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
+          cuenta.orden.codigoOrden?.toLowerCase().includes(this.searchCuenta.toLowerCase()) ||
+          cuenta.orden.fecha?.toLowerCase().includes(this.searchCuenta.toLowerCase());
       }
       return filter;
     });
@@ -689,7 +808,7 @@ export class CuentasPorCobrarComponent implements OnInit {
   //Paginate
   countRangeRegister(): string {
     const startIndex = (this.currentPage - 1) * this.recordPerPage + 1;
-    const endIndex = Math.min(startIndex + this.recordPerPage - 1, this.cuentasPorCobrarFilter.length);
+    const endIndex = Math.min(startIndex + this.recordPerPage - 1, this.ordenesFilter.length);
     let msg;
     endIndex === 0 ? msg = 'No hay registros.' : msg = `Mostrando registros del ${startIndex} al ${endIndex}`;
     return msg;
@@ -697,6 +816,19 @@ export class CuentasPorCobrarComponent implements OnInit {
 
   onCheckboxChange(event: any): void {
     this.searchByRange = event.target.checked;
+  }
+
+  addMantenimientoVehiculo() {
+    if (!this.mantenimientosVehiculoStructure.tipo || !this.mantenimientosVehiculoStructure.observaciones) {
+      this.toastr.warning('Todos los campos son obligatorios para añadir una observación', '¡Atención!', { closeButton: true });
+      return;
+    }
+
+    this.mantenimientoVehiculo.push({ ...this.mantenimientosVehiculoStructure });
+    this.mantenimientosVehiculoStructure = {
+      tipo: '',
+      observaciones: ''
+    };
   }
 
   // Imprimir comprobante
@@ -764,7 +896,7 @@ export class CuentasPorCobrarComponent implements OnInit {
         '***************************',
         { text: `COMPROBANTE DE ${tipoComprobante}`, style: 'header', alignment: 'center' },
         '------------------------------------------',
-        { text: `Código: ${dataAbono.codigoFactura}`, style: 'info'},
+        { text: `Código: ${dataAbono.codigoFactura}`, style: 'info' },
         { text: `Cliente: ${data.receptor.nombres}`, style: 'dataCliente' },
         { text: `RUC/Ced/Pass: ${!data.receptor.numeroIdentificacion ? '9999999999' : data.receptor.numeroIdentificacion}`, style: 'dataCliente' },
         '***************************',
@@ -777,9 +909,9 @@ export class CuentasPorCobrarComponent implements OnInit {
         { text: `IVA: ${data.totalIva}`, style: 'totales', alignment: 'right' },
         { text: `Total: ${data.total}`, style: 'totales', alignment: 'right' },
         '------------------------------------------',
-        { 
-          text: `Estado: ${estado }`, style: 'info', alignment: 'right'
-        }    
+        {
+          text: `Estado: ${estado}`, style: 'info', alignment: 'right'
+        }
       ],
       styles: {
         header: { fontSize: 12, bold: true },
@@ -920,10 +1052,10 @@ export class CuentasPorCobrarComponent implements OnInit {
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
         preciosVenta: [
-          {pvp: productoSeleccionado.pvp1},
-          {pvp: productoSeleccionado.pvp2},
-          {pvp: productoSeleccionado.pvp3},
-          {pvp: productoSeleccionado.pvp4},
+          { pvp: productoSeleccionado.pvp1 },
+          { pvp: productoSeleccionado.pvp2 },
+          { pvp: productoSeleccionado.pvp3 },
+          { pvp: productoSeleccionado.pvp4 },
         ].filter(p => p.pvp > 0),
         precioUnitario: productoSeleccionado.pvp1,
         iva_id: this.facturarConIva ? productoSeleccionado.iva_id : 1,
@@ -1005,18 +1137,18 @@ export class CuentasPorCobrarComponent implements OnInit {
       // Se obtienen los precios unitarios
       const precioProductoSinIva = new Decimal(
         producto.iva_id == 1 ?
-        producto.precioUnitario :
-        0
+          producto.precioUnitario :
+          0
       );
       const precioProductoConIva = new Decimal(
         producto.iva_id == 2 || producto.iva_id == 3 ?
-        producto.precioUnitario : 0
+          producto.precioUnitario : 0
       );
 
       // Se optiene la cantidad y descuento
       const cantidad = new Decimal(producto.cantidad);
       const descuento = new Decimal(producto.descuento);
-      
+
       // Se calcula el precio del producto con la cantidad
       let valorTotalSinIva, valorTotalSinIvaSinDescuento;
       let valorTotalConIva, valorTotalConIvaSinDescuento;
@@ -1026,7 +1158,7 @@ export class CuentasPorCobrarComponent implements OnInit {
 
       valorTotalConIvaSinDescuento = precioProductoConIva.mul(cantidad);
       valorTotalSinIvaSinDescuento = precioProductoSinIva.mul(cantidad);
-      
+
       // Se suma valorTotalConIva y valorTotalSinIva
       let valorTotalConSinIva = new Decimal(0);
       valorTotalConSinIva = valorTotalConSinIva.add(valorTotalConIva);
@@ -1049,7 +1181,7 @@ export class CuentasPorCobrarComponent implements OnInit {
       subtotalSinIva = subtotalSinIva.add(valorTotalSinIvaSinDescuento); // Se acumula el subtotal sin IVA
       totalIva = totalIva.add(valorIva);                                 // Se acumula el IVA
       totalDescuento = totalDescuento.add(descuentoCalculado);           // Se acumula el descuento
-      totalFinal = new Decimal(subtotal.toNumber()+totalIva.toNumber()); // Se acumula el total sumando el subtotal con el IVA
+      totalFinal = new Decimal(subtotal.toNumber() + totalIva.toNumber()); // Se acumula el total sumando el subtotal con el IVA
     });
 
     // Actualizar los totales en el componente
@@ -1088,13 +1220,26 @@ export class CuentasPorCobrarComponent implements OnInit {
         this.FacturasServices.deleteProducto(id).subscribe(
           response => {
             if (response.data) {
-              this.toastr.success(response.message, '¡Listo!', {closeButton: true});
+              this.toastr.success(response.message, '¡Listo!', { closeButton: true });
             }
           }
         );
         this.productosEnFactura.splice(index, 1);
         this.updateTotales();
       }
+    })
+  }
+
+  deleteMantenimientoVehiculo(index: number) {
+    Swal.fire({
+      icon: 'warning',
+      title: '<strong>¿Esta seguro que desea eliminar este registro?</strong>',
+      showCancelButton: true,
+      focusConfirm: false,
+      confirmButtonText: 'Si, eliminar',
+      cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+      this.mantenimientoVehiculo.splice(index, 1);
     })
   }
 

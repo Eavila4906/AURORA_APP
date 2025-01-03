@@ -24,6 +24,10 @@ import { PuntosDeEmisionComponent } from './configuracion/facturacion/puntos-de-
 import { FacturasComponent } from './reportes/facturas/facturas/facturas.component';
 import { MovimientosComponent } from './contabilidad/movimientos/movimientos.component';
 import { SistemaComponent } from './configuracion/sistema/sistema.component';
+import { NuevaComponent } from './ordenes-de-trabajo/nueva/nueva.component';
+import { PendientesComponent } from './ordenes-de-trabajo/pendientes/pendientes.component';
+import { AtendidasComponent } from './ordenes-de-trabajo/atendidas/atendidas.component';
+import { ConfigurarComponent } from './ordenes-de-trabajo/turnos/configurar/configurar.component';
 
 const routes: Routes = [
   {
@@ -31,6 +35,19 @@ const routes: Routes = [
     children: [
       { path: 'vender', component: VenderComponent, canDeactivate: [ConfirmNavigationGuard] },
       { path: 'comprar', component: ComprarComponent },
+    ]
+  },
+  {
+    path: 'ordenes', component: BaseComponent, 
+    children: [
+      { path: 'nueva', component: NuevaComponent, canDeactivate: [ConfirmNavigationGuard] },
+      { path: 'pendientes', component: PendientesComponent },
+      { path: 'atendidas', component: AtendidasComponent },
+      { 
+        path: 'turnos', children: [
+          { path: 'configurar', component: ConfigurarComponent }
+        ]
+      },
     ]
   },
   {
