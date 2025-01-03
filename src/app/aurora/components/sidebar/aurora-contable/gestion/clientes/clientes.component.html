@@ -70,6 +70,11 @@
                                             (click)="openModalSee(cliente.id)" *ngIf="permission_read">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        <button class="ms-1 btn btn-info btn-sm" title="Vehiculos"
+                                            (click)="openModalVehiculos(cliente.id)"
+                                            *ngIf="cliente.gestionaVehiculo">
+                                            <i class="fas fa-car"></i>
+                                        </button>
                                         <button class="ms-1 btn btn-info btn-sm" title="Editar"
                                             (click)="openModalEdit(cliente.id)" *ngIf="permission_update">
                                             <i class="fas fa-edit"></i>
@@ -120,25 +125,22 @@
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Nombres *</label>
-                                            <input class="form-control " type="text" 
-                                            name="nombres" 
-                                            [(ngModel)]="newCliente.nombres">
+                                            <input class="form-control " type="text" name="nombres"
+                                                [(ngModel)]="newCliente.nombres">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Apellidos *</label>
-                                            <input class="form-control " type="text" 
-                                            name="apellidos" 
-                                            [(ngModel)]="newCliente.apellidos">
+                                            <input class="form-control " type="text" name="apellidos"
+                                                [(ngModel)]="newCliente.apellidos">
                                         </div>
                                     </div>
                                     <div class="col-lg-12 col-sm-12">
                                         <div class="mb-3 ">
                                             <label>Tipo de identidad *</label>
-                                            <select class="form-control" name="identificacion_id" 
-                                                [(ngModel)]="newCliente.identificacion_id"
-                                                required>
+                                            <select class="form-control" name="identificacion_id"
+                                                [(ngModel)]="newCliente.identificacion_id" required>
                                                 <option value="0" class="d-none">Selecciona tipo de identidad</option>
                                                 <option *ngFor="let tipo of tiposIdentificacion" [value]="tipo.id">
                                                     {{tipo.identificacion}}
@@ -149,33 +151,29 @@
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Número de identidad *</label>
-                                            <input class="form-control " type="text" 
-                                            name="numeroIdentidad" 
-                                            [(ngModel)]="newCliente.numeroIdentificacion">
+                                            <input class="form-control " type="text" name="numeroIdentidad"
+                                                [(ngModel)]="newCliente.numeroIdentificacion">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Telefono</label>
-                                            <input class="form-control " type="text" 
-                                            name="telefono" 
-                                            [(ngModel)]="newCliente.telefono">
+                                            <input class="form-control " type="text" name="telefono"
+                                                [(ngModel)]="newCliente.telefono">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3 ">
                                             <label>Correo electrónico</label>
-                                            <input class="form-control " type="email" 
-                                            name="email" 
-                                            [(ngModel)]="newCliente.email">
+                                            <input class="form-control " type="email" name="email"
+                                                [(ngModel)]="newCliente.email">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3 ">
                                             <label>Dirección</label>
-                                            <input class="form-control " type="text" 
-                                            name="direccion" 
-                                            [(ngModel)]="newCliente.direccion">
+                                            <input class="form-control " type="text" name="direccion"
+                                                [(ngModel)]="newCliente.direccion">
                                         </div>
                                     </div>
                                 </div>
@@ -188,6 +186,328 @@
                                 (click)="ModalNew.hide(); resetForm()">Cerrar</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal to vehiculos -->
+    <div bsModal #ModalVehiculos="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
+        data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h3 class="modal-title text-white fs-2 fw-bolder">
+                        <i class="fas fa-edit"></i> Gestionar vehiculos
+                    </h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        (click)="ModalVehiculos.hide(); resetFormVeh()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3" *ngIf="editarVehiculo === false">
+                        <button class="btn btn-success text-white" *ngIf="permission_create"
+                            (click)="toggleRegistrarVehiculo()">
+                            Registrar
+                            <i class="fas fa-car"></i>
+                        </button>
+                    </div>
+
+                    <div *ngIf="registrarVehiculo && gestionaVehiculo">
+                        <form class="form-horizontal" (submit)="saveVehiculo(id)">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div class="mb-3">
+                                                <label>Descripción</label>
+                                                <textarea class="form-control" name="vehiculo.descripcion"
+                                                    [(ngModel)]="newVehiculo.descripcion" rows="1"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Marca</label>
+                                                <input class="form-control" type="text" name="vehiculo.marca"
+                                                    [(ngModel)]="newVehiculo.marca">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Modelo</label>
+                                                <input class="form-control" type="text" name="vehiculo.modelo"
+                                                    [(ngModel)]="newVehiculo.modelo">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Cilindraje</label>
+                                                <input class="form-control" type="text" name="vehiculo.cilindraje"
+                                                    [(ngModel)]="newVehiculo.cilindraje">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Color</label>
+                                                <input class="form-control" type="text" name="vehiculo.color"
+                                                    [(ngModel)]="newVehiculo.color">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Año</label>
+                                                <input class="form-control" type="text" name="vehiculo.anio"
+                                                    [(ngModel)]="newVehiculo.anio">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Placa</label>
+                                                <input class="form-control" type="text" name="vehiculo.placa"
+                                                    [(ngModel)]="newVehiculo.placa">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success text-white">Guardar</button>
+                                <button type="button" class="btn btn-secondary"
+                                    (click)="toggleRegistrarVehiculo(); resetFormVeh()">Cerrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div *ngIf="editarVehiculo && gestionaVehiculo">
+                        <form class="form-horizontal" (submit)="editVehiculo(veh_id)">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div class="mb-3">
+                                                <label>Descripción</label>
+                                                <textarea class="form-control" name="veh.descripcion"
+                                                    [(ngModel)]="veh_descripcion" rows="1"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Marca</label>
+                                                <input class="form-control" type="text" name="veh.marca"
+                                                    [(ngModel)]="veh_marca">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Modelo</label>
+                                                <input class="form-control" type="text" name="veh.modelo"
+                                                    [(ngModel)]="veh_modelo">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Cilindraje</label>
+                                                <input class="form-control" type="text" name="veh.cilindraje"
+                                                    [(ngModel)]="veh_cilindraje">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Color</label>
+                                                <input class="form-control" type="text" name="veh.color"
+                                                    [(ngModel)]="veh_color">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Año</label>
+                                                <input class="form-control" type="text" name="veh.anio"
+                                                    [(ngModel)]="veh_anio">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-3">
+                                            <div class="mb-3">
+                                                <label>Placa</label>
+                                                <input class="form-control" type="text" name="veh.placa"
+                                                    [(ngModel)]="veh_placa">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-info text-white">Guardar</button>
+                                <button type="button" class="btn btn-secondary"
+                                    (click)="toggleEditarVehiculo(); resetFormVeh()">Cerrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="row" *ngIf="gestionaVehiculo">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>N°</th>
+                                                    <th>Descripción</th>
+                                                    <th>Marca</th>
+                                                    <th>Modelo</th>
+                                                    <th>Cilindraje</th>
+                                                    <th>Color</th>
+                                                    <th>Año</th>
+                                                    <th>Placa</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <app-spinner-component *ngIf="loading"></app-spinner-component>
+                                            <tbody>
+                                                <tr
+                                                    *ngFor="let vehiculo of vehiculo | paginate: { itemsPerPage: recordPerPage, currentPage: currentPage }; let i = index">
+                                                    <td>{{ i + 1 }}</td>
+                                                    <td>{{ vehiculo.descripcion }}</td>
+                                                    <td>{{ vehiculo.marca }}</td>
+                                                    <td>{{ vehiculo.modelo }}</td>
+                                                    <td>{{ vehiculo.cilindraje }}</td>
+                                                    <td>{{ vehiculo.color }}</td>
+                                                    <td>{{ vehiculo.anio }}</td>
+                                                    <td>{{ vehiculo.placa }}</td>
+
+                                                    <td>
+                                                        <span *ngIf="vehiculo.estado == 'Activo' else elseBlock">
+                                                            {{ vehiculo.estado }} <i
+                                                                class="fas fa-circle fa-sm text-success"></i>
+                                                        </span>
+                                                        <ng-template #elseBlock>
+                                                            <span>
+                                                                {{ vehiculo.estado }} <i
+                                                                    class="fas fa-circle fa-sm text-danger"></i>
+                                                            </span>
+                                                        </ng-template>
+                                                    </td>
+                                                    <td>
+                                                        <button class="ms-1 btn btn-info btn-sm" title="Ver"
+                                                            (click)="seeInfoVehiculo(vehiculo.id)"
+                                                            *ngIf="permission_read">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="ms-1 btn btn-info btn-sm" title="Editar"
+                                                            (click)="formEditarVehiculo(vehiculo.id)"
+                                                            *ngIf="permission_update">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="ms-1 btn btn-danger btn-sm" title="Eliminar"
+                                                            (click)="deleteVehiculo(vehiculo.id)"
+                                                            *ngIf="permission_delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-9"></div>
+                                        <div class="col-md-3 pagination">
+                                            <pagination-controls
+                                                (pageChange)="currentPage=$event"></pagination-controls>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4" *ngIf="verInfoVehiculo && gestionaVehiculo">
+                        <hr>
+                        <h4>
+                            Reportes del vehículo {{ selectedVehiculo.descripcion }}
+                            <span *ngIf="selectedVehiculo.orden && selectedVehiculo.orden.length > 0 ; else elseBlockBtn">
+                                <button class="btn btn-info" title="Imprimir reporte" (click)="generateReporteVehiculo(1)">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                                <button class="btn btn-danger ms-1" title="Descargar reporte"
+                                    (click)="generateReporteVehiculo(2)">
+                                    <i class="fas fa-arrow-alt-circle-down"></i>
+                                </button>
+                            </span>
+                            <ng-template #elseBlockBtn>
+                                <button class="btn btn-info" title="Imprimir reporte" disabled>
+                                    <i class="fas fa-print"></i>
+                                </button>
+                                <button class="btn btn-danger ms-1" title="Descargar reporte" disabled>
+                                    <i class="fas fa-arrow-alt-circle-down"></i>
+                                </button>
+                            </ng-template>
+                            <button class="btn btn-secondary ms-1" (click)="hideInfoVehiculo()" title="Cerrar reporte">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </h4>
+
+                        <div *ngIf="selectedVehiculo.orden && selectedVehiculo.orden.length > 0">
+                            <div *ngFor="let orden of selectedVehiculo.orden" class="mb-3">
+                                <div class="card mb-3 shadow-sm">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0"><b>Orden: {{ orden.codigoOrden }}</b></h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong><b>Descripción:</b></strong> {{ orden.descripcion }}</p>
+                                        <p><strong><b>Fecha:</b></strong> {{ orden.fecha }}</p>
+                                        <p><strong><b>Estado:</b></strong>
+                                            <span [ngClass]="{'text-success': orden.estado === 'Atendida', 
+                                                          'text-warning': orden.estado === 'Pendiente', 
+                                                          'text-danger': orden.estado === 'Anulada'}">
+                                                <b class="ms-1">{{ orden.estado }}</b>
+                                            </span>
+                                        </p>
+
+                                        <hr>
+
+                                        <p><strong><b>Factura:</b></strong> {{ orden.cab_factura.codigoFactura }}</p>
+                                        <p><strong><b>Total:</b></strong> {{ orden.cab_factura.total }}</p>
+                                        <p><strong><b>Estado:</b></strong>
+                                            <span [ngClass]="{'text-success': orden.cab_factura.estado === 'Pagada', 
+                                                          'text-warning': orden.cab_factura.estado === 'Por cobrar', 
+                                                          'text-danger': orden.cab_factura.estado === 'Anulada'}">
+                                                <b class="ms-1">{{ orden.cab_factura.estado }}</b>
+                                            </span>
+                                        </p>
+
+                                        <hr>
+
+                                        <h5 class="mt-4"><b>Observaciones</b></h5>
+                                        <ul *ngIf="orden.mantenimiento && orden.mantenimiento.length > 0"
+                                            class="list-group">
+                                            <li *ngFor="let mant of orden.mantenimiento" class="list-group-item">
+                                                <strong><b>Tipo:</b></strong> {{ mant.tipo }} -
+                                                <strong><b>Descripción:</b></strong>
+                                                {{ mant.observaciones }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="!selectedVehiculo.orden || selectedVehiculo.orden.length === 0">
+                            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"
+                                    aria-label="Warning:">
+                                    <use xlink:href="#exclamation-triangle-fill" />
+                                </svg>
+                                <div>
+                                    No hay datos para mostrar.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -219,25 +539,22 @@
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Nombres *</label>
-                                            <input class="form-control " type="text" 
-                                            name="nombres" 
-                                            [(ngModel)]="nombres">
+                                            <input class="form-control " type="text" name="nombres"
+                                                [(ngModel)]="nombres">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Apellidos *</label>
-                                            <input class="form-control " type="text" 
-                                            name="apellidos" 
-                                            [(ngModel)]="apellidos">
+                                            <input class="form-control " type="text" name="apellidos"
+                                                [(ngModel)]="apellidos">
                                         </div>
                                     </div>
                                     <div class="col-lg-12 col-sm-12">
                                         <div class="mb-3 ">
                                             <label>Tipo de identidad *</label>
-                                            <select class="form-control" name="identificacion_id" 
-                                                [(ngModel)]="identificacion_id"
-                                                required>
+                                            <select class="form-control" name="identificacion_id"
+                                                [(ngModel)]="identificacion_id" required>
                                                 <option value="0" class="d-none">Selecciona tipo de identidad</option>
                                                 <option *ngFor="let tipo of tiposIdentificacion" [value]="tipo.id">
                                                     {{tipo.identificacion}}
@@ -248,41 +565,34 @@
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Número de identidad *</label>
-                                            <input class="form-control " type="text" 
-                                            name="numeroIdentidad" 
-                                            [(ngModel)]="numeroIdentificacion">
+                                            <input class="form-control " type="text" name="numeroIdentidad"
+                                                [(ngModel)]="numeroIdentificacion">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Telefono</label>
-                                            <input class="form-control " type="text" 
-                                            name="telefono" 
-                                            [(ngModel)]="telefono">
+                                            <input class="form-control " type="text" name="telefono"
+                                                [(ngModel)]="telefono">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3 ">
                                             <label>Correo electrónico</label>
-                                            <input class="form-control " type="email" 
-                                            name="email" 
-                                            [(ngModel)]="email">
+                                            <input class="form-control " type="email" name="email" [(ngModel)]="email">
                                         </div>
                                     </div>
                                     <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3 ">
                                             <label>Dirección</label>
-                                            <input class="form-control " type="text" 
-                                            name="direccion" 
-                                            [(ngModel)]="direccion">
+                                            <input class="form-control " type="text" name="direccion"
+                                                [(ngModel)]="direccion">
                                         </div>
                                     </div>
                                     <div class="col-lg-12 col-sm-12">
                                         <div class="mb-3 ">
                                             <label>Estado *</label>
-                                            <select class="form-control" name="estado" 
-                                                [(ngModel)]="estado"
-                                                required>
+                                            <select class="form-control" name="estado" [(ngModel)]="estado" required>
                                                 <option value="Activo">Activo</option>
                                                 <option value="Inactivo">Inactivo</option>
                                             </select>
@@ -312,8 +622,7 @@
                     <h3 class="modal-title text-white fs-2 fw-bolder">
                         <i class="fas fa-info-circle"></i> Información de cliente
                     </h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        (click)="ModalSee.hide()">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalSee.hide()">
                     </button>
                 </div>
 
