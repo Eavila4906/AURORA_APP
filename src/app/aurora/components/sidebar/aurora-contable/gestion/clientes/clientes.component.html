@@ -72,7 +72,7 @@
                                         </button>
                                         <button class="ms-1 btn btn-info btn-sm" title="Vehiculos"
                                             (click)="openModalVehiculos(cliente.id)"
-                                            *ngIf="permission_read && permission_create && permission_update && permission_delete">
+                                            *ngIf="cliente.gestionaVehiculo">
                                             <i class="fas fa-car"></i>
                                         </button>
                                         <button class="ms-1 btn btn-info btn-sm" title="Editar"
@@ -214,7 +214,7 @@
                         </button>
                     </div>
 
-                    <div *ngIf="registrarVehiculo">
+                    <div *ngIf="registrarVehiculo && gestionaVehiculo">
                         <form class="form-horizontal" (submit)="saveVehiculo(id)">
                             <div class="row">
                                 <div class="col-12">
@@ -281,7 +281,7 @@
                         </form>
                     </div>
 
-                    <div *ngIf="editarVehiculo">
+                    <div *ngIf="editarVehiculo && gestionaVehiculo">
                         <form class="form-horizontal" (submit)="editVehiculo(veh_id)">
                             <div class="row">
                                 <div class="col-12">
@@ -348,7 +348,7 @@
                         </form>
                     </div>
 
-                    <div class="row">
+                    <div class="row" *ngIf="gestionaVehiculo">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
@@ -426,7 +426,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-4" *ngIf="verInfoVehiculo">
+                    <div class="mt-4" *ngIf="verInfoVehiculo && gestionaVehiculo">
                         <hr>
                         <h4>
                             Reportes del vehículo {{ selectedVehiculo.descripcion }}

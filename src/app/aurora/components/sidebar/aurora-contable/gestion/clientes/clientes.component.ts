@@ -59,6 +59,7 @@ export class ClientesComponent implements OnInit {
   telefono: string = '';
   email: string = '';
   direccion: string = '';
+  gestionaVehiculo: boolean = false;
   vehiculo: any [] = [];
   estado: string = 'Activo';
 
@@ -110,6 +111,7 @@ export class ClientesComponent implements OnInit {
     this.newCliente.telefono = '';
     this.newCliente.email = '';
     this.newCliente.direccion = '';
+    this.gestionaVehiculo = false;
 
     this.newVehiculo.descripcion = '';
     this.newVehiculo.marca = '';
@@ -238,6 +240,7 @@ export class ClientesComponent implements OnInit {
         this.telefono = response.data.telefono;
         this.email = response.data.email;
         this.direccion = response.data.direccion;
+        this.gestionaVehiculo = response.data.gestionaVehiculo;
         this.vehiculo = response.data.vehiculo;
         this.estado = response.data.estado;
       }

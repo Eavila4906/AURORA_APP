@@ -21,10 +21,12 @@ export class SnpinnerInterceptor implements HttpInterceptor {
 
     const token = this.AppService.token();
     const codigoEmpresa = localStorage.getItem('empresa') || '';
+    const rol = localStorage.getItem('rolId') || '';
     const authReq = request.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,
-        codigoEmpresa: codigoEmpresa
+        codigoEmpresa: codigoEmpresa,
+        rol: rol
       }
     });
 
