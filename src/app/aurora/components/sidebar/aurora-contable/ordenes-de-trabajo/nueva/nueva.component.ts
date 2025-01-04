@@ -5,6 +5,8 @@ import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import { Decimal } from 'decimal.js';
 import * as pdfMake from "pdfmake/build/pdfmake";
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+(<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
 
 import { AppService } from 'src/app/services/app.service';
 import { FacturasService } from '../../tienda/services/facturas.service';

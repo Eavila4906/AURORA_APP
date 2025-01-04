@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ModalDirective } from 'ngx-bootstrap/modal';
 import { ToastrService } from 'ngx-toastr';
-import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import * as pdfMake from "pdfmake/build/pdfmake";
-import { Decimal } from 'decimal.js';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+(<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
 
 import { AppService } from 'src/app/services/app.service';
 import { CuentasPorCobrarService } from '../../contabilidad/cuentas-por-cobrar/services/cuentas-por-cobrar.service';

@@ -30,24 +30,6 @@ import { EmpresasComponent } from './components/sidebar/aurora-administrativo/em
 import { AplicacionesComponent } from './components/sidebar/aurora-administrativo/aplicaciones/aplicaciones.component';
 
 /**
- * Componentes de Aurora Restaurant
- */
-import { GeneralComponent } from './components/sidebar/aurora-restaurant/reportes/general/general/general.component';
-import { ProductosComponent } from './components/sidebar/aurora-restaurant/productos/productos.component';
-import { CategoriasComponent } from './components/sidebar/aurora-restaurant/categorias/categorias.component';
-import { CrearOrdenComponent } from './components/sidebar/aurora-restaurant/orden/crear-orden/crear-orden.component';
-import { OrdenPendienteComponent } from './components/sidebar/aurora-restaurant/orden/orden-pendiente/orden-pendiente.component';
-import { DetallesOrdenComponent } from './components/sidebar/aurora-restaurant/orden/detalles-orden/detalles-orden.component';
-import { SlideProductosComponent } from './components/sidebar/aurora-restaurant/orden/slide-productos/slide-productos.component';
-import { OrdenPagadaComponent } from './components/sidebar/aurora-restaurant/orden/orden-pagada/orden-pagada.component';
-import { DeliveryComponent } from './components/sidebar/aurora-restaurant/delivery/delivery.component';
-import { ComercialComponent } from './components/sidebar/aurora-restaurant/reportes/comercial/comercial/comercial.component';
-import { IngredientesComponent } from './components/sidebar/aurora-restaurant/ingredientes/ingredientes.component';
-import { MovimientoComponent } from './components/sidebar/aurora-restaurant/movimiento/movimiento.component';
-import { StockComponent } from './components/sidebar/aurora-restaurant/reportes/ingredientes/stock/stock.component';
-import { VentasComponent } from './components/sidebar/aurora-restaurant/reportes/ingredientes/ventas/ventas.component';
-
-/**
  * Componentes de Aurora Contable
  */
 import { VenderComponent } from './components/sidebar/aurora-contable/tienda/vender/vender.component';
@@ -94,22 +76,6 @@ import { ConfigurarComponent } from './components/sidebar/aurora-contable/ordene
     ItemsComponent,
     EmpresasComponent,
     AplicacionesComponent,
-
-    //Aurora Restaurant
-    GeneralComponent,
-    ProductosComponent,
-    CategoriasComponent,
-    CrearOrdenComponent,
-    OrdenPendienteComponent,
-    DetallesOrdenComponent,
-    SlideProductosComponent,
-    OrdenPagadaComponent,
-    DeliveryComponent,
-    ComercialComponent,
-    IngredientesComponent,
-    MovimientoComponent,
-    StockComponent,
-    VentasComponent,
 
     //Aurora Contable
     VenderComponent,
