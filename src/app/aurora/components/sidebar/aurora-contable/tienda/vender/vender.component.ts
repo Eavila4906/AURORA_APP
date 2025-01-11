@@ -442,16 +442,16 @@ export class VenderComponent implements OnInit {
           const cambioDiv = document.getElementById('cambio');
           const formaPagoSelect = <HTMLSelectElement>document.getElementById('formaPagoSelect');
           const total = Number(data.data.cabecera.total);
-      
+
           montoInput.value = total.toFixed(2);
-      
+
           montoInput.addEventListener('input', () => {
             const montoRecibido = Number(montoInput.value);
-      
+
             if (montoRecibido < 0) {
               montoInput.value = '0';
             }
-      
+
             const cambio = Math.max(0, montoRecibido - total);
             if (cambioDiv) {
               cambioDiv.innerHTML = `Cambio: ${cambio.toFixed(2)}`;
@@ -463,25 +463,25 @@ export class VenderComponent implements OnInit {
           const montoRecibido = Number((<HTMLInputElement>document.getElementById('monto')).value);
           const total = data.data.cabecera.total;
           let cambio = 0;
-      
+
           if (montoRecibido >= total) {
             cambio = montoRecibido - total;
           }
-      
+
           const observaciones = [
             {
               nombre: 'Pago',
               descripcion: montoRecibido.toFixed(2)
             }
           ];
-      
+
           if (cambio > 0) {
             observaciones.push({
               nombre: 'Cambio',
               descripcion: cambio.toFixed(2)
             });
           }
-      
+
           if (!data.data.observaciones) {
             data.data.observaciones = [];
           }
@@ -499,7 +499,7 @@ export class VenderComponent implements OnInit {
           }
           this.create(data);
         }
-      });      
+      });
     } else {
       this.create(data);
     }
@@ -510,6 +510,7 @@ export class VenderComponent implements OnInit {
       response => {
         if (response.data) {
           this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+          this.getProductos();
           this.limpiarOrden();
           Swal.fire({
             icon: 'warning',
@@ -567,22 +568,35 @@ export class VenderComponent implements OnInit {
     this.showDataHead = !this.showDataHead;
   }
 
+  showNoResultsMessage: boolean = false;
+  debounceTimer: any;
+
   filterProductos() {
-    if (!this.search || this.search.trim() === '') {
-      this.productosFilterSelected = [];
-      return;
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
     }
 
-    this.productosFilterSelected = this.productosFilter.filter(producto =>
-      producto.codigo.includes(this.search) ||
-      producto.descripcion.toLowerCase().includes(this.search.toLowerCase())
-    );
+    this.debounceTimer = setTimeout(() => {
+      if (!this.search || this.search.trim() === '') {
+        this.productosFilterSelected = [];
+        this.showNoResultsMessage = false; // Oculta el mensaje si no hay búsqueda
+        return;
+      }
 
-    // Si hay solo un producto filtrado, agrégalo automáticamente
-    if (this.barCodeOption && this.productosFilterSelected.length === 1) {
-      this.selectProducto(this.productosFilterSelected[0]);
-      this.resetBusquedaProducto();
-    }
+      this.productosFilterSelected = this.productosFilter.filter(producto =>
+        producto.codigo.includes(this.search) ||
+        producto.descripcion.toLowerCase().includes(this.search.toLowerCase())
+      );
+
+      // Muestra u oculta el mensaje según los resultados
+      this.showNoResultsMessage = this.productosFilterSelected.length === 0;
+
+      // Lógica para seleccionar automáticamente un producto si hay uno solo
+      if (this.barCodeOption && this.productosFilterSelected.length === 1) {
+        this.selectProducto(this.productosFilterSelected[0]);
+        this.resetBusquedaProducto();
+      }
+    }, 300); // Espera 300ms antes de ejecutar la búsqueda
   }
 
   selectProducto(productoSeleccionado: any) {

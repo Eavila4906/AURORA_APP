@@ -143,7 +143,7 @@
                                                         </label>
                                                         <input class="form-control" [(ngModel)]="search" name="search"
                                                             (input)="filterProductos()" placeholder="Buscar producto"
-                                                            #searchInput>
+                                                            #searchInput autocomplete="off">
                                                         <ul *ngIf="productosFilterSelected.length > 0"
                                                             class="list-group position-absolute w-100 mt-1"
                                                             style="z-index: 1000;">
@@ -151,10 +151,11 @@
                                                                 (click)="selectProducto(producto)"
                                                                 class="list-group-item list-group-item-action">
                                                                 <b>Producto: </b>{{ producto.descripcion }} -
-                                                                <b>PVP: </b>{{ producto.precioCompra }}
+                                                                <b>PVP: </b>{{ producto.precioCompra }} - 
+                                                                <b>Existencia: </b>{{ producto.stock.cantidad }} 
                                                             </li>
                                                         </ul>
-                                                        <div *ngIf="search && productosFilterSelected.length === 0"
+                                                        <div *ngIf="search && productosFilterSelected.length === 0 && showNoResultsMessage"
                                                             class="alert alert-warning mt-1"
                                                             style="position: absolute; width: 100%;">
                                                             No se encontraron resultados.
