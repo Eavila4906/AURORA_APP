@@ -83,6 +83,9 @@ export class FacturasComponent implements OnInit {
 
   //Search
   search: string = '';
+  filterTipoFactura: string = 'Venta';
+  filterFechaEmision: string = this.AppService.getTimeZoneCurrentDate();
+  filterEstado: string = 'Todos';
 
   //Paginate
   currentPage = 1;
@@ -128,7 +131,8 @@ export class FacturasComponent implements OnInit {
     this.FacturasService.getAll().subscribe(
       response => {
         this.facturas = response.data.sort((a: any, b: any) => b.id - a.id);
-        this.facturasFilter = this.facturas;
+        this.Search();
+        //this.facturasFilter = this.facturas;
         this.loading = false;
       }
     );
@@ -168,25 +172,52 @@ export class FacturasComponent implements OnInit {
 
   //Search
   Search() {
-    this.facturasFilter = this.facturas.filter((factura: {
-      codigoFactura: string,
-      tipoFactura: string,
-      fechaEmision: string,
-      emisor: { nombres: string },
-      receptor: { nombres: string, numeroIdentificacion: string },
-      estado: string
-    }) => {
-      let filter = true;
+    if (
+      this.filterTipoFactura === 'Venta' && this.filterEstado === 'Por pagar' ||
+      this.filterTipoFactura === 'Compra' && this.filterEstado === 'Por cobrar'
+    ) {
+      this.filterEstado = 'Todos';
+    }
+
+    console.log(this.filterFechaEmision);
+
+    this.facturasFilter = this.facturas.filter((factura) => {
+      let matchesTipoFactura = true;
+      let matchesFechaEmision = true;
+      let matchesEstado = true;
+      let matchesGeneral = true;
+  
+      // Filtro por tipo de factura
+      if (this.filterTipoFactura) {
+        matchesTipoFactura = factura.tipoFactura
+          ?.toLowerCase()
+          .includes(this.filterTipoFactura.toLowerCase());
+      }
+
+      if (this.filterFechaEmision) {
+        matchesFechaEmision = factura.fechaEmision
+          ?.toLowerCase()
+          .includes(this.filterFechaEmision.toLowerCase());
+      }
+  
+      // Filtro por estado
+      if (this.filterEstado && this.filterEstado !== 'Todos') {
+        matchesEstado = factura.estado
+          ?.toLowerCase()
+          .includes(this.filterEstado.toLowerCase());
+      }
+  
+      // Filtro general (búsqueda)
       if (this.search) {
-        filter = factura.codigoFactura?.toLowerCase().includes(this.search.toLowerCase()) ||
-          factura.tipoFactura?.toLowerCase().includes(this.search.toLowerCase()) ||
-          factura.fechaEmision?.toLowerCase().includes(this.search.toLowerCase()) ||
+        matchesGeneral =
+          factura.codigoFactura?.toLowerCase().includes(this.search.toLowerCase()) ||
           factura.emisor.nombres?.toLowerCase().includes(this.search.toLowerCase()) ||
           factura.receptor.nombres?.toLowerCase().includes(this.search.toLowerCase()) ||
-          factura.receptor.numeroIdentificacion?.toLowerCase().includes(this.search.toLowerCase()) ||
-          factura.estado?.toLowerCase().startsWith(this.search.toLowerCase());
+          factura.receptor.numeroIdentificacion?.toLowerCase().includes(this.search.toLowerCase());
       }
-      return filter;
+  
+      // Retorna solo las facturas que cumplen con todos los filtros
+      return matchesTipoFactura && matchesFechaEmision && matchesEstado && matchesGeneral;
     });
   }
 

@@ -9,19 +9,37 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row mb-2">
-                        <div class="col-md-9">
-                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
-                                *ngIf="generate_reports">
-                                <i class="fas fa-file-pdf"></i>
-                            </button>
-                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
-                                *ngIf="generate_reports">
-                                <i class="fas fa-print"></i>
-                            </button>-->
-                        </div>
-                        <div class="col-md-3">
-                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                        <h5><i class="fas fa-filter"></i> Filtrar por:</h5>
+                        <div class="row col-md-12 mb-4">
+                            <div class="col-md-2">
+                                <label>Tipo de factura</label>
+                                <select class="form-control" name="filterTipoFactura"
+                                    [(ngModel)]="filterTipoFactura" (change)="Search()">
+                                    <option value="Venta">Venta</option>
+                                    <option value="Compra">Compra</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Fecha emisión</label>
+                                <input class="form-control" type="date" name="filterFechaEmision" 
+                                    [(ngModel)]="filterFechaEmision" (input)="Search()">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Estado</label>
+                                <select class="form-control" name="filterEstado"
+                                    [(ngModel)]="filterEstado" (change)="Search()">
+                                    <option value="Todos">Todos</option>
+                                    <option value="Pagada">Pagada</option>
+                                    <option value="Por cobrar" *ngIf="filterTipoFactura === 'Venta'">Por cobrar</option>
+                                    <option value="Por pagar" *ngIf="filterTipoFactura === 'Compra'">Por pagar</option>
+                                    <option value="Anulada">Anulada</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label>General</label>
+                                <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
                                 [(ngModel)]="search">
+                            </div>
                         </div>
                     </div>
                     <div>
