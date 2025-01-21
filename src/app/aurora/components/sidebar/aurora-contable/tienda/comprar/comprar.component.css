@@ -47,3 +47,30 @@
 .formControlPersonality:hover {
     border-color: #86b7fe;
 }
+
+.resumen-factura {
+    border: 2px solid #ddd; /* Borde del cuadro */
+    border-radius: 5px;    /* Bordes redondeados */
+    padding: 15px;          /* Espaciado interno */
+    background-color: #f9f9f9; /* Fondo suave */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    width: 380px;
+}
+
+.contenido-resumen {
+    line-height: 1.6; /* Espaciado entre líneas */
+}
+
+.total-destacado {
+    background-color: #007bff; /* Azul */
+    color: white;              /* Letras blancas */
+    font-weight: bold;         /* Texto en negrita */
+    padding: 10px;             /* Espaciado interno */
+    margin-top: 5px;          /* Espaciado superior */
+    text-align: center;        /* Centrar texto */
+    border-radius: 5px;        /* Bordes redondeados */
+    font-size: 1.5rem;
+}
+.bg-table {
+    background-color: #86a9c14f;
+}

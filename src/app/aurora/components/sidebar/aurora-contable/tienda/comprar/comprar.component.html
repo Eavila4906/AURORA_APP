@@ -6,47 +6,47 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col-md-12">
-                            <div class="row mb-3 col-12">
-                                <div class="col-lg-7 col-sm-7">
-                                    <h1 class="h3 d-inline align-middle">Orden de compra </h1>
-                                </div>
-                                <div class="col-lg-5 col-sm-5">
-                                    <button class="btn btn-success text-white" title="Guardar y pagar"
-                                        (click)="createFactura(1)">
-                                        <i class="fas fa-cash-register"></i>
-                                    </button>
-                                    <button class="ms-2 btn btn-success text-white" title="Guardar cuenta por pagar"
-                                        (click)="createFactura(2)">
-                                        <i class="far fa-handshake"></i>
-                                    </button>
-                                    <button class="ms-2 btn btn-success text-white" title="Guardar y abonar"
-                                        (click)="openModalSaveAndAbonar()">
-                                        <i class="fas fa-hand-holding-usd"></i>
-                                    </button>
-                                    <button class="ms-2 btn btn-info text-white" title="Añadir formas de pago"
-                                        (click)="openModalAddFormasDePago()">
-                                        <i class="fas fa-file-invoice-dollar"></i>
-                                    </button>
-                                    <button class="ms-2 btn btn-info text-white" title="Añadir observaciones"
-                                        (click)="openModalAddObservacion()">
-                                        <i class="fas fa-clipboard-list"></i>
-                                    </button>
-                                    <button class="ms-2 btn btn-success text-white" title="Nuevo proveedor"
-                                        (click)="openModalCreateCliente()">
-                                        <i class="fas fa-people-arrows"></i>
-                                    </button>
-                                    <button class="ms-2 btn btn-info" title="Datos de cabecera"
-                                        (click)="toggleDataHead()">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <!--<button class="ms-2 btn btn-info" title="Autorizar factura al SRI">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>-->
-                                    <button class="ms-2 btn btn-warning" title="Limpiar orden" (click)="clearOrden()">
-                                        <i class="fas fa-broom"></i>
-                                    </button>
+                            <div class="col-12">
+                                <div class="row mb-3 align-items-center">
+                                    <div class="col-lg-8 col-sm-8">
+                                        <h1 class="h3 d-inline align-middle">Orden de compra</h1>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-4 d-flex justify-content-end flex-wrap">
+                                        <button class="ms-2 btn btn-success text-white" title="Guardar y pagar"
+                                            (click)="createFactura(1)">
+                                            <i class="fas fa-cash-register"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-success text-white" title="Guardar cuenta por cobrar"
+                                            (click)="createFactura(2)">
+                                            <i class="far fa-handshake"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-success text-white" title="Guardar y abonar"
+                                            (click)="openModalSaveAndAbonar()">
+                                            <i class="fas fa-hand-holding-usd"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-info text-white" title="Añadir formas de pago"
+                                            (click)="openModalAddFormasDePago()">
+                                            <i class="fas fa-file-invoice-dollar"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-info text-white" title="Añadir observaciones"
+                                            (click)="openModalAddObservacion()">
+                                            <i class="fas fa-clipboard-list"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-success text-white" title="Nuevo cliente"
+                                            (click)="openModalCreateCliente()">
+                                            <i class="fas fa-people-arrows"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-info" title="Datos de cabecera"
+                                            (click)="toggleDataHead()">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="ms-2 btn btn-warning" title="Limpiar orden" (click)="clearOrden()">
+                                            <i class="fas fa-broom"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
                             <hr>
                             <form>
                                 <div class="row mb-2">
@@ -161,66 +161,70 @@
                                                             No se encontraron resultados.
                                                         </div>
                                                     </div>
-                                                    <div class="col-lg-12 col-sm-12 position-relative">
+                                                    <div class="col-lg-12 col-sm-12 position-relative mb-2">
                                                         <label>
                                                             <input type="checkbox" name="otrosProductos" 
                                                             [(ngModel)]="otrosProductos">
                                                             <small> Otros productos / servicios</small>
                                                         </label>
                                                     </div>
+
+                                                    <div class="row col-lg-12 col-sm-12 position-relative" *ngIf="otrosProductos">
+                                                        <div class="col-lg-2 col-sm-2">
+                                                            <div class="mb-3">
+                                                                <label>Cantidad *</label>
+                                                                <input class="form-control" type="number" min="1" name="cantidad-ops"
+                                                                    [(ngModel)]="cantidadOPS">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-5 col-sm-5">
+                                                            <div class="mb-3">
+                                                                <label>Descripción *</label>
+                                                                <textarea class="form-control" type="text" rows="1" name="descripcion-ops"
+                                                                    [(ngModel)]="descripcionOPS">
+                                                                </textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2 col-sm-2">
+                                                            <div class="mb-3">
+                                                                <label>Precio unit. *</label>
+                                                                <input class="form-control" type="number" name="precioUnitario-ops"
+                                                                    [(ngModel)]="precioUnitarioOPS">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-2 col-sm-2">
+                                                            <div class="mb-3">
+                                                                <label>IVA *</label>
+                                                                <select class="form-control" name="iva-ops" [(ngModel)]="ivaOPS">
+                                                                    <option *ngFor="let tipo of tiposIva" [value]="tipo.id">
+                                                                        {{ tipo.tipoIva }}
+                                                                    </option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-1 col-sm-1">
+                                                            <div class="mt-4">
+                                                                <button class="btn btn-success text-white"
+                                                                    (click)="addOtrosProductos()">
+                                                                    Añadir
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!-- Totales en la esquina -->
-                                            <div class="col-lg-3 col-sm-3 text-right">
-                                                <div class="mt-2 ms-2">
-                                                    <b>Subtotal con IVA: </b>{{subtotalConIva === 0 ? '0.00' : subtotalConIva}}<br>
-                                                    <b>Subtotal sin IVA: </b>{{subtotalSinIva === 0 ? '0.00' : subtotalSinIva}}<br>
+                                            <div class="col-lg-3 col-sm-3 text-right resumen-factura">
+                                                <div class="contenido-resumen">
+                                                    <b>Subtotal con IVA: </b>{{subtotalConIva === 0 ? '0.00' :
+                                                    subtotalConIva}}<br>
+                                                    <b>Subtotal (0%): </b>{{subtotalSinIva === 0 ? '0.00' :
+                                                    subtotalSinIva}}<br>
                                                     <b>Descuento: </b>{{totalDescuento === 0 ? '0.00' : totalDescuento}}<br>
                                                     <b>Subtotal: </b>{{subtotal === 0 ? '0.00' : subtotal}}<br>
                                                     <b>IVA: </b>{{totalIva === 0 ? '0.00' : totalIva}}<br>
-                                                    <b>Total: </b>{{total === 0 ? '0.00' : total}}
-                                                </div>
-                                            </div>
-                                            <div class="row mt-3" *ngIf="otrosProductos">
-                                                <hr>
-                                                <div class="col-lg-1 col-sm-1">
-                                                    <div class="mb-3">
-                                                        <label>Cantidad *</label>
-                                                        <input class="form-control" type="number" min="1" name="cantidad-ops"
-                                                            [(ngModel)]="cantidadOPS">
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-5 col-sm-5">
-                                                    <div class="mb-3">
-                                                        <label>Descripción *</label>
-                                                        <textarea class="form-control" type="text" rows="1" name="descripcion-ops"
-                                                            [(ngModel)]="descripcionOPS">
-                                                        </textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-1 col-sm-1">
-                                                    <div class="mb-3">
-                                                        <label>Precio unit. *</label>
-                                                        <input class="form-control" type="number" name="precioUnitario-ops"
-                                                            [(ngModel)]="precioUnitarioOPS">
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-1 col-sm-1">
-                                                    <div class="mb-3">
-                                                        <label>IVA *</label>
-                                                        <select class="form-control" name="iva-ops" [(ngModel)]="ivaOPS">
-                                                            <option *ngFor="let tipo of tiposIva" [value]="tipo.id">
-                                                                {{ tipo.tipoIva }}
-                                                            </option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-1 col-sm-1">
-                                                    <div class="mt-4">
-                                                        <button class="btn btn-success text-white"
-                                                            (click)="addOtrosProductos()">
-                                                            Añadir
-                                                        </button>
+                                                    <div class="total-destacado mt-2">
+                                                        <b>Total: </b>{{total === 0 ? '0.00' : total}}
                                                     </div>
                                                 </div>
                                             </div>
@@ -233,7 +237,7 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">
-                            <thead>
+                            <thead class="bg-table">
                                 <tr>
                                     <th>N°</th>
                                     <th>Código</th>

@@ -11,6 +11,9 @@
             Generar
             <i class="fas fa-barcode"></i>
         </button>
+        <button class="btn btn-warning ms-2" title="Limpiar filtros" (click)="clearFilters()">
+            <i class="fas fa-broom"></i>
+        </button>
     </div>
 
     <div class="row">
@@ -18,19 +21,67 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row mb-2">
-                        <div class="col-md-9">
-                            <!--<button class="btn btn-danger" title="Descargar pdf" (click)="rptRolesList(1)"
-                                *ngIf="generate_reports">
-                                <i class="fas fa-file-pdf"></i>
-                            </button>
-                            <button class="ms-1 btn btn-primary" title="Imprimir" (click)="rptRolesList(2)"
-                                *ngIf="generate_reports">
-                                <i class="fas fa-print"></i>
-                            </button>-->
-                        </div>
-                        <div class="col-md-3">
-                            <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
-                                [(ngModel)]="search">
+                        <h5><i class="fas fa-filter"></i> Filtrar por:</h5>
+                        <div class="row col-md-12 mb-4">
+                            <div class="col-md-12 mb-4">
+                                <label>Código / Descripción</label>
+                                <input class="form-control" type="search" placeholder="Buscar" (input)="Search()"
+                                    [(ngModel)]="search">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Categoría</label>
+                                <select class="form-control" name="filterCategoria" [(ngModel)]="filterCategoria"
+                                    required (change)="Search()">
+                                    <option value="Todas">Todas</option>
+                                    <option *ngFor="let categoria of categorias" [value]="categoria.categoria">
+                                        {{categoria.categoria}}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Marca</label>
+                                <select class="form-control" name="filterMarca" [(ngModel)]="filterMarca" 
+                                    required (change)="Search()">
+                                    <option value="Todas">Todas</option>
+                                    <option *ngFor="let marca of marcas" [value]="marca.marca">
+                                        {{marca.marca}}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Línea</label>
+                                <select class="form-control" name="filterLinea" [(ngModel)]="filterLinea"
+                                    required (change)="Search()">
+                                    <option value="Todas">Todas</option>
+                                    <option *ngFor="let linea of lineas" [value]="linea.linea">
+                                        {{linea.linea}}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Proveedor</label>
+                                <select class="form-control" name="filterProveedor"
+                                    [(ngModel)]="filterProveedor" required (change)="Search()">
+                                    <option value="Todos">Todos</option>
+                                    <option *ngFor="let proveedor of proveedores" [value]="proveedor.proveedor">
+                                        {{proveedor.proveedor}}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Existencia</label>
+                                <input type="search" placeholder="Cantidad" class="form-control" 
+                                name="filterExistencia" [(ngModel)]="filterExistencia" (input)="Search()">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Estado</label>
+                                <select class="form-control" name="filterEstado" [(ngModel)]="filterEstado"
+                                    (change)="Search()">
+                                    <option value="Todos">Todos</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -47,6 +98,7 @@
                                     <th>Marca</th>
                                     <th>Linea</th>
                                     <th>Proveedor</th>
+                                    <th>Existencia</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -62,7 +114,11 @@
                                     <td>{{ producto.nombreMarca }}</td>
                                     <td>{{ producto.nombreLinea }}</td>
                                     <td>{{ producto.nombreProveedor }}</td>
-
+                                    <td *ngIf="!producto.stock else elseBlockStock"><i class="far fa-clock"></i>
+                                        Pendiente</td>
+                                    <ng-template #elseBlockStock>
+                                        <td>{{ producto.stock.cantidad }}</td>
+                                    </ng-template>
                                     <td>
                                         <span *ngIf="producto.estado == 'Activo' else elseBlock">
                                             {{ producto.estado }} <i class="fas fa-circle fa-sm text-success"></i>
@@ -109,7 +165,7 @@
     <!--Modal to new -->
     <div bsModal #ModalNew="bs-modal" class="modal fade" data-bs-backdrop="static" tabindex="-1"
         aria-labelledby="modal-default" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-xl-personalizado" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-success">
                     <h3 class="modal-title text-white fs-2 fw-bolder">
@@ -121,179 +177,181 @@
                 </div>
 
                 <div class="modal-body">
-                    <form class="form-horizontal">
+                    <form class="ms-2">
                         <p class="text-success">
                             Los campos con asterisco (<span class="required">*</span>) son obligatorios.
                         </p>
-                        <span *ngIf="barCodeNewProducto">
-                            <span *ngIf="barCodeNewProducto">
-                                <span>
-                                    <i class="fas fa-barcode text-success"
-                                        title="Ya hay un código de barras"></i>
-                                </span>
-                            </span>
-                            <span *ngIf="!barCodeNewProducto" (click)="barCodeGenerateInput()">
-                                <span>
-                                    <i class="ms-2 fas fa-barcode text-muted"
-                                        title="Generar código de barras"></i>
-                                </span>
-                            </span>
-                            <span *ngIf="barCodeNewProducto" (click)="resetBarCodeInput()"
-                                class="ms-2">
-                                <i class="fas fa-times text-danger"
-                                    title="Eliminar código de barras"></i>
-                            </span>
-                            <span *ngIf="!barCodeNewProducto" class="ms-2">
-                                <i class="fas fa-times text-muted"></i>
-                            </span>
-                        </span>
 
-                        <div class="row">
-                            <div class="col-12">
+                        <div class="col-md-12 row">
+                            <div class="col-lg-6 col-sm-6">
                                 <div class="row">
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3">
-                                            <label *ngIf="!barCodeNewProducto">
-                                                Código *
-                                                <span *ngIf="!barCodeNewProducto">
-                                                    <span *ngIf="barCodeNewProducto">
-                                                        <span>
-                                                            <i class="fas fa-barcode text-success"
-                                                                title="Ya hay un código de barras"></i>
-                                                        </span>
-                                                    </span>
-                                                    <span *ngIf="!barCodeNewProducto" (click)="barCodeGenerateInput()">
-                                                        <span>
-                                                            <i class="ms-2 fas fa-barcode text-muted"
-                                                                title="Generar código de barras"></i>
-                                                        </span>
-                                                    </span>
-                                                    <span *ngIf="newProducto.codigo" (click)="resetBarCodeInput()"
-                                                        class="ms-2">
-                                                        <i class="fas fa-times text-danger"
-                                                            title="Eliminar código de barras"></i>
-                                                    </span>
-                                                    <span *ngIf="!newProducto.codigo" class="ms-2">
-                                                        <i class="fas fa-times text-muted"></i>
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 text-center">
+                                            <h5>Características y detalles</h5>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="col-lg-4 col-sm-4 mb-3">
+                                        <span *ngIf="barCodeNewProducto">
+                                            <span *ngIf="barCodeNewProducto">
+                                                <span>
+                                                    <i class="fas fa-barcode text-success"
+                                                        title="Ya hay un código de barras"></i>
+                                                </span>
+                                            </span>
+                                            <span *ngIf="!barCodeNewProducto" (click)="barCodeGenerateInput()">
+                                                <span>
+                                                    <i class="ms-2 fas fa-barcode text-muted"
+                                                        title="Generar código de barras"></i>
+                                                </span>
+                                            </span>
+                                            <span *ngIf="barCodeNewProducto" (click)="resetBarCodeInput()" class="ms-2">
+                                                <i class="fas fa-times text-danger"
+                                                    title="Eliminar código de barras"></i>
+                                            </span>
+                                            <span *ngIf="!barCodeNewProducto" class="ms-2">
+                                                <i class="fas fa-times text-muted"></i>
+                                            </span>
+                                        </span>
+                                        <label *ngIf="!barCodeNewProducto">
+                                            Código *
+                                            <span *ngIf="!barCodeNewProducto">
+                                                <span *ngIf="barCodeNewProducto">
+                                                    <span>
+                                                        <i class="fas fa-barcode text-success"
+                                                            title="Ya hay un código de barras"></i>
                                                     </span>
                                                 </span>
-                                            </label>
-                                            <input *ngIf="!barCodeNewProducto" class="form-control " type="text" name="codigo"
-                                                [(ngModel)]="newProducto.codigo">
+                                                <span *ngIf="!barCodeNewProducto" (click)="barCodeGenerateInput()">
+                                                    <span>
+                                                        <i class="ms-2 fas fa-barcode text-muted"
+                                                            title="Generar código de barras"></i>
+                                                    </span>
+                                                </span>
+                                                <span *ngIf="newProducto.codigo" (click)="resetBarCodeInput()"
+                                                    class="ms-2">
+                                                    <i class="fas fa-times text-danger"
+                                                        title="Eliminar código de barras"></i>
+                                                </span>
+                                                <span *ngIf="!newProducto.codigo" class="ms-2">
+                                                    <i class="fas fa-times text-muted"></i>
+                                                </span>
+                                            </span>
+                                        </label>
+                                        <input *ngIf="!barCodeNewProducto" class="form-control " type="text"
+                                            name="codigo" [(ngModel)]="newProducto.codigo">
 
-                                            <table *ngIf="barCodeNewProducto" class="table-bordered"
-                                                style="width: 100%; border-collapse: collapse;">
-                                                <tr>
-                                                    <td
-                                                        style="text-align: center; padding: 10px; border: 1px solid #ccc;">
-                                                        <img [src]="barCodeImageNewProducto" [title]="'Código: ' + barCodeNewProducto + newProducto.codigo"
-                                                            alt="Código de barras">
-                                                    </td>
-                                                </tr>
-                                            </table>
+                                        <table *ngIf="barCodeNewProducto" class="table-bordered"
+                                            style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="text-align: center; padding: 10px; border: 1px solid #ccc;">
+                                                    <img [src]="barCodeImageNewProducto"
+                                                        [title]="'Código: ' + barCodeNewProducto + newProducto.codigo"
+                                                        alt="Código de barras">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-lg-8 col-sm-8 mb-3">
+                                        <label>Descripción</label>
+                                        <textarea class="form-control" name="descripcion"
+                                            [(ngModel)]="newProducto.descripcion" rows="1" required>
+                                                </textarea>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3 mb-3">
+                                        <label>Categoría *</label>
+                                        <select class="form-control" name="categoria_id"
+                                            [(ngModel)]="newProducto.categoria_id" required>
+                                            <option value="0" class="d-none">Seleccionar</option>
+                                            <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                                                {{categoria.categoria}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3 mb-3">
+                                        <label>Marca *</label>
+                                        <select class="form-control" name="marca_id" [(ngModel)]="newProducto.marca_id"
+                                            required>
+                                            <option value="0" class="d-none">Seleccionar</option>
+                                            <option *ngFor="let marca of marcas" [value]="marca.id">
+                                                {{marca.marca}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3 mb-3">
+                                        <label>Línea *</label>
+                                        <select class="form-control" name="linea_id" [(ngModel)]="newProducto.linea_id"
+                                            required>
+                                            <option value="0" class="d-none">Seleccionar</option>
+                                            <option *ngFor="let linea of lineas" [value]="linea.id">
+                                                {{linea.linea}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-3 col-sm-3 mb-3">
+                                        <label>Proveedor *</label>
+                                        <select class="form-control" name="proveedor_id"
+                                            [(ngModel)]="newProducto.proveedor_id" required>
+                                            <option value="0" class="d-none">Seleccionar</option>
+                                            <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">
+                                                {{proveedor.proveedor}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6 mb-3">
+                                        <label>Fecha de elaboración</label>
+                                        <input class="form-control " type="date" name="fechaElaboracion"
+                                            [(ngModel)]="newProducto.fechaElaboracion">
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6 mb-3">
+                                        <label>Fecha de vencimiento</label>
+                                        <input class="form-control " type="date" name="fechaVencimiento"
+                                            [(ngModel)]="newProducto.fechaVencimiento">
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6 mb-3">
+                                        <label>Lote</label>
+                                        <input class="form-control " type="text" name="lote"
+                                            [(ngModel)]="newProducto.lote">
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6 mb-3">
+                                        <label>Medición *</label>
+                                        <select class="form-control" name="marca_id"
+                                            [(ngModel)]="newProducto.medicion_id" required>
+                                            <option value="0" class="d-none">Seleccionar</option>
+                                            <option *ngFor="let medicion of tiposMedicion" [value]="medicion.id">
+                                                {{medicion.medicion}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-1 col-sm-0">
+                                <div class="line-separator"></div>
+                            </div>
+
+                            <div class="col-lg-5 col-sm-6">
+                                <div class="row">
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 text-center">
+                                            <h5>IVA, costo o precio de compra</h5>
                                         </div>
                                     </div>
-                                    <div class="col-lg-8 col-sm-8">
-                                        <div class="mb-3">
-                                            <label>Descripción</label>
-                                            <textarea class="form-control" name="descripcion"
-                                                [(ngModel)]="newProducto.descripcion" rows="1" required>
-                                            </textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3 ">
-                                            <label>Categoría *</label>
-                                            <select class="form-control" name="categoria_id"
-                                                [(ngModel)]="newProducto.categoria_id" required>
-                                                <option value="0" class="d-none">Seleccionar</option>
-                                                <option *ngFor="let categoria of categorias" [value]="categoria.id">
-                                                    {{categoria.categoria}}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3 ">
-                                            <label>Marca *</label>
-                                            <select class="form-control" name="marca_id"
-                                                [(ngModel)]="newProducto.marca_id" required>
-                                                <option value="0" class="d-none">Seleccionar</option>
-                                                <option *ngFor="let marca of marcas" [value]="marca.id">
-                                                    {{marca.marca}}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3 ">
-                                            <label>Línea *</label>
-                                            <select class="form-control" name="linea_id"
-                                                [(ngModel)]="newProducto.linea_id" required>
-                                                <option value="0" class="d-none">Seleccionar</option>
-                                                <option *ngFor="let linea of lineas" [value]="linea.id">
-                                                    {{linea.linea}}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3 ">
-                                            <label>Proveedor *</label>
-                                            <select class="form-control" name="proveedor_id"
-                                                [(ngModel)]="newProducto.proveedor_id" required>
-                                                <option value="0" class="d-none">Seleccionar</option>
-                                                <option *ngFor="let proveedor of proveedores" [value]="proveedor.id">
-                                                    {{proveedor.proveedor}}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3">
-                                            <label>Precio de compra</label>
-                                            <input class="form-control " type="text" name="precioCompra"
-                                                [(ngModel)]="newProducto.precioCompra">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3">
-                                            <label>Fecha de elaboración</label>
-                                            <input class="form-control " type="date" name="fechaElaboracion"
-                                                [(ngModel)]="newProducto.fechaElaboracion">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3">
-                                            <label>Fecha de vencimiento</label>
-                                            <input class="form-control " type="date" name="fechaVencimiento"
-                                                [(ngModel)]="newProducto.fechaVencimiento">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3">
-                                            <label>Lote</label>
-                                            <input class="form-control " type="text" name="lote"
-                                                [(ngModel)]="newProducto.lote">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3 ">
-                                            <label>Medición *</label>
-                                            <select class="form-control" name="marca_id"
-                                                [(ngModel)]="newProducto.medicion_id" required>
-                                                <option value="0" class="d-none">Seleccionar</option>
-                                                <option *ngFor="let medicion of tiposMedicion" [value]="medicion.id">
-                                                    {{medicion.medicion}}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
+
+                                    <hr>
+
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3 ">
                                             <label>IVA *</label>
-                                            <select class="form-control" name="iva_id" [(ngModel)]="newProducto.iva_id"
-                                                required>
+                                            <select class="form-control" name="iva_idNew"
+                                                [(ngModel)]="newProducto.iva_id" required
+                                                (change)="calcularCostosAndPvps('NEW', 'GENERAL', null)">
                                                 <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let iva of tiposIva" [value]="iva.id">
                                                     {{iva.tipoIva}}
@@ -301,37 +359,221 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
+                                    <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
-                                            <label>PVP 1 *</label>
-                                            <input class="form-control " type="text" name="pvp1"
-                                                [(ngModel)]="newProducto.pvp1">
+                                            <label>Costo (0%)</label>
+                                            <input class="form-control" type="number" name="costoIva0New"
+                                                [(ngModel)]="newProducto.costoIva0" min="0"
+                                                (input)="calcularCostosAndPvps('NEW', 'COSTO', null)">
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
+                                    <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
-                                            <label>PVP 2 </label>
-                                            <input class="form-control " type="text" name="pvp2"
-                                                [(ngModel)]="newProducto.pvp2">
+                                            <label>Costo con IVA</label>
+                                            <input class="form-control " type="number" name="costoConIvaNew"
+                                                [(ngModel)]="newProducto.costoConIva" min="0" readonly>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 3</label>
-                                            <input class="form-control " type="text" name="pvp3"
-                                                [(ngModel)]="newProducto.pvp3">
+
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 text-center">
+                                            <h5>Ganancias y precios de venta al publico</h5>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 4</label>
-                                            <input class="form-control " type="text" name="pvp4"
-                                                [(ngModel)]="newProducto.pvp4">
+
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="row">
+                                            <div class="col-lg-3 col-sm-3 disabled-block">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp1New"
+                                                        [(ngModel)]="newProducto.habilitarPvp1"
+                                                        (change)="onChangeCheckbox('NEW', 1)">
+                                                    Habilitar pvp 1
+                                                </label>
+                                            </div>
+                                            <div class="col-lg-3 col-sm-3"
+                                                [class.disabled-block]="!newProducto.habilitarPvp1">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp2New"
+                                                        [(ngModel)]="newProducto.habilitarPvp2"
+                                                        (input)="resetPvp('NEW', 2, !newProducto.habilitarPvp2)"
+                                                        (change)="onChangeCheckbox('NEW', 2)">
+                                                    Habilitar pvp 2
+                                                </label>
+                                            </div>
+                                            <div class="col-lg-3 col-sm-3"
+                                                [class.disabled-block]="!newProducto.habilitarPvp2">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp3New"
+                                                        [(ngModel)]="newProducto.habilitarPvp3"
+                                                        (input)="resetPvp('NEW', 3, !newProducto.habilitarPvp3)"
+                                                        (change)="onChangeCheckbox('NEW', 3)">
+                                                    Habilitar pvp 3
+                                                </label>
+                                            </div>
+                                            <div class="col-lg-3 col-sm-3"
+                                                [class.disabled-block]="!newProducto.habilitarPvp3">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp4New"
+                                                        [(ngModel)]="newProducto.habilitarPvp4"
+                                                        (input)="resetPvp('NEW', 4, !newProducto.habilitarPvp4)"
+                                                        (change)="onChangeCheckbox('NEW', 4)">
+                                                    Habilitar pvp 4
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP1"
+                                        [class.disabled-block]="!newProducto.habilitarPvp1">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)*</label>
+                                                <input class="form-control" type="number" name="pGananciaPvp1New"
+                                                    [(ngModel)]="newProducto.pGananciaPvp1" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PGANANCIAPVP1', 1)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)*</label>
+                                                <input class="form-control" type="number" name="gananciaPvp1New"
+                                                    [(ngModel)]="newProducto.gananciaPvp1" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'GANANCIAPVP1', 1)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 1 (0%)*</label>
+                                                <input class="form-control" type="number" name="pvp1Iva0New"
+                                                    [(ngModel)]="newProducto.pvp1Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PVP1', 1)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 1 *</label>
+                                                <input class="form-control" type="number" name="pvp1New"
+                                                    [(ngModel)]="newProducto.pvp1" min="0" readonly>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP2"
+                                        [class.disabled-block]="!newProducto.habilitarPvp2">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)</label>
+                                                <input class="form-control " type="number" name="pGananciaPVP2New"
+                                                    [(ngModel)]="newProducto.pGananciaPvp2" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PGANANCIAPVP2', 2)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)</label>
+                                                <input class="form-control " type="number" name="gananciaPVP2New"
+                                                    [(ngModel)]="newProducto.gananciaPvp2" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'GANANCIAPVP2', 2)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 2 (0%)</label>
+                                                <input class="form-control " type="number" name="pvp2Iva0New"
+                                                    [(ngModel)]="newProducto.pvp2Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PVP2', 2)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 2</label>
+                                                <input class="form-control " type="number" name="pvp2New"
+                                                    [(ngModel)]="newProducto.pvp2" min="0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP3"
+                                        [class.disabled-block]="!newProducto.habilitarPvp3">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)</label>
+                                                <input class="form-control " type="number" name="pGananciaPVP3New"
+                                                    [(ngModel)]="newProducto.pGananciaPvp3" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PGANANCIAPVP3', 3)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)</label>
+                                                <input class="form-control " type="number" name="gananciaPVP3New"
+                                                    [(ngModel)]="newProducto.gananciaPvp3" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'GANANCIAPVP3', 3)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 3 (0%)</label>
+                                                <input class="form-control " type="number" name="pvp3Iva0New"
+                                                    [(ngModel)]="newProducto.pvp3Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PVP3', 3)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 3</label>
+                                                <input class="form-control " type="number" name="pvp3New"
+                                                    [(ngModel)]="newProducto.pvp3" min="0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP4"
+                                        [class.disabled-block]="!newProducto.habilitarPvp4">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)</label>
+                                                <input class="form-control " type="number" name="pGananciaPVP4New"
+                                                    [(ngModel)]="newProducto.pGananciaPvp4" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PGANANCIAPVP4', 4)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)</label>
+                                                <input class="form-control " type="number" name="gananciaPVP4New"
+                                                    [(ngModel)]="newProducto.gananciaPvp4" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'GANANCIAPVP4', 4)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 4 (0%)</label>
+                                                <input class="form-control " type="number" name="pvp4Iva0New"
+                                                    [(ngModel)]="newProducto.pvp4Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PVP4', 4)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 4</label>
+                                                <input class="form-control " type="number" name="pvp4New"
+                                                    [(ngModel)]="newProducto.pvp4" min="0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
+
+                        <br>
 
                         <div class="modal-footer">
                             <button type="button" class="btn btn-success text-white" (click)="create(1)">
@@ -352,7 +594,7 @@
     <!--Modal to Edit -->
     <div bsModal #ModalEdit="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"
         data-keyboard="false" data-backdrop="static">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-xl-personalizado" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-info">
                     <h3 class="modal-title text-white fs-2 fw-bolder">
@@ -363,14 +605,24 @@
                 </div>
 
                 <div class="modal-body">
-                    <form #formUpdateRol="ngForm" id="form-UpdateRol" class="form-horizontal" (submit)="edit(id)">
+                    <form class="ms-2" (submit)="edit(id)">
                         <p class="text-info">
                             Los campos con asterisco (<span class="required">*</span>) son obligatorios.
                         </p>
 
-                        <div class="row">
-                            <div class="col-12">
+                        <div class="col-md-12 row">
+                            <div class="col-lg-6 col-sm-6">
                                 <div class="row">
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 text-center">
+                                            <h5>Características y detalles</h5>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
                                             <table class="table-bordered"
@@ -437,34 +689,27 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-sm-4">
-                                        <div class="mb-3">
-                                            <label>Precio de compra</label>
-                                            <input class="form-control " type="text" name="precioCompra"
-                                                [(ngModel)]="precioCompra">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-sm-4">
+                                    <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Fecha de elaboración</label>
                                             <input class="form-control " type="date" name="fechaElaboracion"
                                                 [(ngModel)]="fechaElaboracion">
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-sm-4">
+                                    <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Fecha de vencimiento</label>
                                             <input class="form-control " type="date" name="fechaVencimiento"
                                                 [(ngModel)]="fechaVencimiento">
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-sm-4">
+                                    <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3">
                                             <label>Lote</label>
                                             <input class="form-control " type="text" name="lote" [(ngModel)]="lote">
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-sm-4">
+                                    <div class="col-lg-6 col-sm-6">
                                         <div class="mb-3 ">
                                             <label>Medición *</label>
                                             <select class="form-control" name="medicion_id" [(ngModel)]="medicion_id"
@@ -475,40 +720,248 @@
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-1 col-sm-0">
+                                <div class="line-separator"></div>
+                            </div>
+
+                            <div class="col-lg-5 col-sm-6">
+                                <div class="row">
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 text-center">
+                                            <h5>IVA, costo o precio de compra</h5>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
                                     <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3 ">
                                             <label>IVA *</label>
-                                            <select class="form-control" name="iva_id" [(ngModel)]="iva_id" required>
+                                            <select class="form-control" name="iva_idEdit"
+                                                [(ngModel)]="iva_id" required
+                                                (change)="calcularCostosAndPvps('EDIT', 'GENERAL', null)">
+                                                <option value="0" class="d-none">Seleccionar</option>
                                                 <option *ngFor="let iva of tiposIva" [value]="iva.id">
                                                     {{iva.tipoIva}}
                                                 </option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
+                                    <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
-                                            <label>PVP 1*</label>
-                                            <input class="form-control " type="text" name="pvp1" [(ngModel)]="pvp1">
+                                            <label>Costo (0%)</label>
+                                            <input class="form-control" type="number" name="costoIva0Edit"
+                                                [(ngModel)]="costoIva0" min="0"
+                                                (input)="calcularCostosAndPvps('EDIT', 'COSTO', null)">
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
+                                    <div class="col-lg-4 col-sm-4">
                                         <div class="mb-3">
-                                            <label>PVP 2</label>
-                                            <input class="form-control " type="text" name="pvp2" [(ngModel)]="pvp2">
+                                            <label>Costo con IVA</label>
+                                            <input class="form-control " type="number" name="costoConIvaEdit"
+                                                [(ngModel)]="costoConIva" min="0" readonly>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 3</label>
-                                            <input class="form-control " type="text" name="pvp3" [(ngModel)]="pvp3">
+
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="mb-3 text-center">
+                                            <h5>Ganancias y precios de venta al publico</h5>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3 col-sm-3">
-                                        <div class="mb-3">
-                                            <label>PVP 4</label>
-                                            <input class="form-control " type="text" name="pvp4" [(ngModel)]="pvp4">
+
+                                    <hr>
+
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="row">
+                                            <div class="col-lg-3 col-sm-3 disabled-block">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp1Edit"
+                                                        [(ngModel)]="habilitarPvp1"
+                                                        (change)="onChangeCheckbox('EDIT', 1)">
+                                                    Habilitar pvp 1
+                                                </label>
+                                            </div>
+                                            <div class="col-lg-3 col-sm-3"
+                                                [class.disabled-block]="!habilitarPvp1">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp2Edit"
+                                                        [(ngModel)]="habilitarPvp2"
+                                                        (input)="resetPvp('EDIT', 2, !habilitarPvp2)"
+                                                        (change)="onChangeCheckbox('EDIT', 2)">
+                                                    Habilitar pvp 2
+                                                </label>
+                                            </div>
+                                            <div class="col-lg-3 col-sm-3"
+                                                [class.disabled-block]="!habilitarPvp2">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp3Edit"
+                                                        [(ngModel)]="habilitarPvp3"
+                                                        (input)="resetPvp('EDIT', 3, !habilitarPvp3)"
+                                                        (change)="onChangeCheckbox('EDIT', 3)">
+                                                    Habilitar pvp 3
+                                                </label>
+                                            </div>
+                                            <div class="col-lg-3 col-sm-3"
+                                                [class.disabled-block]="!habilitarPvp3">
+                                                <label>
+                                                    <input type="checkbox" name="habilitarPvp4Edit"
+                                                        [(ngModel)]="habilitarPvp4"
+                                                        (input)="resetPvp('EDIT', 4, !habilitarPvp4)"
+                                                        (change)="onChangeCheckbox('EDIT', 4)">
+                                                    Habilitar pvp 4
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP1"
+                                        [class.disabled-block]="!habilitarPvp1">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)*</label>
+                                                <input class="form-control" type="number" name="pGananciaPvp1Edit"
+                                                    [(ngModel)]="pGananciaPvp1" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PGANANCIAPVP1', 1)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)*</label>
+                                                <input class="form-control" type="number" name="gananciaPvp1Edit"
+                                                    [(ngModel)]="gananciaPvp1" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'GANANCIAPVP1', 1)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 1 (0%)*</label>
+                                                <input class="form-control" type="number" name="pvp1Iva0Edit"
+                                                    [(ngModel)]="pvp1Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PVP1', 1)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 1 *</label>
+                                                <input class="form-control" type="number" name="pvp1Edit"
+                                                    [(ngModel)]="pvp1" min="0" readonly>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP2"
+                                        [class.disabled-block]="!habilitarPvp2">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)</label>
+                                                <input class="form-control " type="number" name="pGananciaPVP2Edit"
+                                                    [(ngModel)]="pGananciaPvp2" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PGANANCIAPVP2', 2)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)</label>
+                                                <input class="form-control " type="number" name="gananciaPVP2Edit"
+                                                    [(ngModel)]="gananciaPvp2" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'GANANCIAPVP2', 2)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 2 (0%)</label>
+                                                <input class="form-control " type="number" name="pvp2Iva0Edit"
+                                                    [(ngModel)]="pvp2Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PVP2', 2)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 2</label>
+                                                <input class="form-control " type="number" name="pvp2Edit"
+                                                    [(ngModel)]="pvp2" min="0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP3"
+                                        [class.disabled-block]="!habilitarPvp3">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)</label>
+                                                <input class="form-control " type="number" name="pGananciaPVP3Edit"
+                                                    [(ngModel)]="pGananciaPvp3" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PGANANCIAPVP3', 3)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)</label>
+                                                <input class="form-control " type="number" name="gananciaPVP3Edit"
+                                                    [(ngModel)]="gananciaPvp3" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'GANANCIAPVP3', 3)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 3 (0%)</label>
+                                                <input class="form-control " type="number" name="pvp3Iva0Edit"
+                                                    [(ngModel)]="pvp3Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PVP3', 3)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 3</label>
+                                                <input class="form-control " type="number" name="pvp3Edit"
+                                                    [(ngModel)]="pvp3" min="0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3 col-sm-3 PVP4"
+                                        [class.disabled-block]="!habilitarPvp4">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3 mt-2">
+                                                <label>Ganancia (%)</label>
+                                                <input class="form-control " type="number" name="pGananciaPVP4Edit"
+                                                    [(ngModel)]="pGananciaPvp4" min="0"
+                                                    (input)="calcularCostosAndPvps('NEW', 'PGANANCIAPVP4', 4)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>Ganancia ($)</label>
+                                                <input class="form-control " type="number" name="gananciaPVP4Edit"
+                                                    [(ngModel)]="gananciaPvp4" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'GANANCIAPVP4', 4)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 4 (0%)</label>
+                                                <input class="form-control " type="number" name="pvp4Iva0Edit"
+                                                    [(ngModel)]="pvp4Iva0" min="0"
+                                                    (input)="calcularCostosAndPvps('EDIT', 'PVP4', 4)">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="mb-3">
+                                                <label>PVP 4</label>
+                                                <input class="form-control " type="number" name="pvp4Edit"
+                                                    [(ngModel)]="pvp4" min="0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -585,21 +1038,57 @@
                                 <td><b>Iva:</b></td>
                                 <td>{{tipoIva}}</td>
                             </tr>
-                            <tr>
+                            <tr class="PVP1">
                                 <td><b>PVP 1:</b></td>
                                 <td>{{pvp1}}</td>
+                                <td><b>PVP 1 (0%):</b></td>
+                                <td>{{pvp1Iva0}}</td>
+                            </tr>
+                            <tr class="PVP1">
+                                <td><b>Ganancia (%):</b></td>
+                                <td>{{pGananciaPvp1}}</td>
+                                <td><b>Ganancia ($):</b></td>
+                                <td>{{gananciaPvp1}}</td>
+                            </tr>
+                            <tr class="PVP2">
                                 <td><b>PVP 2:</b></td>
                                 <td>{{pvp2}}</td>
+                                <td><b>PVP 2 (0%):</b></td>
+                                <td>{{pvp2Iva0}}</td>
                             </tr>
-                            <tr>
+                            <tr class="PVP2">
+                                <td><b>Ganancia (%):</b></td>
+                                <td>{{pGananciaPvp2}}</td>
+                                <td><b>Ganancia ($):</b></td>
+                                <td>{{gananciaPvp2}}</td>
+                            </tr>
+                            <tr class="PVP3">
                                 <td><b>PVP 3:</b></td>
                                 <td>{{pvp3}}</td>
+                                <td><b>PVP 3 (0%):</b></td>
+                                <td>{{pvp3Iva0}}</td>
+                            </tr>
+                            <tr class="PVP3">
+                                <td><b>Ganancia (%):</b></td>
+                                <td>{{pGananciaPvp3}}</td>
+                                <td><b>Ganancia ($):</b></td>
+                                <td>{{gananciaPvp3}}</td>
+                            </tr>
+                            <tr class="PVP4">
                                 <td><b>PVP 4:</b></td>
                                 <td>{{pvp4}}</td>
+                                <td><b>PVP 4 (0%):</b></td>
+                                <td>{{pvp4Iva0}}</td>
+                            </tr>
+                            <tr class="PVP4">
+                                <td><b>Ganancia (%):</b></td>
+                                <td>{{pGananciaPvp4}}</td>
+                                <td><b>Ganancia ($):</b></td>
+                                <td>{{gananciaPvp4}}</td>
                             </tr>
                             <tr>
                                 <td><b>Estado:</b></td>
-                                <td colspan="3" id="view-rol">
+                                <td colspan="3">
                                     <span *ngIf="estado == 'Activo' else elseBlock">
                                         {{estado}} <i class="fas fa-circle fa-sm text-success"></i>
                                     </span>
@@ -609,6 +1098,10 @@
                                         </span>
                                     </ng-template>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td><b>Existencia:</b></td>
+                                <td colspan="3">{{existencia}}</td>
                             </tr>
                         </tbody>
                     </table>

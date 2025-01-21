@@ -4,6 +4,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import JsBarcode from 'jsbarcode';
+import { Decimal } from 'decimal.js';
 import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
@@ -23,16 +24,34 @@ interface Producto {
   linea_id: number;
   proveedor_id: number;
   descripcion: string;
-  pvp1: number;
-  pvp2: number;
-  pvp3: number;
-  pvp4: number;
   precioCompra: number;
   fechaElaboracion: string;
   fechaVencimiento: string;
   lote: string;
   medicion_id: number;
   iva_id: number;
+  costoIva0: any;
+  costoConIva: any;
+  habilitarPvp1: boolean;
+  pGananciaPvp1: any;
+  gananciaPvp1: any;
+  pvp1Iva0: any;
+  pvp1: any;
+  habilitarPvp2: boolean;
+  pGananciaPvp2: any;
+  gananciaPvp2: any;
+  pvp2Iva0: any;
+  pvp2: any;
+  habilitarPvp3: boolean;
+  pGananciaPvp3: any;
+  gananciaPvp3: any;
+  pvp3Iva0: any;
+  pvp3: any;
+  habilitarPvp4: boolean;
+  pGananciaPvp4: any;
+  gananciaPvp4: any;
+  pvp4Iva0: any;
+  pvp4: any;
 }
 
 @Component({
@@ -63,17 +82,43 @@ export class ProductosComponent implements OnInit {
   linea_id: number = 0;
   proveedor_id: number = 0;
   descripcion: string = '';
-  pvp1: number = 0.0;
-  pvp2: number = 0.0;
-  pvp3: number = 0.0;
-  pvp4: number = 0.0;
   precioCompra: number = 0.0;
   fechaElaboracion: string = '';
   fechaVencimiento: string = '';
   lote: string = '';
   medicion_id: number = 0;
   iva_id: number = 0;
+
+  costoIva0: any = 0.00;
+  costoConIva: any = 0.00;
+
+  habilitarPvp1: boolean = true;
+  pGananciaPvp1: any = 0.00;
+  gananciaPvp1: any = 0.00;
+  pvp1Iva0: any = 0.00;
+  pvp1: any = 0.00;
+
+  habilitarPvp2: boolean = false;
+  pGananciaPvp2: any = 0.00;
+  gananciaPvp2: any = 0.00;
+  pvp2Iva0: any = 0.00;
+  pvp2: any = 0.00;
+
+  habilitarPvp3: boolean = false;
+  pGananciaPvp3: any = 0.00;
+  gananciaPvp3: any = 0.00;
+  pvp3Iva0: any = 0.00;
+  pvp3: any = 0.00;
+
+  habilitarPvp4: boolean = false;
+  pGananciaPvp4: any = 0.00;
+  gananciaPvp4: any = 0.00;
+  pvp4Iva0: any = 0.00;
+  pvp4: any = 0.00;
+
   estado: string = 'Activo';
+
+  existencia: any;
 
   marcas: any[] = [];
   marca: string = '';
@@ -100,21 +145,50 @@ export class ProductosComponent implements OnInit {
     linea_id: 0,
     proveedor_id: 0,
     descripcion: '',
-    pvp1: 0.0,
-    pvp2: 0.0,
-    pvp3: 0.0,
-    pvp4: 0.0,
     precioCompra: 0.0,
     fechaElaboracion: '',
     fechaVencimiento: '',
     lote: '',
     medicion_id: 0,
-    iva_id: 0
+
+    iva_id: 0,
+    costoIva0: 0.00,
+    costoConIva: 0.00,
+
+    habilitarPvp1: true,
+    pGananciaPvp1: 0.00,
+    gananciaPvp1: 0.00,
+    pvp1Iva0: 0.00,
+    pvp1: 0.00,
+
+    habilitarPvp2: false,
+    pGananciaPvp2: 0.00,
+    gananciaPvp2: 0.00,
+    pvp2Iva0: 0.00,
+    pvp2: 0.00,
+
+    habilitarPvp3: false,
+    pGananciaPvp3: 0.00,
+    gananciaPvp3: 0.00,
+    pvp3Iva0: 0.00,
+    pvp3: 0.00,
+
+    habilitarPvp4: false,
+    pGananciaPvp4: 0.00,
+    gananciaPvp4: 0.00,
+    pvp4Iva0: 0.00,
+    pvp4: 0.00,
   }
 
   //Search
   search: string = '';
   productosFilter: any[] = [];
+  filterCategoria: any = 'Todas';
+  filterMarca: any = 'Todas';
+  filterLinea: any = 'Todas';
+  filterProveedor: any = 'Todos';
+  filterExistencia: any = '';
+  filterEstado: any = 'Todos';
 
   //Paginate
   currentPage = 1;
@@ -127,16 +201,39 @@ export class ProductosComponent implements OnInit {
     this.newProducto.linea_id = 0;
     this.newProducto.proveedor_id = 0;
     this.newProducto.descripcion = '';
-    this.newProducto.pvp1 = 0.0;
-    this.newProducto.pvp2 = 0.0;
-    this.newProducto.pvp3 = 0.0;
-    this.newProducto.pvp4 = 0.0;
     this.newProducto.precioCompra = 0.0;
     this.newProducto.fechaElaboracion = '';
     this.newProducto.fechaVencimiento = '';
     this.newProducto.lote = '';
     this.newProducto.medicion_id = 0;
     this.newProducto.iva_id = 0;
+
+    this.newProducto.costoIva0 = 0.00,
+    this.newProducto.costoConIva = 0.00,
+
+    this.newProducto.habilitarPvp1 = true,
+    this.newProducto.pGananciaPvp1 = 0.00,
+    this.newProducto.gananciaPvp1 = 0.00,
+    this.newProducto.pvp1Iva0 = 0.00,
+    this.newProducto.pvp1 = 0.00,
+
+    this.newProducto.habilitarPvp2 = false,
+    this.newProducto.pGananciaPvp2 = 0.00,
+    this.newProducto.gananciaPvp2 = 0.00,
+    this.newProducto.pvp2Iva0 = 0.00,
+    this.newProducto.pvp2 = 0.00,
+
+    this.newProducto.habilitarPvp3 = false,
+    this.newProducto.pGananciaPvp3 = 0.00,
+    this.newProducto.gananciaPvp3 = 0.00,
+    this.newProducto.pvp3Iva0 = 0.00,
+    this.newProducto.pvp3 = 0.00,
+
+    this.newProducto.habilitarPvp4 = false,
+    this.newProducto.pGananciaPvp4 = 0.00,
+    this.newProducto.gananciaPvp4 = 0.00,
+    this.newProducto.pvp4Iva0 = 0.00,
+    this.newProducto.pvp4 = 0.00,
 
     this.id = 0;
     this.codigo = '';
@@ -145,16 +242,39 @@ export class ProductosComponent implements OnInit {
     this.linea_id = 0;
     this.proveedor_id = 0;
     this.descripcion = '';
-    this.pvp1 = 0.0;
-    this.pvp2 = 0.0;
-    this.pvp3 = 0.0;
-    this.pvp4 = 0.0;
-    this.precioCompra = 0.0;
     this.fechaElaboracion = '';
     this.fechaVencimiento = '';
     this.lote = '';
     this.medicion_id = 0;
     this.iva_id = 0;
+
+    this.costoIva0 = 0.00,
+    this.costoConIva = 0.00,
+
+    this.habilitarPvp1 = true,
+    this.pGananciaPvp1 = 0.00,
+    this.gananciaPvp1 = 0.00,
+    this.pvp1Iva0 = 0.00,
+    this.pvp1 = 0.00,
+
+    this.habilitarPvp2 = false,
+    this.pGananciaPvp2 = 0.00,
+    this.gananciaPvp2 = 0.00,
+    this.pvp2Iva0 = 0.00,
+    this.pvp2 = 0.00,
+
+    this.habilitarPvp3 = false,
+    this.pGananciaPvp3 = 0.00,
+    this.gananciaPvp3 = 0.00,
+    this.pvp3Iva0 = 0.00,
+    this.pvp3 = 0.00,
+
+    this.habilitarPvp4 = false,
+    this.pGananciaPvp4 = 0.00,
+    this.gananciaPvp4 = 0.00,
+    this.pvp4Iva0 = 0.00,
+    this.pvp4 = 0.00,
+
     this.estado = 'Activo';
   }
 
@@ -238,11 +358,6 @@ export class ProductosComponent implements OnInit {
         this.proveedor_id = response.data.proveedor_id;
         this.proveedor = response.data.nombreProveedor;
         this.descripcion = response.data.descripcion;
-        this.pvp1 = response.data.pvp1;
-        this.pvp2 = response.data.pvp2;
-        this.pvp3 = response.data.pvp3;
-        this.pvp4 = response.data.pvp4;
-        this.precioCompra = response.data.precioCompra;
         this.fechaElaboracion = response.data.fechaElaboracion;
         this.fechaVencimiento = response.data.fechaVencimiento;
         this.lote = response.data.lote;
@@ -250,7 +365,36 @@ export class ProductosComponent implements OnInit {
         this.tipoMedicion = response.data.medicion;
         this.iva_id = response.data.iva_id;
         this.tipoIva = response.data.iva;
+
+        this.costoIva0 = response.data.costoIva0;
+        this.costoConIva = response.data.costoConIva;
+
+        this.habilitarPvp1 = response.data.habilitarPvp1;
+        this.pGananciaPvp1 = response.data.pGananciaPvp1;
+        this.gananciaPvp1 = response.data.gananciaPvp1;
+        this.pvp1Iva0 = response.data.pvp1Iva0;
+        this.pvp1 = response.data.pvp1;
+
+        this.habilitarPvp2 = response.data.habilitarPvp2;
+        this.pGananciaPvp2 = response.data.pGananciaPvp2;
+        this.gananciaPvp2 = response.data.gananciaPvp2;
+        this.pvp2Iva0 = response.data.pvp2Iva0;
+        this.pvp2 = response.data.pvp2;
+
+        this.habilitarPvp3 = response.data.habilitarPvp3;
+        this.pGananciaPvp3 = response.data.pGananciaPvp3;
+        this.gananciaPvp3 = response.data.gananciaPvp3;
+        this.pvp3Iva0 = response.data.pvp3Iva0;
+        this.pvp3 = response.data.pvp3;
+
+        this.habilitarPvp4 = response.data.habilitarPvp4;
+        this.pGananciaPvp4 = response.data.pGananciaPvp4;
+        this.gananciaPvp4 = response.data.gananciaPvp4;
+        this.pvp4Iva0 = response.data.pvp4Iva0;
+        this.pvp4 = response.data.pvp4;
+
         this.estado = response.data.estado;
+        this.existencia = response.data.stock ? response.data.stock.cantidad : 'Ingreso pendiente al invetario.';
       }
     );
   }
@@ -306,24 +450,41 @@ export class ProductosComponent implements OnInit {
   create(op: number) {
     let data = {
       data: {
-        codigo: !this.newProducto.codigo && this.barCodeImageNewProducto 
-          ? this.barCodeNewProducto 
+        codigo: !this.newProducto.codigo && this.barCodeImageNewProducto
+          ? this.barCodeNewProducto
           : this.newProducto.codigo,
         categoria_id: this.newProducto.categoria_id,
         marca_id: this.newProducto.marca_id,
         linea_id: this.newProducto.linea_id,
         proveedor_id: this.newProducto.proveedor_id,
         descripcion: this.newProducto.descripcion,
-        pvp1: this.newProducto.pvp1,
-        pvp2: this.newProducto.pvp2,
-        pvp3: this.newProducto.pvp3,
-        pvp4: this.newProducto.pvp4,
-        precioCompra: this.newProducto.precioCompra,
         fechaElaboracion: this.newProducto.fechaElaboracion,
         fechaVencimiento: this.newProducto.fechaVencimiento,
         lote: this.newProducto.lote,
         medicion_id: this.newProducto.medicion_id,
         iva_id: this.newProducto.iva_id,
+        costoIva0: this.newProducto.costoIva0,
+        costoConIva: this.newProducto.costoConIva,
+        habilitarPvp1: this.newProducto.habilitarPvp1,
+        pGananciaPvp1: this.newProducto.pGananciaPvp1,
+        gananciaPvp1: this.newProducto.gananciaPvp1,
+        pvp1Iva0: this.newProducto.pvp1Iva0,
+        pvp1: this.newProducto.pvp1,
+        habilitarPvp2: this.newProducto.habilitarPvp2,
+        pGananciaPvp2: this.newProducto.pGananciaPvp2,
+        gananciaPvp2: this.newProducto.gananciaPvp2,
+        pvp2Iva0: this.newProducto.pvp2Iva0,
+        pvp2: this.newProducto.pvp2,
+        habilitarPvp3: this.newProducto.habilitarPvp3,
+        pGananciaPvp3: this.newProducto.pGananciaPvp3,
+        gananciaPvp3: this.newProducto.gananciaPvp3,
+        pvp3Iva0: this.newProducto.pvp3Iva0,
+        pvp3: this.newProducto.pvp3,
+        habilitarPvp4: this.newProducto.habilitarPvp4,
+        pGananciaPvp4: this.newProducto.pGananciaPvp4,
+        gananciaPvp4: this.newProducto.gananciaPvp4,
+        pvp4Iva0: this.newProducto.pvp4Iva0,
+        pvp4: this.newProducto.pvp4,
         auditoria: this.AppService.getDataAuditoria('create')
       }
     };
@@ -355,16 +516,33 @@ export class ProductosComponent implements OnInit {
         linea_id: this.linea_id,
         proveedor_id: this.proveedor_id,
         descripcion: this.descripcion,
-        pvp1: this.pvp1,
-        pvp2: this.pvp2,
-        pvp3: this.pvp3,
-        pvp4: this.pvp4,
-        precioCompra: this.precioCompra,
         fechaElaboracion: this.fechaElaboracion,
         fechaVencimiento: this.fechaVencimiento,
         lote: this.lote,
         medicion_id: this.medicion_id,
         iva_id: this.iva_id,
+        costoIva0: this.costoIva0,
+        costoConIva: this.costoConIva,
+        habilitarPvp1: this.habilitarPvp1,
+        pGananciaPvp1: this.pGananciaPvp1,
+        gananciaPvp1: this.gananciaPvp1,
+        pvp1Iva0: this.pvp1Iva0,
+        pvp1: this.pvp1,
+        habilitarPvp2: this.habilitarPvp2,
+        pGananciaPvp2: this.pGananciaPvp2,
+        gananciaPvp2: this.gananciaPvp2,
+        pvp2Iva0: this.pvp2Iva0,
+        pvp2: this.pvp2,
+        habilitarPvp3: this.habilitarPvp3,
+        pGananciaPvp3: this.pGananciaPvp3,
+        gananciaPvp3: this.gananciaPvp3,
+        pvp3Iva0: this.pvp3Iva0,
+        pvp3: this.pvp3,
+        habilitarPvp4: this.habilitarPvp4,
+        pGananciaPvp4: this.pGananciaPvp4,
+        gananciaPvp4: this.gananciaPvp4,
+        pvp4Iva0: this.pvp4Iva0,
+        pvp4: this.pvp4,
         estado: this.estado,
         auditoria: this.AppService.getDataAuditoria('edit')
       }
@@ -411,27 +589,77 @@ export class ProductosComponent implements OnInit {
 
   //Search
   Search() {
-    this.productosFilter = this.productos.filter((producto: {
-      codigo: string,
-      descripcion: string,
-      nombreCategoria: string,
-      nombreMarca: string,
-      nombreLinea: string,
-      proveedor: string,
-      estado: string
-    }) => {
-      let filter = true;
-      if (this.search) {
-        filter = producto.codigo?.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.descripcion?.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.nombreCategoria?.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.nombreMarca?.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.nombreMarca?.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.proveedor?.toLowerCase().includes(this.search.toLowerCase()) ||
-          producto.estado?.toLowerCase().startsWith(this.search.toLowerCase());
+    this.productosFilter = this.productos.filter((producto) => {
+      let matchesCategoria = true;
+      let matchesMarca = true;
+      let matchesLinea = true;
+      let matchesProveedor = true;
+      let matchesExistencia = true;
+      let matchesEstado = true;
+      let matchesGeneral = true;
+
+      if (this.filterCategoria && this.filterCategoria !== 'Todas') {
+        matchesCategoria = producto.nombreCategoria
+          ?.toLowerCase()
+          .includes(this.filterCategoria.toLowerCase());
       }
-      return filter;
+
+      if (this.filterMarca && this.filterMarca !== 'Todas') {
+        matchesMarca = producto.nombreMarca
+          ?.toLowerCase()
+          .includes(this.filterMarca.toLowerCase());
+      }
+
+      if (this.filterLinea && this.filterLinea !== 'Todas') {
+        matchesLinea = producto.nombreLinea
+          ?.toLowerCase()
+          .includes(this.filterLinea.toLowerCase());
+      }
+
+      if (this.filterProveedor && this.filterProveedor !== 'Todos') {
+        matchesProveedor = producto.nombreProveedor
+          ?.toLowerCase()
+          .includes(this.filterProveedor.toLowerCase());
+      }
+
+      if (this.filterExistencia) {
+        if (producto.stock && producto.stock.cantidad) {
+          matchesExistencia = producto.stock.cantidad
+            .toString()
+            .toLowerCase()
+            .includes(this.filterExistencia.toLowerCase());
+        } else {
+          matchesExistencia = false;
+        }
+      }
+
+      if (this.filterEstado && this.filterEstado !== 'Todos') {
+        matchesEstado = producto.estado
+          ?.toLowerCase()
+          .includes(this.filterEstado.toLowerCase());
+      }
+
+      // Filtro general (búsqueda)
+      if (this.search) {
+        matchesGeneral =
+          producto.codigo?.toLowerCase().includes(this.search.toLowerCase()) ||
+          producto.descripcion?.toLowerCase().includes(this.search.toLowerCase());
+      }
+
+      return matchesCategoria && matchesMarca && matchesLinea && matchesProveedor && matchesExistencia && matchesEstado && matchesGeneral;
     });
+  }
+
+  clearFilters() {
+    this.search = '';
+    this.filterCategoria = 'Todas';
+    this.filterMarca = 'Todas';
+    this.filterLinea = 'Todas';
+    this.filterProveedor = 'Todos';
+    this.filterExistencia = '';
+    this.filterEstado = 'Todos';
+
+    this.Search();
   }
 
   //Paginate
@@ -575,6 +803,682 @@ export class ProductosComponent implements OnInit {
     this.newProducto.codigo = '';
     this.barCodeNewProducto = '';
     this.barCodeImageNewProducto = '';
+  }
+
+  // Calculo de costo, ganancia y pvps tomando en cuenta el porcentaje del iva
+  calcularCostosAndPvps(form: any, op: any, pvp: any) {
+    if (form === 'NEW') {
+      const ivaString = this.tiposIva.find(tipo => tipo.id == this.newProducto.iva_id)?.tipoIva.replace('%', '') || '0';
+      const iva = new Decimal(ivaString);
+
+      const costoIva0 = new Decimal(this.newProducto.costoIva0 || 0);
+      const costoIva = new Decimal(costoIva0.mul(iva).div(100)).toFixed(2);
+      const costoConIva = costoIva0.plus(costoIva);
+      this.newProducto.costoConIva = costoConIva.toFixed(2);
+
+      const pGananciaPvp1 = new Decimal(this.newProducto.pGananciaPvp1 || 0);
+      const pvp1Iva0 = new Decimal(this.newProducto.pvp1Iva0 || 0);
+
+      const pGananciaPvp2 = new Decimal(this.newProducto.pGananciaPvp2 || 0);
+      const pvp2Iva0 = new Decimal(this.newProducto.pvp2Iva0 || 0);
+
+      const pGananciaPvp3 = new Decimal(this.newProducto.pGananciaPvp3 || 0);
+      const pvp3Iva0 = new Decimal(this.newProducto.pvp3Iva0 || 0);
+
+      const pGananciaPvp4 = new Decimal(this.newProducto.pGananciaPvp4 || 0);
+      const pvp4Iva0 = new Decimal(this.newProducto.pvp4Iva0 || 0);
+
+      if (op === 'COSTO' || op === 'GENERAL') {
+        this.newProducto.pGananciaPvp1 = '0';
+        this.newProducto.gananciaPvp1 = '0.00';
+        this.newProducto.pvp1Iva0 = costoConIva.toFixed(2);
+        const pvp1Iva = costoConIva.mul(iva).div(100).toFixed(2);
+        this.newProducto.pvp1 = costoConIva.plus(pvp1Iva).toFixed(2);
+
+        this.newProducto.pGananciaPvp2 = '0';
+        this.newProducto.gananciaPvp2 = '0.00';
+        if (this.newProducto.habilitarPvp2) {
+          this.newProducto.pvp2Iva0 = costoConIva.toFixed(2);
+          const pvp2Iva = costoConIva.mul(iva).div(100).toFixed(2);
+          this.newProducto.pvp2 = costoConIva.plus(pvp2Iva).toFixed(2);
+        } else {
+          this.newProducto.pvp2Iva0 = '0.00';
+          this.newProducto.pvp2 = '0.00';
+        }
+
+        this.newProducto.pGananciaPvp3 = '0';
+        this.newProducto.gananciaPvp3 = '0.00';
+        if (this.newProducto.habilitarPvp3) {
+          this.newProducto.pvp3Iva0 = costoConIva.toFixed(2);
+          const pvp3Iva = costoConIva.mul(iva).div(100).toFixed(2);
+          this.newProducto.pvp3 = costoConIva.plus(pvp3Iva).toFixed(2);
+        } else {
+          this.newProducto.pvp3Iva0 = '0.00';
+          this.newProducto.pvp3 = '0.00';
+        }
+
+        this.newProducto.pGananciaPvp4 = '0';
+        this.newProducto.gananciaPvp4 = '0.00';
+        if (this.newProducto.habilitarPvp4) {
+          this.newProducto.pvp4Iva0 = costoConIva.toFixed(2);
+          const pvp4Iva = costoConIva.mul(iva).div(100).toFixed(2);
+          this.newProducto.pvp4 = costoConIva.plus(pvp4Iva).toFixed(2);
+        } else {
+          this.newProducto.pvp4Iva0 = '0.00';
+          this.newProducto.pvp4 = '0.00';
+        }
+
+        if (costoIva0.isZero()) {
+          if (pvp1Iva0.lte(0)) {
+            this.newProducto.pGananciaPvp1 = this.newProducto.habilitarPvp1 ? '100' : '0';
+            this.newProducto.gananciaPvp1 = '0.00';
+            this.newProducto.pvp1Iva0 = '0.00';
+            this.newProducto.pvp1 = '0.00';
+          }
+          if (pvp2Iva0.lte(0)) {
+            this.newProducto.pGananciaPvp2 = this.newProducto.habilitarPvp2 ? '100' : '0';
+            this.newProducto.gananciaPvp2 = '0.00';
+            this.newProducto.pvp2Iva0 = '0.00';
+            this.newProducto.pvp2 = '0.00';
+          }
+          if (pvp3Iva0.lte(0)) {
+            this.newProducto.pGananciaPvp3 = this.newProducto.habilitarPvp3 ? '100' : '0';;
+            this.newProducto.gananciaPvp3 = '0.00';
+            this.newProducto.pvp3Iva0 = '0.00';
+            this.newProducto.pvp3 = '0.00';
+          }
+          if (pvp4Iva0.lte(0)) {
+            this.newProducto.pGananciaPvp4 = this.newProducto.habilitarPvp4 ? '100' : '0';;
+            this.newProducto.gananciaPvp4 = '0.00';
+            this.newProducto.pvp4Iva0 = '0.00';
+            this.newProducto.pvp4 = '0.00';
+          }
+        }
+        return;
+      }
+
+      if (pvp === 1) {
+        if (op === 'PGANANCIAPVP1') {
+          const gananciaPvp1 = costoConIva.mul(pGananciaPvp1).div(100);
+          const nuevoPvp1Iva0 = gananciaPvp1.plus(costoConIva);
+          const nuevoPvp1Iva = nuevoPvp1Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp1 = nuevoPvp1Iva0.plus(nuevoPvp1Iva);
+
+          this.newProducto.gananciaPvp1 = gananciaPvp1.toFixed(2);
+          this.newProducto.pvp1Iva0 = nuevoPvp1Iva0.toFixed(2);
+          this.newProducto.pvp1 = nuevoPvp1.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP1') {
+          const gananciaPvp1 = new Decimal(this.newProducto.gananciaPvp1 || 0);
+          const nuevoPvp1Iva0 = gananciaPvp1.plus(costoConIva);
+          const nuevoPvp1Iva = nuevoPvp1Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp1 = nuevoPvp1Iva0.plus(nuevoPvp1Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp1.mul(100).div(costoConIva);
+          
+
+          this.newProducto.pGananciaPvp1 = nuevoPorcentajeGanancia.toFixed(0);
+          this.newProducto.pvp1Iva0 = nuevoPvp1Iva0.toFixed(2);
+          this.newProducto.pvp1 = nuevoPvp1.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP1') {
+          const nuevoPvp1Iva = pvp1Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp1 = pvp1Iva0.plus(nuevoPvp1Iva);
+
+          this.newProducto.pvp1 = nuevoPvp1.toFixed(2);
+
+          const gananciaPvp1 = pvp1Iva0.minus(costoConIva);
+          this.newProducto.gananciaPvp1 = gananciaPvp1.toFixed(2);
+          this.newProducto.pGananciaPvp1 = gananciaPvp1.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.newProducto.pvp1Iva0 = pvp1Iva0.toFixed(2);
+            const nuevoPvp1Iva = pvp1Iva0.mul(iva).div(100).toFixed(2);
+            this.newProducto.pvp1 = pvp1Iva0.plus(nuevoPvp1Iva).toFixed(2);
+            this.newProducto.pGananciaPvp1 = '100';
+            this.newProducto.gananciaPvp1 = pvp1Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+
+      if (pvp === 2) {
+        if (op === 'PGANANCIAPVP2') {
+          const gananciaPvp2 = costoConIva.mul(pGananciaPvp2).div(100);
+          const nuevoPvp2Iva0 = gananciaPvp2.plus(costoConIva);
+          const nuevoPvp2Iva = nuevoPvp2Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp2 = nuevoPvp2Iva0.plus(nuevoPvp2Iva);
+
+          this.newProducto.gananciaPvp2 = gananciaPvp2.toFixed(2);
+          this.newProducto.pvp2Iva0 = nuevoPvp2Iva0.toFixed(2);
+          this.newProducto.pvp2 = nuevoPvp2.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP2') {
+          const gananciaPvp2 = new Decimal(this.newProducto.gananciaPvp2 || 0);
+          const nuevoPvp2Iva0 = gananciaPvp2.plus(costoConIva);
+          const nuevoPvp2Iva = nuevoPvp2Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp2 = nuevoPvp2Iva0.plus(nuevoPvp2Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp2.mul(100).div(costoConIva);
+          
+
+          this.newProducto.pGananciaPvp2 = nuevoPorcentajeGanancia.toFixed(0);
+          this.newProducto.pvp2Iva0 = nuevoPvp2Iva0.toFixed(2);
+          this.newProducto.pvp2 = nuevoPvp2.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP2') {
+          const nuevoPvp2Iva = pvp2Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp2 = pvp2Iva0.plus(nuevoPvp2Iva);
+
+          this.newProducto.pvp2 = nuevoPvp2.toFixed(2);
+
+          const gananciaPvp2 = pvp2Iva0.minus(costoConIva);
+          this.newProducto.gananciaPvp2 = gananciaPvp2.toFixed(2);
+          this.newProducto.pGananciaPvp2 = gananciaPvp2.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.newProducto.pvp2Iva0 = pvp2Iva0.toFixed(2);
+            const nuevoPvp2Iva = pvp2Iva0.mul(iva).div(100).toFixed(2);
+            this.newProducto.pvp2 = pvp2Iva0.plus(nuevoPvp2Iva).toFixed(2);
+            this.newProducto.pGananciaPvp2 = '100';
+            this.newProducto.gananciaPvp2 = pvp2Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+
+      if (pvp === 3) {
+        if (op === 'PGANANCIAPVP3') {
+          const gananciaPvp3 = costoConIva.mul(pGananciaPvp3).div(100);
+          const nuevoPvp3Iva0 = gananciaPvp3.plus(costoConIva);
+          const nuevoPvp3Iva = nuevoPvp3Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp3 = nuevoPvp3Iva0.plus(nuevoPvp3Iva);
+
+          this.newProducto.gananciaPvp3 = gananciaPvp3.toFixed(2);
+          this.newProducto.pvp3Iva0 = nuevoPvp3Iva0.toFixed(2);
+          this.newProducto.pvp3 = nuevoPvp3.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP3') {
+          const gananciaPvp3 = new Decimal(this.newProducto.gananciaPvp3 || 0);
+          const nuevoPvp3Iva0 = gananciaPvp3.plus(costoConIva);
+          const nuevoPvp3Iva = nuevoPvp3Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp3 = nuevoPvp3Iva0.plus(nuevoPvp3Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp3.mul(100).div(costoConIva);
+          
+
+          this.newProducto.pGananciaPvp3 = nuevoPorcentajeGanancia.toFixed(0);
+          this.newProducto.pvp3Iva0 = nuevoPvp3Iva0.toFixed(2);
+          this.newProducto.pvp3 = nuevoPvp3.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP3') {
+          const nuevoPvp3Iva = pvp3Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp3 = pvp3Iva0.plus(nuevoPvp3Iva);
+
+          this.newProducto.pvp3 = nuevoPvp3.toFixed(2);
+
+          const gananciaPvp3 = pvp3Iva0.minus(costoConIva);
+          this.newProducto.gananciaPvp3 = gananciaPvp3.toFixed(2);
+          this.newProducto.pGananciaPvp3 = gananciaPvp3.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.newProducto.pvp3Iva0 = pvp3Iva0.toFixed(2);
+            const nuevoPvp3Iva = pvp3Iva0.mul(iva).div(100).toFixed(2);
+            this.newProducto.pvp3 = pvp3Iva0.plus(nuevoPvp3Iva).toFixed(2);
+            this.newProducto.pGananciaPvp3 = '100';
+            this.newProducto.gananciaPvp3 = pvp3Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+
+      if (pvp === 4) {
+        if (op === 'PGANANCIAPVP4') {
+          const gananciaPvp4 = costoConIva.mul(pGananciaPvp4).div(100);
+          const nuevoPvp4Iva0 = gananciaPvp4.plus(costoConIva);
+          const nuevoPvp4Iva = nuevoPvp4Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp4 = nuevoPvp4Iva0.plus(nuevoPvp4Iva);
+
+          this.newProducto.gananciaPvp4 = gananciaPvp4.toFixed(2);
+          this.newProducto.pvp4Iva0 = nuevoPvp4Iva0.toFixed(2);
+          this.newProducto.pvp4 = nuevoPvp4.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP4') {
+          const gananciaPvp4 = new Decimal(this.newProducto.gananciaPvp4 || 0);
+          const nuevoPvp4Iva0 = gananciaPvp4.plus(costoConIva);
+          const nuevoPvp4Iva = nuevoPvp4Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp4 = nuevoPvp4Iva0.plus(nuevoPvp4Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp4.mul(100).div(costoConIva);
+          
+
+          this.newProducto.pGananciaPvp4 = nuevoPorcentajeGanancia.toFixed(0);
+          this.newProducto.pvp4Iva0 = nuevoPvp4Iva0.toFixed(2);
+          this.newProducto.pvp4 = nuevoPvp4.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP4') {
+          const nuevoPvp4Iva = pvp4Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp4 = pvp4Iva0.plus(nuevoPvp4Iva);
+
+          this.newProducto.pvp4 = nuevoPvp4.toFixed(2);
+
+          const gananciaPvp4 = pvp4Iva0.minus(costoConIva);
+          this.newProducto.gananciaPvp4 = gananciaPvp4.toFixed(2);
+          this.newProducto.pGananciaPvp4 = gananciaPvp4.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.newProducto.pvp4Iva0 = pvp4Iva0.toFixed(2);
+            const nuevoPvp4Iva = pvp4Iva0.mul(iva).div(100).toFixed(2);
+            this.newProducto.pvp4 = pvp4Iva0.plus(nuevoPvp4Iva).toFixed(2);
+            this.newProducto.pGananciaPvp4 = '100';
+            this.newProducto.gananciaPvp4 = pvp4Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+    } else {
+      const ivaString = this.tiposIva.find(tipo => tipo.id == this.iva_id)?.tipoIva.replace('%', '') || '0';
+      const iva = new Decimal(ivaString);
+
+      const costoIva0 = new Decimal(this.costoIva0 || 0);
+      const costoIva = new Decimal(costoIva0.mul(iva).div(100)).toFixed(2);
+      const costoConIva = costoIva0.plus(costoIva);
+      this.costoConIva = costoConIva.toFixed(2);
+
+      const pGananciaPvp1 = new Decimal(this.pGananciaPvp1 || 0);
+      const pvp1Iva0 = new Decimal(this.pvp1Iva0 || 0);
+
+      const pGananciaPvp2 = new Decimal(this.pGananciaPvp2 || 0);
+      const pvp2Iva0 = new Decimal(this.pvp2Iva0 || 0);
+
+      const pGananciaPvp3 = new Decimal(this.pGananciaPvp3 || 0);
+      const pvp3Iva0 = new Decimal(this.pvp3Iva0 || 0);
+
+      const pGananciaPvp4 = new Decimal(this.pGananciaPvp4 || 0);
+      const pvp4Iva0 = new Decimal(this.pvp4Iva0 || 0);
+
+      if (op === 'COSTO' || op === 'GENERAL') {
+        this.pGananciaPvp1 = '0';
+        this.gananciaPvp1 = '0.00';
+        this.pvp1Iva0 = costoConIva.toFixed(2);
+        const pvp1Iva = costoConIva.mul(iva).div(100).toFixed(2);
+        this.pvp1 = costoConIva.plus(pvp1Iva).toFixed(2);
+
+        this.pGananciaPvp2 = '0';
+        this.gananciaPvp2 = '0.00';
+        if (this.habilitarPvp2) {
+          this.pvp2Iva0 = costoConIva.toFixed(2);
+          const pvp2Iva = costoConIva.mul(iva).div(100).toFixed(2);
+          this.pvp2 = costoConIva.plus(pvp2Iva).toFixed(2);
+        } else {
+          this.pvp2Iva0 = '0.00';
+          this.pvp2 = '0.00';
+        }
+
+        this.pGananciaPvp3 = '0';
+        this.gananciaPvp3 = '0.00';
+        if (this.habilitarPvp3) {
+          this.pvp3Iva0 = costoConIva.toFixed(2);
+          const pvp3Iva = costoConIva.mul(iva).div(100).toFixed(2);
+          this.pvp3 = costoConIva.plus(pvp3Iva).toFixed(2);
+        } else {
+          this.pvp3Iva0 = '0.00';
+          this.pvp3 = '0.00';
+        }
+
+        this.pGananciaPvp4 = '0';
+        this.gananciaPvp4 = '0.00';
+        if (this.habilitarPvp4) {
+          this.pvp4Iva0 = costoConIva.toFixed(2);
+          const pvp4Iva = costoConIva.mul(iva).div(100).toFixed(2);
+          this.pvp4 = costoConIva.plus(pvp4Iva).toFixed(2);
+        } else {
+          this.pvp4Iva0 = '0.00';
+          this.pvp4 = '0.00';
+        }
+
+        if (costoIva0.isZero()) {
+          if (pvp1Iva0.lte(0)) {
+            this.pGananciaPvp1 = this.habilitarPvp1 ? '100' : '0';
+            this.gananciaPvp1 = '0.00';
+            this.pvp1Iva0 = '0.00';
+            this.pvp1 = '0.00';
+          }
+          if (pvp2Iva0.lte(0)) {
+            this.pGananciaPvp2 = this.habilitarPvp2 ? '100' : '0';
+            this.gananciaPvp2 = '0.00';
+            this.pvp2Iva0 = '0.00';
+            this.pvp2 = '0.00';
+          }
+          if (pvp3Iva0.lte(0)) {
+            this.pGananciaPvp3 = this.habilitarPvp3 ? '100' : '0';;
+            this.gananciaPvp3 = '0.00';
+            this.pvp3Iva0 = '0.00';
+            this.pvp3 = '0.00';
+          }
+          if (pvp4Iva0.lte(0)) {
+            this.pGananciaPvp4 = this.habilitarPvp4 ? '100' : '0';;
+            this.gananciaPvp4 = '0.00';
+            this.pvp4Iva0 = '0.00';
+            this.pvp4 = '0.00';
+          }
+        }
+        return;
+      }
+
+      if (pvp === 1) {
+        if (op === 'PGANANCIAPVP1') {
+          const gananciaPvp1 = costoConIva.mul(pGananciaPvp1).div(100);
+          const nuevoPvp1Iva0 = gananciaPvp1.plus(costoConIva);
+          const nuevoPvp1Iva = nuevoPvp1Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp1 = nuevoPvp1Iva0.plus(nuevoPvp1Iva);
+
+          this.gananciaPvp1 = gananciaPvp1.toFixed(2);
+          this.pvp1Iva0 = nuevoPvp1Iva0.toFixed(2);
+          this.pvp1 = nuevoPvp1.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP1') {
+          const gananciaPvp1 = new Decimal(this.gananciaPvp1 || 0);
+          const nuevoPvp1Iva0 = gananciaPvp1.plus(costoConIva);
+          const nuevoPvp1Iva = nuevoPvp1Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp1 = nuevoPvp1Iva0.plus(nuevoPvp1Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp1.mul(100).div(costoConIva);
+          
+
+          this.pGananciaPvp1 = nuevoPorcentajeGanancia.toFixed(0);
+          this.pvp1Iva0 = nuevoPvp1Iva0.toFixed(2);
+          this.pvp1 = nuevoPvp1.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP1') {
+          const nuevoPvp1Iva = pvp1Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp1 = pvp1Iva0.plus(nuevoPvp1Iva);
+
+          this.pvp1 = nuevoPvp1.toFixed(2);
+
+          const gananciaPvp1 = pvp1Iva0.minus(costoConIva);
+          this.gananciaPvp1 = gananciaPvp1.toFixed(2);
+          this.pGananciaPvp1 = gananciaPvp1.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.pvp1Iva0 = pvp1Iva0.toFixed(2);
+            const nuevoPvp1Iva = pvp1Iva0.mul(iva).div(100).toFixed(2);
+            this.pvp1 = pvp1Iva0.plus(nuevoPvp1Iva).toFixed(2);
+            this.pGananciaPvp1 = '100';
+            this.gananciaPvp1 = pvp1Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+
+      if (pvp === 2) {
+        if (op === 'PGANANCIAPVP2') {
+          const gananciaPvp2 = costoConIva.mul(pGananciaPvp2).div(100);
+          const nuevoPvp2Iva0 = gananciaPvp2.plus(costoConIva);
+          const nuevoPvp2Iva = nuevoPvp2Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp2 = nuevoPvp2Iva0.plus(nuevoPvp2Iva);
+
+          this.gananciaPvp2 = gananciaPvp2.toFixed(2);
+          this.pvp2Iva0 = nuevoPvp2Iva0.toFixed(2);
+          this.pvp2 = nuevoPvp2.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP2') {
+          const gananciaPvp2 = new Decimal(this.gananciaPvp2 || 0);
+          const nuevoPvp2Iva0 = gananciaPvp2.plus(costoConIva);
+          const nuevoPvp2Iva = nuevoPvp2Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp2 = nuevoPvp2Iva0.plus(nuevoPvp2Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp2.mul(100).div(costoConIva);
+          
+
+          this.pGananciaPvp2 = nuevoPorcentajeGanancia.toFixed(0);
+          this.pvp2Iva0 = nuevoPvp2Iva0.toFixed(2);
+          this.pvp2 = nuevoPvp2.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP2') {
+          const nuevoPvp2Iva = pvp2Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp2 = pvp2Iva0.plus(nuevoPvp2Iva);
+
+          this.pvp2 = nuevoPvp2.toFixed(2);
+
+          const gananciaPvp2 = pvp2Iva0.minus(costoConIva);
+          this.gananciaPvp2 = gananciaPvp2.toFixed(2);
+          this.pGananciaPvp2 = gananciaPvp2.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.pvp2Iva0 = pvp2Iva0.toFixed(2);
+            const nuevoPvp2Iva = pvp2Iva0.mul(iva).div(100).toFixed(2);
+            this.pvp2 = pvp2Iva0.plus(nuevoPvp2Iva).toFixed(2);
+            this.pGananciaPvp2 = '100';
+            this.gananciaPvp2 = pvp2Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+
+      if (pvp === 3) {
+        if (op === 'PGANANCIAPVP3') {
+          const gananciaPvp3 = costoConIva.mul(pGananciaPvp3).div(100);
+          const nuevoPvp3Iva0 = gananciaPvp3.plus(costoConIva);
+          const nuevoPvp3Iva = nuevoPvp3Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp3 = nuevoPvp3Iva0.plus(nuevoPvp3Iva);
+
+          this.gananciaPvp3 = gananciaPvp3.toFixed(2);
+          this.pvp3Iva0 = nuevoPvp3Iva0.toFixed(2);
+          this.pvp3 = nuevoPvp3.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP3') {
+          const gananciaPvp3 = new Decimal(this.gananciaPvp3 || 0);
+          const nuevoPvp3Iva0 = gananciaPvp3.plus(costoConIva);
+          const nuevoPvp3Iva = nuevoPvp3Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp3 = nuevoPvp3Iva0.plus(nuevoPvp3Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp3.mul(100).div(costoConIva);
+          
+
+          this.pGananciaPvp3 = nuevoPorcentajeGanancia.toFixed(0);
+          this.pvp3Iva0 = nuevoPvp3Iva0.toFixed(2);
+          this.pvp3 = nuevoPvp3.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP3') {
+          const nuevoPvp3Iva = pvp3Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp3 = pvp3Iva0.plus(nuevoPvp3Iva);
+
+          this.pvp3 = nuevoPvp3.toFixed(2);
+
+          const gananciaPvp3 = pvp3Iva0.minus(costoConIva);
+          this.gananciaPvp3 = gananciaPvp3.toFixed(2);
+          this.pGananciaPvp3 = gananciaPvp3.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.pvp3Iva0 = pvp3Iva0.toFixed(2);
+            const nuevoPvp3Iva = pvp3Iva0.mul(iva).div(100).toFixed(2);
+            this.pvp3 = pvp3Iva0.plus(nuevoPvp3Iva).toFixed(2);
+            this.pGananciaPvp3 = '100';
+            this.gananciaPvp3 = pvp3Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+
+      if (pvp === 4) {
+        if (op === 'PGANANCIAPVP4') {
+          const gananciaPvp4 = costoConIva.mul(pGananciaPvp4).div(100);
+          const nuevoPvp4Iva0 = gananciaPvp4.plus(costoConIva);
+          const nuevoPvp4Iva = nuevoPvp4Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp4 = nuevoPvp4Iva0.plus(nuevoPvp4Iva);
+
+          this.gananciaPvp4 = gananciaPvp4.toFixed(2);
+          this.pvp4Iva0 = nuevoPvp4Iva0.toFixed(2);
+          this.pvp4 = nuevoPvp4.toFixed(2);
+          return;
+        }
+
+        if (op === 'GANANCIAPVP4') {
+          const gananciaPvp4 = new Decimal(this.gananciaPvp4 || 0);
+          const nuevoPvp4Iva0 = gananciaPvp4.plus(costoConIva);
+          const nuevoPvp4Iva = nuevoPvp4Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp4 = nuevoPvp4Iva0.plus(nuevoPvp4Iva);
+          const nuevoPorcentajeGanancia = gananciaPvp4.mul(100).div(costoConIva);
+          
+
+          this.pGananciaPvp4 = nuevoPorcentajeGanancia.toFixed(0);
+          this.pvp4Iva0 = nuevoPvp4Iva0.toFixed(2);
+          this.pvp4 = nuevoPvp4.toFixed(2);
+          return;
+        }
+
+        if (op === 'PVP4') {
+          const nuevoPvp4Iva = pvp4Iva0.mul(iva).div(100).toFixed(2);
+          const nuevoPvp4 = pvp4Iva0.plus(nuevoPvp4Iva);
+
+          this.pvp4 = nuevoPvp4.toFixed(2);
+
+          const gananciaPvp4 = pvp4Iva0.minus(costoConIva);
+          this.gananciaPvp4 = gananciaPvp4.toFixed(2);
+          this.pGananciaPvp4 = gananciaPvp4.div(costoConIva).times(100).toFixed(0);
+          if (costoIva0.isZero()) {
+            this.pvp4Iva0 = pvp4Iva0.toFixed(2);
+            const nuevoPvp4Iva = pvp4Iva0.mul(iva).div(100).toFixed(2);
+            this.pvp4 = pvp4Iva0.plus(nuevoPvp4Iva).toFixed(2);
+            this.pGananciaPvp4 = '100';
+            this.gananciaPvp4 = pvp4Iva0.toFixed(2);
+          }
+          return;
+        }
+      }
+    }
+  }
+
+  resetPvp(form: any, op: number, esHabilidado: boolean) {
+    if (form === 'NEW') {
+      if (op === 2 && !esHabilidado) {
+        this.newProducto.pGananciaPvp2 = '0';
+        this.newProducto.gananciaPvp2 = '0.00';
+        this.newProducto.pvp2Iva0 = '0.00';
+        this.newProducto.pvp2 = '0.00';
+      }
+      if (op === 3 && !esHabilidado) {
+        this.newProducto.pGananciaPvp3 = '0';
+        this.newProducto.gananciaPvp3 = '0.00';
+        this.newProducto.pvp3Iva0 = '0.00';
+        this.newProducto.pvp3 = '0.00';
+      }
+      if (op === 4 && !esHabilidado) {
+        this.newProducto.pGananciaPvp4 = '0';
+        this.newProducto.gananciaPvp4 = '0.00';
+        this.newProducto.pvp4Iva0 = '0.00';
+        this.newProducto.pvp4 = '0.00';
+      }
+    } else {
+      if (op === 2 && !esHabilidado) {
+        this.pGananciaPvp2 = '0';
+        this.gananciaPvp2 = '0.00';
+        this.pvp2Iva0 = '0.00';
+        this.pvp2 = '0.00';
+      }
+      if (op === 3 && !esHabilidado) {
+        this.pGananciaPvp3 = '0';
+        this.gananciaPvp3 = '0.00';
+        this.pvp3Iva0 = '0.00';
+        this.pvp3 = '0.00';
+      }
+      if (op === 4 && !esHabilidado) {
+        this.pGananciaPvp4 = '0';
+        this.gananciaPvp4 = '0.00';
+        this.pvp4Iva0 = '0.00';
+        this.pvp4 = '0.00';
+      }
+    }
+
+  }
+
+  onChangeCheckbox(form: any, level: number): void {
+    if (form === 'NEW') {
+      if (level === 1 && !this.newProducto.habilitarPvp1) {
+        this.newProducto.habilitarPvp2 = false;
+        this.newProducto.pGananciaPvp2 = '0';
+        this.newProducto.gananciaPvp2 = '0.00';
+        this.newProducto.pvp2Iva0 = '0.00';
+        this.newProducto.pvp2 = '0.00';
+        this.newProducto.habilitarPvp3 = false;
+        this.newProducto.pGananciaPvp3 = '0';
+        this.newProducto.gananciaPvp3 = '0.00';
+        this.newProducto.pvp3Iva0 = '0.00';
+        this.newProducto.pvp3 = '0.00';
+        this.newProducto.habilitarPvp4 = false;
+        this.newProducto.pGananciaPvp4 = '0';
+        this.newProducto.gananciaPvp4 = '0.00';
+        this.newProducto.pvp4Iva0 = '0.00';
+        this.newProducto.pvp4 = '0.00';
+      } else if (level === 2 && !this.newProducto.habilitarPvp2) {
+        this.newProducto.habilitarPvp3 = false;
+        this.newProducto.pGananciaPvp3 = '0';
+        this.newProducto.gananciaPvp3 = '0.00';
+        this.newProducto.pvp3Iva0 = '0.00';
+        this.newProducto.pvp3 = '0.00';
+        this.newProducto.habilitarPvp4 = false;
+        this.newProducto.pGananciaPvp4 = '0';
+        this.newProducto.gananciaPvp4 = '0.00';
+        this.newProducto.pvp4Iva0 = '0.00';
+        this.newProducto.pvp4 = '0.00';
+      } else if (level === 3 && !this.newProducto.habilitarPvp3) {
+        this.newProducto.habilitarPvp4 = false;
+        this.newProducto.pGananciaPvp4 = '0';
+        this.newProducto.gananciaPvp4 = '0.00';
+        this.newProducto.pvp4Iva0 = '0.00';
+        this.newProducto.pvp4 = '0.00';
+      }
+    } else {
+      if (level === 1 && !this.habilitarPvp1) {
+        this.habilitarPvp2 = false;
+        this.pGananciaPvp2 = '0';
+        this.gananciaPvp2 = '0.00';
+        this.pvp2Iva0 = '0.00';
+        this.pvp2 = '0.00';
+        this.habilitarPvp3 = false;
+        this.pGananciaPvp3 = '0';
+        this.gananciaPvp3 = '0.00';
+        this.pvp3Iva0 = '0.00';
+        this.pvp3 = '0.00';
+        this.habilitarPvp4 = false;
+        this.pGananciaPvp4 = '0';
+        this.gananciaPvp4 = '0.00';
+        this.pvp4Iva0 = '0.00';
+        this.pvp4 = '0.00';
+      } else if (level === 2 && !this.habilitarPvp2) {
+        this.habilitarPvp3 = false;
+        this.pGananciaPvp3 = '0';
+        this.gananciaPvp3 = '0.00';
+        this.pvp3Iva0 = '0.00';
+        this.pvp3 = '0.00';
+        this.habilitarPvp4 = false;
+        this.pGananciaPvp4 = '0';
+        this.gananciaPvp4 = '0.00';
+        this.pvp4Iva0 = '0.00';
+        this.pvp4 = '0.00';
+      } else if (level === 3 && !this.habilitarPvp3) {
+        this.habilitarPvp4 = false;
+        this.pGananciaPvp4 = '0';
+        this.gananciaPvp4 = '0.00';
+        this.pvp4Iva0 = '0.00';
+        this.pvp4 = '0.00';
+      }
+    }
   }
 
 }

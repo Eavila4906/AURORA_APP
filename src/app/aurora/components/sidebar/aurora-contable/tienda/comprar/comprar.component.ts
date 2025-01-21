@@ -530,7 +530,7 @@ export class ComprarComponent implements OnInit {
         codigo: productoSeleccionado.codigo,
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
-        precioUnitario: productoSeleccionado.precioCompra,
+        precioUnitario: productoSeleccionado.costoIva0,
         iva_id: productoSeleccionado.iva_id,
         iva: productoSeleccionado.iva,
         tipoDescuento: '%',
