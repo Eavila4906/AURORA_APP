@@ -152,7 +152,7 @@
                                                                 class="list-group-item list-group-item-action">
                                                                 <b>Producto: </b>{{ producto.descripcion }} -
                                                                 <b>PVP: </b>{{ producto.precioCompra }} - 
-                                                                <b>Existencia: </b>{{ producto.stock.cantidad }} 
+                                                                <b>Existencia: </b>{{ producto.stock ? producto.stock.cantidad : 'Pendiente' }}
                                                             </li>
                                                         </ul>
                                                         <div *ngIf="search && productosFilterSelected.length === 0 && showNoResultsMessage"
