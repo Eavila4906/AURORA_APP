@@ -429,6 +429,7 @@ export class ComprarComponent implements OnInit {
       response => {
         if (response.data) {
           this.toastr.success(response.message, '¡Listo!', { closeButton: true });
+          this.getProductos();
           this.limpiarOrden();
           Swal.fire({
             icon: 'warning',
@@ -486,22 +487,35 @@ export class ComprarComponent implements OnInit {
     this.showDataHead = !this.showDataHead;
   }
 
+  showNoResultsMessage: boolean = false;
+  debounceTimer: any;
+
   filterProductos() {
-    if (!this.search || this.search.trim() === '') {
-      this.productosFilterSelected = [];
-      return;
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
     }
 
-    this.productosFilterSelected = this.productosFilter.filter(producto =>
-      producto.codigo.includes(this.search) ||
-      producto.descripcion.toLowerCase().includes(this.search.toLowerCase())
-    );
+    this.debounceTimer = setTimeout(() => {
+      if (!this.search || this.search.trim() === '') {
+        this.productosFilterSelected = [];
+        this.showNoResultsMessage = false; // Oculta el mensaje si no hay búsqueda
+        return;
+      }
 
-    // Si hay solo un producto filtrado, agrégalo automáticamente
-    if (this.barCodeOption && this.productosFilterSelected.length === 1) {
-      this.selectProducto(this.productosFilterSelected[0]);
-      this.resetBusquedaProducto();
-    }
+      this.productosFilterSelected = this.productosFilter.filter(producto =>
+        producto.codigo.includes(this.search) ||
+        producto.descripcion.toLowerCase().includes(this.search.toLowerCase())
+      );
+
+      // Muestra u oculta el mensaje según los resultados
+      this.showNoResultsMessage = this.productosFilterSelected.length === 0;
+
+      // Lógica para seleccionar automáticamente un producto si hay uno solo
+      if (this.barCodeOption && this.productosFilterSelected.length === 1) {
+        this.selectProducto(this.productosFilterSelected[0]);
+        this.resetBusquedaProducto();
+      }
+    }, 300); // Espera 300ms antes de ejecutar la búsqueda
   }
 
   selectProducto(productoSeleccionado: any) {
@@ -516,7 +530,7 @@ export class ComprarComponent implements OnInit {
         codigo: productoSeleccionado.codigo,
         cantidad: 1,
         descripcion: productoSeleccionado.descripcion,
-        precioUnitario: productoSeleccionado.precioCompra,
+        precioUnitario: productoSeleccionado.costoIva0,
         iva_id: productoSeleccionado.iva_id,
         iva: productoSeleccionado.iva,
         tipoDescuento: '%',
@@ -911,7 +925,7 @@ export class ComprarComponent implements OnInit {
         },
         '***************************',
         { text: `Subtotal con IVA: ${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal sin IVA: ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal (0%): ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
         { text: `Descuento: ${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
         { text: `Subtotal: ${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
         { text: `IVA: ${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },

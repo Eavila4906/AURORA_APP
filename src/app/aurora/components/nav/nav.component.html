@@ -22,6 +22,12 @@
                         </div>
                     </a>
                     <div class="dropdown-menu dashboard-dropdown dropdown-menu-end">
+                        <a class="dropdown-item d-flex align-items-center" (click)="profileChange()"> 
+                            <i class="fas fa-user-alt text-muted me-2"></i> Cambiar perfil
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" (click)="companyChange()">
+                            <i class="fas fa-building text-muted me-2"></i> Cambiar negocio / empresa
+                        </a>
                         <a class="dropdown-item d-flex align-items-center" (click)="passwordChange()">
                             <i class="fas fa-key text-muted me-2"></i> Cambiar contraseña
                         </a>

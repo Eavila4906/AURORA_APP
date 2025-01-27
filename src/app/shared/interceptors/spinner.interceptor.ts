@@ -43,6 +43,12 @@ export class SnpinnerInterceptor implements HttpInterceptor {
             }
             return of(error).pipe(delay(60000)); // Esperar 60 segundos antes de reintentar
           }
+
+          if (error.status === 401&& error.error.message != 'Credenciales incorrectas') {
+            localStorage.clear();
+            window.location.reload();
+          }
+
           // Si el error no es 429, simplemente lo pasamos al siguiente operador
           return throwError(() => error);
         })

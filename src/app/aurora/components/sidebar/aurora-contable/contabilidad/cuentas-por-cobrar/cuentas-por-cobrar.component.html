@@ -181,7 +181,7 @@
         <div class="modal-content">
             <div class="modal-header bg-info">
                 <h3 class="modal-title text-white fs-2 fw-bolder">
-                    <i class="fas fa-edit"></i> Editar orden {{codigoFactura}}
+                    <i class="fas fa-edit"></i> Editar
                 </h3>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="ModalEdit.hide(); resetForm()">
                 </button>
@@ -195,9 +195,14 @@
                                 <div class="card-body">
                                     <div class="row mb-2">
                                         <div class="col-md-12">
-                                            <div class="row mb-3 col-12">
-                                                <div class="col-lg-5 col-sm-5">
-                                                    <button class="btn btn-info text-white" title="Guardar"
+                                            <div class="col-12">
+                                                <div class="row mb-3 align-items-center">
+                                                    <div class="col-lg-8 col-sm-8">
+                                                        <h1 class="h3 d-inline align-middle">Código: {{codigoFactura}} - </h1>
+                                                        <h1 class="h3 d-inline align-middle">Cliente: {{selectedOption}}</h1>
+                                                    </div>
+                                                    <div class="col-lg-4 col-sm-4 d-flex justify-content-end flex-wrap">
+                                                        <button class="btn btn-info text-white" title="Guardar"
                                                         (click)="editFactura(cabFactura_id, 1)">
                                                         <i class="fas fa-save"></i>
                                                     </button>
@@ -217,6 +222,7 @@
                                                         (click)="ModalEdit.hide()">
                                                         <i class="fas fa-reply"></i>
                                                     </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <hr>
@@ -258,7 +264,8 @@
                                                                                 (click)="selectProducto(producto)"
                                                                                 class="list-group-item list-group-item-action">
                                                                                 <b>Producto: </b>{{ producto.descripcion }} -
-                                                                                <b>PVP: </b>{{ producto.pvp1 }}
+                                                                                <b>PVP: </b>{{ producto.pvp1 }} -
+                                                                                <b>Existencia: </b>{{ producto.stock.cantidad }}
                                                                             </li>
                                                                         </ul>
                                                                         <div *ngIf="search && productosFilterSelected.length === 0"
@@ -269,15 +276,18 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <!-- Totales en la esquina -->
-                                                            <div class="col-lg-3 col-sm-3 text-right">
-                                                                <div class="mt-2 ms-2">
-                                                                    <b>Subtotal con IVA: </b>{{subtotalConIva === 0 ? '0.00' : subtotalConIva}}<br>
-                                                                    <b>Subtotal sin IVA: </b>{{subtotalSinIva === 0 ? '0.00' : subtotalSinIva}}<br>
+                                                            <div class="col-lg-3 col-sm-3 text-right resumen-factura">
+                                                                <div class="contenido-resumen">
+                                                                    <b>Subtotal con IVA: </b>{{subtotalConIva === 0 ? '0.00' :
+                                                                    subtotalConIva}}<br>
+                                                                    <b>Subtotal (0%): </b>{{subtotalSinIva === 0 ? '0.00' :
+                                                                    subtotalSinIva}}<br>
                                                                     <b>Descuento: </b>{{totalDescuento === 0 ? '0.00' : totalDescuento}}<br>
                                                                     <b>Subtotal: </b>{{subtotal === 0 ? '0.00' : subtotal}}<br>
                                                                     <b>IVA: </b>{{totalIva === 0 ? '0.00' : totalIva}}<br>
-                                                                    <b>Total: </b>{{total === 0 ? '0.00' : total}}
+                                                                    <div class="total-destacado mt-2">
+                                                                        <b>Total: </b>{{total === 0 ? '0.00' : total}}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -288,7 +298,7 @@
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table table-striped table-hover">
-                                            <thead>
+                                            <thead class="bg-table">
                                                 <tr>
                                                     <th>N°</th>
                                                     <th>Código</th>
@@ -322,8 +332,8 @@
                                                                 [(ngModel)]="producto.precioUnitario"
                                                                 (change)="calcularTotalProducto(producto)"
                                                                 style="height: 35px; width: 100px">
-                                                                <option *ngFor="let pvp of producto.preciosVenta" [value]="pvp.pvp">
-                                                                    {{pvp.pvp}}
+                                                                <option *ngFor="let pvp of producto.preciosVenta" [value]="pvp.pvpIva0">
+                                                                    {{pvp.pvpIva0}}
                                                                 </option>
                                                             </select>
                                                         </div>

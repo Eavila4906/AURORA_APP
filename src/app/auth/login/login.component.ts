@@ -48,7 +48,9 @@ export class LoginComponent implements OnInit {
               id: response.data.user.id,
               username: response.data.user.username,
               name: response.data.user.name,
-              lastname: response.data.user.lastname
+              lastname: response.data.user.lastname,
+              roles: response.data.user.roles,
+              companies: response.data.user.companies
             }
           }
 

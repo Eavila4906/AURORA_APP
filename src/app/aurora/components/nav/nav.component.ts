@@ -25,7 +25,11 @@ export class NavComponent implements OnInit {
   user: string = '';
   username: string = '';
   rolId: any;
+  empresaId: any;
   rol: any;
+
+  roles: any;
+  companies: any;
 
   currentPassword: string = '';
   newPassword: string = '';
@@ -52,7 +56,129 @@ export class NavComponent implements OnInit {
       let userdata = JSON.parse(this.userData);
       this.username = userdata.user.username;
       this.rol = localStorage.getItem('rol') !== null ? localStorage.getItem('rol') : null;
+      this.roles = userdata.user.roles;
+      this.companies = userdata.user.companies;
     }
+  }
+
+  profileChange() {
+    Swal.fire({
+      title: '<strong><i class="fas fa-user-alt"></i> Cambiar perfil</strong>',
+      html: `
+        <form id="profileForm">
+          <center>
+            <div class="col-11">
+              <div class="row">
+                <div class="col-lg-12 col-sm-12">
+                  <div class="mb-3 position-relative">
+                    <select class="form-control" name="roles" id="roles">
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </center>
+        </form>
+        <hr>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Cambiar',
+      cancelButtonText: 'Cancelar',
+      width: '550px',
+      didOpen: () => {
+        const select = document.getElementById('roles') as HTMLSelectElement;
+        const storedRoleId = localStorage.getItem('rolId');
+  
+        this.roles.forEach((role: { id: number; rol: string }) => {
+          const option = document.createElement('option');
+          option.value = role.id.toString();
+          option.textContent = role.rol;
+  
+          if (storedRoleId && storedRoleId === role.id.toString()) {
+            option.selected = true;
+            this.rolId = role.id; 
+          }
+  
+          select.appendChild(option);
+        });
+  
+        select.addEventListener('change', (event) => {
+          const selectedId = (event.target as HTMLSelectElement).value;
+          this.rolId = selectedId; 
+        });
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const selectedRole = this.roles.find(
+          (role: { id: number; rol: string }) => role.id.toString() === this.rolId
+        );
+  
+        if (selectedRole) {
+          localStorage.setItem('rolId', selectedRole.id.toString());
+          localStorage.setItem('rol', selectedRole.rol);
+          localStorage.removeItem('menu');
+          const basePath = window.location.pathname.split('/')[1]; 
+          window.location.href = `/${basePath}/principal`;
+        }
+      }
+    });
+  }  
+  
+  companyChange() {
+    Swal.fire({
+      title: '<strong><i class="fas fa-building"></i> Cambiar negocio / empresa</strong>',
+      html: `
+        <form id="companyForm">
+          <center>
+            <div class="col-11">
+              <div class="row">
+                <div class="col-lg-12 col-sm-12">
+                  <div class="mb-3 position-relative">
+                    <select class="form-control" name="companies" id="companies">
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </center>
+        </form>
+        <hr>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Cambiar',
+      cancelButtonText: 'Cancelar',
+      width: '550px',
+      didOpen: () => {
+        const select = document.getElementById('companies') as HTMLSelectElement;
+        const storedRoleId = localStorage.getItem('empresa');
+  
+        this.companies.forEach((company: { id: number; name: string }) => {
+          const option = document.createElement('option');
+          option.value = company.id.toString();
+          option.textContent = company.name;
+  
+          if (storedRoleId && storedRoleId === company.id.toString()) {
+            option.selected = true;
+            this.empresaId = company.id; 
+          }
+  
+          select.appendChild(option);
+        });
+  
+        select.addEventListener('change', (event) => {
+          const selectedId = (event.target as HTMLSelectElement).value;
+          this.empresaId = selectedId; 
+        });
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.setItem('empresa', this.empresaId.toString());
+        const basePath = window.location.pathname.split('/')[1]; 
+        window.location.href = `/${basePath}/principal`;
+      }
+    });
   }
 
   passwordChange() {

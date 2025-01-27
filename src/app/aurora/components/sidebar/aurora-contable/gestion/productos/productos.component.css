@@ -4,3 +4,39 @@
     word-wrap: break-word; /* Para compatibilidad con navegadores antiguos */
     white-space: normal; /* Asegura que el texto se ajuste a nuevas líneas */
 }
+
+.row {
+    position: relative; /* Asegura que la posición relativa se base en este contenedor */
+}
+
+.line-separator {
+    border-left: 1px solid #ccc; /* Línea fina */
+    height: 100%; /* Asegura que ocupe toda la altura del contenedor */
+    margin: 0 auto;
+    margin-left: 50%;
+}
+
+.modal-xl-personalizado {
+    max-width: 75%;
+}
+
+.PVP1 {
+    background-color: rgba(137, 43, 226, 0.090);
+}
+
+.PVP2 {
+    background-color: rgba(242, 255, 0, 0.090);
+}
+
+.PVP3 {
+    background-color: rgba(0, 123, 50, 0.090);
+}
+
+.PVP4 {
+    background-color: rgba(255, 153, 0, 0.09);
+}
+
+.disabled-block {
+    pointer-events: none; /* Evita cualquier interacción con los elementos */
+    opacity: 0.6; /* Hace que el bloque se vea deshabilitado */
+}
