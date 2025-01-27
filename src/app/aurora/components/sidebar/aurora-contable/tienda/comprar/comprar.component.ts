@@ -925,7 +925,7 @@ export class ComprarComponent implements OnInit {
         },
         '***************************',
         { text: `Subtotal con IVA: ${data.data.cabecera.subtotalConIva}`, style: 'totales', alignment: 'right' },
-        { text: `Subtotal sin IVA: ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
+        { text: `Subtotal (0%): ${data.data.cabecera.subtotalSinIva}`, style: 'totales', alignment: 'right' },
         { text: `Descuento: ${data.data.cabecera.totalDescuento}`, style: 'totales', alignment: 'right' },
         { text: `Subtotal: ${data.data.cabecera.subtotal}`, style: 'totales', alignment: 'right' },
         { text: `IVA: ${data.data.cabecera.totalIva}`, style: 'totales', alignment: 'right' },

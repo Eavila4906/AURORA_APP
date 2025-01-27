@@ -281,7 +281,7 @@ export class FacturasComponent implements OnInit {
               stack: [
                 { text: 'Totales', style: 'subheader' },
                 { text: `Subtotal con IVA: ${this.subTotalConIva}` },
-                { text: `Subtotal sin IVA: ${this.subTotalSinIva}` },
+                { text: `Subtotal (0%): ${this.subTotalSinIva}` },
                 { text: `Descuento: ${this.totalDescuento}` },
                 { text: `Subtotal: ${this.subtotal}` },
                 { text: `IVA: ${this.totalIva}` },
